@@ -587,8 +587,18 @@ ${keywordLine}${conditionBlock}
         throw new Error('NETWORK_BLOCKED: ' + networkErr.message);
       }
       if (res.ok) { lastErr = null; break; }
-      if (res.status === 503 || res.status === 429) {
-        lastErr = new Error('Gemini API error ' + res.status + ' (混雑中)');
+      if (res.status === 429) {
+        // quota exceeded — this is NOT transient; retrying won't help until quota resets, so fail fast with the real reason
+        const errText429 = await res.text();
+        let detail = errText429.slice(0,300);
+        try {
+          const parsed429 = JSON.parse(errText429);
+          detail = parsed429.error?.message || detail;
+        } catch(e){}
+        throw new Error('QUOTA: ' + detail);
+      }
+      if (res.status === 503) {
+        lastErr = new Error('Gemini API error 503 (一時的な高負荷)');
         await new Promise(r => setTimeout(r, 1200 * (attempt + 1)));
         continue;
       }
@@ -912,11 +922,12 @@ ${keywordLine}${conditionBlock}
         result = await generateGeminiRecipe(mainIngredient, keyword, quickMode);
       } catch (e1) {
         const msg1 = (e1.message || String(e1));
-        if (msg1.startsWith('BUSY') && !quickMode) {
-          // researched mode congested — automatically fall back to quick mode rather than failing outright
-          document.getElementById('rpgPotStatus').textContent = '混雑中のため素早く生成に切り替え中…';
+        if ((msg1.startsWith('BUSY') || msg1.startsWith('QUOTA')) && !quickMode) {
+          // researched mode unavailable (congested or quota) — automatically fall back to quick mode rather than failing outright
+          document.getElementById('rpgPotStatus').textContent = msg1.startsWith('QUOTA') ? '検索の割り当てが上限のため素早く生成に切り替え中…' : '混雑中のため素早く生成に切り替え中…';
           result = await generateGeminiRecipe(mainIngredient, keyword, true);
           fellBack = true;
+          window.__rpgLastFallbackReason = msg1.startsWith('QUOTA') ? 'quota' : 'busy';
         } else {
           throw e1;
         }
@@ -924,7 +935,11 @@ ${keywordLine}${conditionBlock}
       clearInterval(bubbleInterval);
       potWrap.classList.remove('rpg-pot-brewing');
       currentGacha = result;
-      if (fellBack) gachaError = '(検索連携が混雑していたため、素早く生成モードで作りました)';
+      if (fellBack) {
+        gachaError = window.__rpgLastFallbackReason === 'quota'
+          ? '(検索連携の割り当て上限に達していたため、素早く生成モードで作りました。Google AI Studioで請求先アカウントの設定/割り当て状況を確認すると直る場合があります)'
+          : '(検索連携が混雑していたため、素早く生成モードで作りました)';
+      }
       playFanfare();
     } catch (e) {
       clearInterval(bubbleInterval);
@@ -933,6 +948,8 @@ ${keywordLine}${conditionBlock}
       const msg = (e.message || String(e));
       if (msg.startsWith('NETWORK_BLOCKED')) {
         gachaError = 'この環境ではAPI通信がブロックされている可能性があります(Claudeのアプリ内プレビューなど)。GitHub Pagesなど公開したサイトから開いてお試しください。';
+      } else if (msg.startsWith('QUOTA')) {
+        gachaError = '検索連携(Grounding)の割り当てに達しています。Google AI Studio→Settings→Plan informationで請求先アカウントを設定すると、この割り当てが正しく有効になる場合があります。詳細: ' + msg.replace('QUOTA: ','').slice(0,150);
       } else if (msg.startsWith('BUSY')) {
         gachaError = 'Geminiのサーバーが今かなり混み合っています。少し時間をおいてから、または「素早く生成」モードでもう一度試してみてください。';
       } else {
