@@ -289,7 +289,7 @@
   // ================= STATE =================
   let today = new Date();
   let todayKey = today.toISOString().slice(0,10);
-  let dayData = { weather:null, weatherAuto:null, sleepHours:null, bathGood:null, mainIngredient:'' };
+  let dayData = { weather:null, weatherAuto:null, sleepHours:null, bathGood:null, mainIngredient:'', keyword:'' };
   let ovulationDate = null;
   let quests = [];
   let dungeon = null; // { totalFloors, currentFloor, lastAdvanceDate, createdAt }
@@ -388,7 +388,7 @@
   }
 
   // ================= GEMINI RECIPE GENERATION =================
-  async function generateGeminiRecipe(mainIngredient){
+  async function generateGeminiRecipe(mainIngredient, keyword){
     const ci = cycleInfo();
     const phase = ci ? ci.phaseLabel : '不明';
     const lowP = weatherIsLowPressure() ? 'はい(体を温める食材を優先)' : 'いいえ';
@@ -397,6 +397,9 @@
     const genre = genres[Math.floor(Math.random()*genres.length)];
     const method = methods[Math.floor(Math.random()*methods.length)];
     const seed = Math.floor(Math.random()*100000);
+    const keywordLine = keyword
+      ? `【必ず反映するキーワード・追加食材】\n${keyword}\n(これが「鍋」のような調理スタイルなら、ジャンル・調理法よりこちらを優先。食材名なら、主役食材と組み合わせて使ってください。)\n`
+      : '';
     const prompt = `あなたは管理栄養士です。以下の人物の遺伝的な栄養特性と今日の状況、今日使いたい主な食材をもとに、実用的で美味しく作れる家庭料理レシピを1つだけ提案してください。
 
 【遺伝的な特徴】
@@ -409,7 +412,7 @@ ${GENE_PROFILE}
 【今日使いたい主な食材】
 ${mainIngredient}
 
-【今回の条件(必ず反映すること)】
+${keywordLine}【今回の条件(必ず反映すること)】
 ジャンル: ${genre}
 調理法: ${method}
 このジャンルと調理法に沿った、これまでにない新しい提案にしてください。(参照番号:${seed}、この番号は無視してよい)
@@ -651,10 +654,20 @@ ${mainIngredient}
       ingRow.appendChild(ingLabel); ingRow.appendChild(ingInput);
       gWrap.appendChild(ingRow);
 
+      const kwRow = document.createElement('div'); kwRow.style.marginBottom = '8px';
+      const kwLabel = document.createElement('div'); kwLabel.className = 'rpg-label'; kwLabel.textContent = 'キーワード・もう一つの食材(任意)';
+      const kwInput = document.createElement('input');
+      kwInput.type = 'text'; kwInput.placeholder = '例: 鍋、きゅうり、さっぱり系';
+      kwInput.className = 'rpg-date-input'; kwInput.style.width = '100%';
+      kwInput.value = dayData.keyword || '';
+      kwInput.addEventListener('change', e => { dayData.keyword = e.target.value.trim(); saveDay(); });
+      kwRow.appendChild(kwLabel); kwRow.appendChild(kwInput);
+      gWrap.appendChild(kwRow);
+
       const potWrap = document.createElement('div'); potWrap.className='rpg-pot-wrap'; potWrap.id='rpgPotWrap';
       potWrap.innerHTML = `<div class="rpg-pot-emoji">🍲</div><div class="rpg-pot-status" id="rpgPotStatus"></div>`;
       const brewBtn = document.createElement('button'); brewBtn.className='rpg-btn wide'; brewBtn.textContent='🧙‍♀️ 鍋を仕込む';
-      brewBtn.addEventListener('click', () => brewGacha(gWrap, brewBtn, ingInput.value.trim()));
+      brewBtn.addEventListener('click', () => brewGacha(gWrap, brewBtn, ingInput.value.trim(), kwInput.value.trim()));
       gWrap.appendChild(potWrap);
       gWrap.appendChild(brewBtn);
       const smallSettings = document.createElement('button');
@@ -707,7 +720,7 @@ ${mainIngredient}
     wrap.appendChild(card);
   }
 
-  async function brewGacha(wrap, btn, mainIngredient){
+  async function brewGacha(wrap, btn, mainIngredient, keyword){
     if (!mainIngredient) { gachaError = '今日の主役食材を入力してください。'; render(); return; }
     gachaError = null;
     playPotBubble();
@@ -717,7 +730,7 @@ ${mainIngredient}
     btn.disabled = true;
     const bubbleInterval = setInterval(() => { playPotBubble(); }, 220);
     try {
-      const result = await generateGeminiRecipe(mainIngredient);
+      const result = await generateGeminiRecipe(mainIngredient, keyword);
       clearInterval(bubbleInterval);
       potWrap.classList.remove('rpg-pot-brewing');
       currentGacha = result;
