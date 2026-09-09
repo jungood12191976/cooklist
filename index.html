@@ -400,14 +400,40 @@
     const ci = cycleInfo();
     let parts = [];
     if (ci) {
-      if (ci.phase === 'ovulation') parts.push('排卵期でエストロゲンが変動中。<b>まずカカオ85%を一かけ</b>、それから今日の冒険に出ましょう。');
-      else if (ci.phase === 'luteal_late') parts.push(`生理予定まであと${ci.daysToPeriod}日、セロトニン・マグネシウム需要が上がる時期。<b>先に一口補給</b>してから進みましょう。`);
-      else if (ci.phase === 'menstrual') parts.push('生理が近い、または始まっている時期。<b>鉄分を意識した一皿を先に</b>。');
+      if (ci.phase === 'ovulation') parts.push(pick([
+        '排卵期でエストロゲンが変動中。<b>まずカカオ85%を一かけ</b>、それから今日の冒険に出ましょう。',
+        '排卵期特有のホルモンの波の中にいます。<b>マグネシウムを一口補給</b>してから動き出しましょう。',
+        '今日は排卵期。自律神経が揺れやすい日です。<b>白湯を一口</b>飲んでから始めましょう。'
+      ]));
+      else if (ci.phase === 'luteal_late') parts.push(pick([
+        `生理予定まであと${ci.daysToPeriod}日、セロトニン・マグネシウム需要が上がる時期。<b>先に一口補給</b>してから進みましょう。`,
+        `生理予定まであと${ci.daysToPeriod}日。<b>鉄分かカカオを一口</b>、それから今日のクエストに向かいましょう。`,
+        `あと${ci.daysToPeriod}日で生理予定。プロゲステロンが下がる時期です。<b>甘いものより、まずマグネシウム</b>を。`
+      ]));
+      else if (ci.phase === 'menstrual') parts.push(pick([
+        '生理が近い、または始まっている時期。<b>鉄分を意識した一皿を先に</b>。',
+        '生理周期の終盤です。<b>無理に飛ばさず、鉄分補給から</b>始めましょう。'
+      ]));
     }
-    if (weatherIsLowPressure()) parts.push('低気圧・高湿度のフィールド。<b>白湯+生姜を一口</b>飲んでから進むと切り替えが早くなります。');
-    if (dayData.sleepHours && parseFloat(dayData.sleepHours) < 6.5) parts.push('睡眠がやや短めですね。<b>今ここで1分だけ深呼吸</b>、それだけで今日は十分取り戻せます。');
-    if (isNightMode()) parts.push('もう夜も遅い時間。<b>今日はここまでにして、宿でしっかり休みましょう。</b>');
-    if (parts.length === 0) parts.push('今日は大きな負荷要因は見当たりません。<b>このペースで押していきましょう。</b>');
+    if (weatherIsLowPressure()) parts.push(pick([
+      '低気圧・高湿度のフィールド。<b>白湯+生姜を一口</b>飲んでから進むと切り替えが早くなります。',
+      '今日は低気圧のフィールド。<b>体を温める一口</b>から始めると、動き出しが軽くなります。',
+      '気圧が低い日です。<b>まず1杯の温かい飲み物</b>で自律神経を整えましょう。'
+    ]));
+    if (dayData.sleepHours && parseFloat(dayData.sleepHours) < 6.5) parts.push(pick([
+      '睡眠がやや短めですね。<b>今ここで1分だけ深呼吸</b>、それだけで今日は十分取り戻せます。',
+      '昨夜は少し眠りが短かったですね。<b>白湯を一杯</b>飲んでから今日を始めましょう。',
+      '睡眠不足のじょうたいです。<b>今日は夜、いつもより早めに宿へ</b>戻りましょう。'
+    ]));
+    if (isNightMode()) parts.push(pick([
+      'もう夜も遅い時間。<b>今日はここまでにして、宿でしっかり休みましょう。</b>',
+      '夜が更けてきました。<b>続きは明日のあなたに託しましょう。</b>'
+    ]));
+    if (parts.length === 0) parts.push(pick([
+      '今日は大きな負荷要因は見当たりません。<b>このペースで押していきましょう。</b>',
+      '今日はいいコンディションです。<b>この調子でクエストを進めましょう。</b>',
+      '負荷の少ない一日です。<b>攻めの一日にしていきましょう。</b>'
+    ]));
     return parts.join(' ');
   }
 
