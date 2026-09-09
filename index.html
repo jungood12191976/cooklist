@@ -48,7 +48,7 @@
   /* ---- pixel hero sprite ---- */
   .rpg-scene{ position:relative; height: 190px; display:flex; align-items:flex-end; justify-content:center; margin-bottom: 10px; padding-bottom: 14px; }
   .rpg-bed-img{
-    display:block; max-width: 55%; width: 100%; height: auto; margin: 0 auto;
+    display:block; max-width: 44%; width: 100%; height: auto; margin: 0 auto;
     image-rendering: pixelated; image-rendering: crisp-edges;
     filter: drop-shadow(0 4px 3px rgba(0,0,0,0.4));
   }
@@ -255,14 +255,26 @@
 
   // ================= GENE PROFILE (for Gemini prompt grounding) =================
   const GENE_PROFILE = `
-- MTHFR等により葉酸・B6・B12の必要性が高い(メチル化経路)
-- FADS1/FADS2が弱くALAからEPA/DHAへの変換効率が低い(魚由来の直接摂取が有効)
-- DIO2が弱くT4→T3変換が落ちやすい(体を温める食材・セレン・亜鉛が有効)
-- KEAP1-NRF2感受性があり、アブラナ科野菜・にんにく等の解毒サポートが有効
-- AGT型で塩分感受性があり、カリウム豊富な野菜(減塩)が有効
-- PPARG等によりインスリン感受性の個性があり、低GI・食物繊維が有効
-- GAD1等によりGABA合成にB6・マグネシウム・タウニンが関わる
-- ヒスタミン代謝(DAO・HDC)にビタミンCが関わる
+【メチル化・葉酸代謝】MTHFR C677T ホモ(酵素活性-70%)、SLC19A1・MTHFD1・CBS・GSSもホモ変異。活性型葉酸(5-MTHF)・B6(P5P)・B12(メチルコバラミン)が必須。合成葉酸は不向き。
+【ビタミンA】BCMO1ホモ(β-カロテン→レチノール変換-51%)。プレフォームドのビタミンA(レバー・卵黄・魚)で直接補う。
+【ビタミンB群】B6血中やや低め(NBPF3)。B12はFUT2により吸収不利、活性型で補給。
+【ビタミンD】CYP2R1・CYP24A1・DHCR7いずれも弱く活性化・分解の両面に個性。D3+K2+マグネシウムを継続、血中25(OH)Dは50-60ng/mL目安。
+【ビタミンE/C】血中トコフェロール低め傾向。GSTM1欠失によりビタミンC処理能にも影響の可能性。
+【鉄】TMPRSS6・TFに個性、フェリチン・鉄飽和度で実測確認が前提。
+【オメガ3/EPA】FADS1/FADS2でALA→EPA/DHA変換が弱い。魚由来のEPA/DHAを直接摂取が必要(実測EPA/AA比0.03と低値で優先度高)。
+【甲状腺】DIO1・DIO2ホモでT4→T3変換が緩やか(実測FT3 2.5と基準内低め)。セレン(かつお・まぐろ・ブラジルナッツ)が未測定の唯一の補因子。TG・TSHRにも個性があり自己免疫性甲状腺リスクにやや注意。
+【解毒Phase I/II】CYP1A1/1A2でカフェイン・エストロゲン代謝が遅い。GSTM1完全欠失・UGT1A6ホモで抱合解毒力が低下。KEAP1-NRF2経路の感受性ありスルフォラファン(アブラナ科)が有効。HMOX-1・GSTM3も抗酸化力低下方向。
+【エストロゲン代謝】CYP17A1・COMTの組み合わせでエストロゲン産生・メチル化代謝がやや滞りやすい。アブラナ科野菜がここでも有効。
+【ヒスタミン】HDC(産生)ホモで産生多め、HNMT(分解)も遅め、DAOはやや低下。血液の好酸球高値と一致。低ヒスタミン食・ビタミンC・B6が有効。
+【神経伝達物質】TPH2ホモでセロトニン合成律速(早朝覚醒・気分に影響し得る)、GAD1ホモでGABA合成が緩やか、COMTは中間活性型(記憶注意にはやや有利)、MAO-Aはヘテロで分解やや遅め。5HTTLPR短縮型で刺激への感受性がやや高い。
+【ドーパミン・報酬系】SLC6A3(DAT)ホモ・DRD2/ANKK1・CHRNA4ホモにより新規性追求・完了報酬への反応が強い体質。単調な繰り返しより、小さな新しい達成が動機づけになりやすい。
+【炎症体質】IL-6高産生型・IL-10低産生型で慢性炎症がやや起きやすい。オメガ3・飽和脂肪管理が有効。CTLA4・STAT4等により自己免疫系リスクにも軽度の素因。
+【血圧・血管】AGT・EDN1ホモで塩分感受性が高い。脂質(コレステロール・HDL・中性脂肪)は実測で良好、APOEがε2型でLDLが上がりにくい体質。減塩・カリウム豊富な野菜が有効。
+【血糖・インスリン】PPARG・IRS1・WFS1に素因があるが実測HbA1cは良好。1,5-AGが低めで食後血糖スパイクの可能性、低GI・食後の軽い運動が有効。
+【カフェイン・アルコール】CYP1A2で代謝がやや遅い(コーヒーは1日2杯程度が目安)。ALDH2はフラッシュ反応の出ない典型型。
+【腸内環境】MCM6ホモで乳糖不耐の傾向、FUT2型で腸内細菌の足場は良好。TNFSF15によりIBS傾向、DGKHでシュウ酸性の腎結石リスク。発酵食品・水溶性食物繊維が有効。
+【体内時計・睡眠】NPAS2・CLOCK・MTNR1Bに個性があり、生活リズムが乱れると戻りにくい。BDNFはVal/Met型で運動が気分・睡眠に効きやすい。朝の光と規則的な就寝が重要。
+【骨格・回復】腱靭帯のコラーゲン遺伝子は良好でけがをしにくいが、MCT-1ホモで乳酸処理が遅く高強度運動後は疲労が残りやすい。
 `.trim();
 
   function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
