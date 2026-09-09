@@ -426,7 +426,7 @@
       keywordLine = keyword ? `【必ず反映する追加食材・要望】\n${keyword}\n主役食材と組み合わせて使ってください。\n` : '';
     }
 
-    const prompt = `あなたは管理栄養士です。以下の人物の遺伝的な栄養特性と今日の状況、今日使いたい主な食材をもとに、実用的で美味しく作れる家庭料理レシピを1つだけ提案してください。
+    const prompt = `あなたは管理栄養士です。まずGoogle検索を使って「${mainIngredient} ${keyword} レシピ 人気 簡単」のような検索で、実際に人気のある本物のレシピを1つ探してください。そのレシピを土台にして、以下の人物の遺伝的な栄養特性と今日の状況に合わせて、食材を1〜2品追加したり、調理法を少し工夫してください(元のレシピの良さは壊さないこと)。
 
 【遺伝的な特徴】
 ${GENE_PROFILE}
@@ -441,12 +441,13 @@ ${mainIngredient}
 ${keywordLine}${conditionBlock}
 
 以下のJSON形式のみを出力してください。他のテキストや説明、コードブロック記法は一切含めないでください。
-{"name":"料理名(主な食材を含む)","meaning":"なぜこの人の遺伝的特徴に合うか。100字程度、日本語。","recipe":"作り方。150字程度、簡潔な手順、日本語。"}`;
+{"name":"料理名(主な食材を含む)","meaning":"検索で見つけた元レシピがどんなものか一言と、この人の遺伝的特徴に合わせてどう工夫したか。120字程度、日本語。","recipe":"作り方。分量も具体的に。150〜200字程度、日本語。"}`;
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(geminiKey)}`;
     const body = JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 1.1, topP: 0.97, topK: 64 }
+      tools: [{ google_search: {} }],
+      generationConfig: { temperature: 0.9, topP: 0.97, topK: 64 }
     });
 
     let res, lastErr;
@@ -469,7 +470,9 @@ ${keywordLine}${conditionBlock}
     if (lastErr) throw new Error('BUSY: ' + lastErr.message);
     const json = await res.json();
     const text = (json.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('\n');
-    const clean = text.replace(/```json|```/g, '').trim();
+    let clean = text.replace(/```json|```/g, '').trim();
+    const jsonMatch = clean.match(/\{[\s\S]*\}/);
+    if (jsonMatch) clean = jsonMatch[0];
     const parsed = JSON.parse(clean);
     return { name: parsed.name, meaning: parsed.meaning, recipe: parsed.recipe };
   }
