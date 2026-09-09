@@ -263,33 +263,73 @@
 - ヒスタミン代謝(DAO・HDC)にビタミンCが関わる
 `.trim();
 
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
   const STATE_ADVICE = {
     damage: { label:'💀‼️ ダメージを受けた',
       lines: (phase) => [
-        `<b>今すぐ1つだけ:</b> マグネシウム入りの温かい飲み物(カカオ85%を溶かした豆乳ココア)を一口。`,
-        phase === 'ovulation' ? `<b>体の中で起きていること:</b> 排卵期でエストロゲンが急降下中。自律神経が一時的にざわつくのは正常な反応です。`
-        : phase === 'luteal_late' ? `<b>体の中で起きていること:</b> 生理前、プロゲステロン低下でGABA産生が落ちやすい時期。B6需要が上がる体質だと当然の反応です。`
-        : `<b>体の中で起きていること:</b> 自律神経の一時的な乱れです。`,
-        `<b>反撃:</b> 年収1億円になるんでしょ？そんな人が小さい不調を待ち受けてどうするの？！`
+        pick([
+          `<b>今すぐ1つだけ:</b> マグネシウム入りの温かい飲み物(カカオ85%を溶かした豆乳ココア)を一口。`,
+          `<b>今すぐ1つだけ:</b> にがり水を数滴たらした白湯を一口飲んでください。`,
+          `<b>今すぐ1つだけ:</b> ナッツを一握り、ゆっくり噛んで食べてください。`
+        ]),
+        phase === 'ovulation' ? pick([
+          `<b>体の中で起きていること:</b> 排卵期でエストロゲンが急降下中。自律神経が一時的にざわつくのは正常な反応です。`,
+          `<b>体の中で起きていること:</b> 排卵期特有のホルモン変動の波の中にいます。長くは続きません。`
+        ]) : phase === 'luteal_late' ? pick([
+          `<b>体の中で起きていること:</b> 生理前、プロゲステロン低下でGABA産生が落ちやすい時期。B6需要が上がる体質だと当然の反応です。`,
+          `<b>体の中で起きていること:</b> 生理前のマグネシウム消費が増える時期。イライラは体質的に説明がつく反応です。`
+        ]) : pick([
+          `<b>体の中で起きていること:</b> 自律神経の一時的な乱れです。`,
+          `<b>体の中で起きていること:</b> 一時的なストレス反応が出ているだけです。`
+        ]),
+        pick([
+          `<b>反撃:</b> 年収1億円になるんでしょ？そんな人が小さい不調を待ち受けてどうするの？！`,
+          `<b>反撃:</b> イーロン・マスクは、勝算が薄く見えても重要なことなら動き続ける姿勢を貫いてきたと言われています。今のこれは、その"重要なこと"の途中の1コマに過ぎません。`,
+          `<b>反撃:</b> ジェフ・ベゾスは、将来後悔しないための選択を軸に据える考え方(リグレット・ミニマイゼーション)を大切にしてきたそうです。今ここで止まる後悔と、進む後悔、どちらが軽いですか。`,
+          `<b>反撃:</b> 探検家シャクルトンは、絶望的な状況でも「次の一歩」だけを見て乗組員を導いたと言われています。今のあなたに必要なのも、次の一歩だけです。`,
+          `<b>反撃:</b> ここで足を止めたら、ダンジョンの1フロアが今日は進みません。それだけの話です。動きましょう。`
+        ])
       ]},
     unmotivated: { label:'⤵️ やる気が出ない',
       lines: () => [
-        `<b>今すぐ1つだけ:</b> 白湯にすりおろし生姜を少し加えて一口。体温を上げることがDIO2の変換サポートに。`,
-        `<b>体の中で起きていること:</b> FT3が低め体質。体が冷えていると代謝の切り替えが遅れます。「やる気が出ない」は燃料供給の問題です。`,
-        `<b>切り替え:</b> 5分だけ、ステップ台でもいいので体を動かしてみてください。小さな一歩が今の停滞を破ります。`
+        pick([
+          `<b>今すぐ1つだけ:</b> 白湯にすりおろし生姜を少し加えて一口。体温を上げることがDIO2の変換サポートに。`,
+          `<b>今すぐ1つだけ:</b> 温かいお茶を一杯、まず飲んでください。`,
+          `<b>今すぐ1つだけ:</b> 首の後ろにカイロか温かいタオルを当ててみてください。`
+        ]),
+        pick([
+          `<b>体の中で起きていること:</b> FT3が低め体質。体が冷えていると代謝の切り替えが遅れます。「やる気が出ない」は燃料供給の問題です。`,
+          `<b>体の中で起きていること:</b> 甲状腺ホルモンの変換が落ちやすい体質。やる気の問題ではなく、エネルギー変換の遅れです。`
+        ]),
+        pick([
+          `<b>切り替え:</b> 5分だけ、ステップ台でもいいので体を動かしてみてください。小さな一歩が今の停滞を破ります。`,
+          `<b>切り替え:</b> 本田宗一郎は、失敗を恐れて動かないことこそが一番の失敗だという考え方で知られています。5分だけ、なんでもいいので手を動かしてみましょう。`,
+          `<b>切り替え:</b> 孫正義は、迷ったら小さくてもまず一歩踏み出すスタイルを貫いてきたと言われています。今日のあなたの一歩は、ステップ台の5分でいいんです。`,
+          `<b>切り替え:</b> 冒険家は「今日の天気」ではなく「今日の一歩」で前に進みます。5分だけ体を動かしてみてください。`
+        ])
       ]},
     worst: { label:'🙀🌀 絶不調〜',
       lines: () => [
-        `<b>今すぐ1つだけ:</b> 水を1杯、ゆっくり飲んでください。`,
-        `<b>淡々と、理由:</b> 体調不良の理由は、あなたの意志の弱さではなく、遺伝子と今の環境の組み合わせです。淡々と対処すれば、また前に進めます。`,
-        `<b>今日できる最小の一手:</b> 深呼吸を4秒吸って7秒止めて8秒吐く、を3セット。それ以上は求めません。`
+        pick([
+          `<b>今すぐ1つだけ:</b> 水を1杯、ゆっくり飲んでください。`,
+          `<b>今すぐ1つだけ:</b> 一度、目を閉じて深呼吸を1回だけしてください。`
+        ]),
+        pick([
+          `<b>淡々と、理由:</b> 体調不良の理由は、あなたの意志の弱さではなく、遺伝子と今の環境の組み合わせです。淡々と対処すれば、また前に進めます。`,
+          `<b>淡々と、理由:</b> 今の状態は、複数の要因(睡眠・周期・気圧)が重なった結果です。あなたのせいではありません。`
+        ]),
+        pick([
+          `<b>今日できる最小の一手:</b> 深呼吸を4秒吸って7秒止めて8秒吐く、を3セット。それ以上は求めません。`,
+          `<b>今日できる最小の一手:</b> 今日は「休む」も立派な戦略です。5分だけ目を閉じて、それから次を考えましょう。`
+        ])
       ]}
   };
 
   // ================= STATE =================
   let today = new Date();
   let todayKey = today.toISOString().slice(0,10);
-  let dayData = { weather:null, weatherAuto:null, sleepHours:null, bathGood:null, mainIngredient:'', keyword:'' };
+  let dayData = { weather:null, weatherAuto:null, sleepHours:null, bathGood:null, mainIngredient:'', keyword:'', quickMode:false };
   let ovulationDate = null;
   let quests = [];
   let dungeon = null; // { totalFloors, currentFloor, lastAdvanceDate, createdAt }
@@ -388,7 +428,7 @@
   }
 
   // ================= GEMINI RECIPE GENERATION =================
-  async function generateGeminiRecipe(mainIngredient, keyword){
+  async function generateGeminiRecipe(mainIngredient, keyword, quickMode){
     const ci = cycleInfo();
     const phase = ci ? ci.phaseLabel : '不明';
     const lowP = weatherIsLowPressure() ? 'はい(体を温める食材を優先)' : 'いいえ';
@@ -426,7 +466,10 @@
       keywordLine = keyword ? `【必ず反映する追加食材・要望】\n${keyword}\n主役食材と組み合わせて使ってください。\n` : '';
     }
 
-    const prompt = `あなたは管理栄養士です。まずGoogle検索を使って「${mainIngredient} ${keyword} レシピ 人気 簡単」のような検索で、実際に人気のある本物のレシピを1つ探してください。そのレシピを土台にして、以下の人物の遺伝的な栄養特性と今日の状況に合わせて、食材を1〜2品追加したり、調理法を少し工夫してください(元のレシピの良さは壊さないこと)。
+    const searchInstruction = quickMode
+      ? 'あなたの知識をもとに、実用的で美味しく作れる家庭料理レシピを1つだけ考えてください。'
+      : `まずGoogle検索を使って「${mainIngredient} ${keyword} レシピ 人気 簡単」のような検索で、実際に人気のある本物のレシピを1つ探してください。そのレシピを土台にして、`;
+    const prompt = `あなたは管理栄養士です。${searchInstruction}以下の人物の遺伝的な栄養特性と今日の状況に合わせて、食材を1〜2品追加したり、調理法を少し工夫してください(元のレシピがある場合はその良さを壊さないこと)。
 
 【遺伝的な特徴】
 ${GENE_PROFILE}
@@ -441,14 +484,15 @@ ${mainIngredient}
 ${keywordLine}${conditionBlock}
 
 以下のJSON形式のみを出力してください。他のテキストや説明、コードブロック記法は一切含めないでください。
-{"name":"料理名(主な食材を含む)","meaning":"検索で見つけた元レシピがどんなものか一言と、この人の遺伝的特徴に合わせてどう工夫したか。120字程度、日本語。","recipe":"作り方。分量も具体的に。150〜200字程度、日本語。"}`;
+{"name":"料理名(主な食材を含む)","meaning":"${quickMode ? 'この人の遺伝的特徴に合わせてどう工夫したか。100字程度、日本語。' : '検索で見つけた元レシピがどんなものか一言と、この人の遺伝的特徴に合わせてどう工夫したか。120字程度、日本語。'}","recipe":"作り方。分量も具体的に。150〜200字程度、日本語。"}`;
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(geminiKey)}`;
-    const body = JSON.stringify({
+    const requestPayload = {
       contents: [{ parts: [{ text: prompt }] }],
-      tools: [{ google_search: {} }],
-      generationConfig: { temperature: 0.9, topP: 0.97, topK: 64 }
-    });
+      generationConfig: { temperature: quickMode ? 1.1 : 0.9, topP: 0.97, topK: 64 }
+    };
+    if (!quickMode) requestPayload.tools = [{ google_search: {} }];
+    const body = JSON.stringify(requestPayload);
 
     let res, lastErr;
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -701,10 +745,22 @@ ${keywordLine}${conditionBlock}
       kwRow.appendChild(kwLabel); kwRow.appendChild(kwInput);
       gWrap.appendChild(kwRow);
 
+      const modeRow = document.createElement('div'); modeRow.className = 'rpg-toggle-row'; modeRow.style.marginBottom = '10px';
+      const researchedBtn = document.createElement('button');
+      researchedBtn.className = 'rpg-toggle' + (dayData.quickMode !== true ? ' active' : '');
+      researchedBtn.textContent = 'じっくり検索(正確・やや遅い)';
+      researchedBtn.addEventListener('click', () => { playSelect(); dayData.quickMode = false; saveDay(); render(); });
+      const quickBtn = document.createElement('button');
+      quickBtn.className = 'rpg-toggle' + (dayData.quickMode === true ? ' active' : '');
+      quickBtn.textContent = '素早く生成(速い)';
+      quickBtn.addEventListener('click', () => { playSelect(); dayData.quickMode = true; saveDay(); render(); });
+      modeRow.appendChild(researchedBtn); modeRow.appendChild(quickBtn);
+      gWrap.appendChild(modeRow);
+
       const potWrap = document.createElement('div'); potWrap.className='rpg-pot-wrap'; potWrap.id='rpgPotWrap';
       potWrap.innerHTML = `<div class="rpg-pot-emoji">🍲</div><div class="rpg-pot-status" id="rpgPotStatus"></div>`;
       const brewBtn = document.createElement('button'); brewBtn.className='rpg-btn wide'; brewBtn.textContent='🧙‍♀️ 鍋を仕込む';
-      brewBtn.addEventListener('click', () => brewGacha(gWrap, brewBtn, ingInput.value.trim(), kwInput.value.trim()));
+      brewBtn.addEventListener('click', () => brewGacha(gWrap, brewBtn, ingInput.value.trim(), kwInput.value.trim(), dayData.quickMode === true));
       gWrap.appendChild(potWrap);
       gWrap.appendChild(brewBtn);
       const smallSettings = document.createElement('button');
@@ -757,7 +813,7 @@ ${keywordLine}${conditionBlock}
     wrap.appendChild(card);
   }
 
-  async function brewGacha(wrap, btn, mainIngredient, keyword){
+  async function brewGacha(wrap, btn, mainIngredient, keyword, quickMode){
     if (!mainIngredient) { gachaError = '今日の主役食材を入力してください。'; render(); return; }
     gachaError = null;
     playPotBubble();
@@ -767,7 +823,7 @@ ${keywordLine}${conditionBlock}
     btn.disabled = true;
     const bubbleInterval = setInterval(() => { playPotBubble(); }, 220);
     try {
-      const result = await generateGeminiRecipe(mainIngredient, keyword);
+      const result = await generateGeminiRecipe(mainIngredient, keyword, quickMode);
       clearInterval(bubbleInterval);
       potWrap.classList.remove('rpg-pot-brewing');
       currentGacha = result;
