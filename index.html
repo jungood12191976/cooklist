@@ -396,7 +396,7 @@
 
     // dish-style keywords take priority over random genre/method (avoids conflicts like "鍋"+"和える" producing a salad)
     const styleMap = {
-      '鍋': '本格的な鍋料理にしてください。だし割りスープを鍋で作り、具材をそのスープで煮ながら食べるスタイルにすること。和え物・サラダ・汁なし料理にはしないでください。',
+      '鍋': '本格的な鍋料理にしてください。水またはだしを必ず400〜800ml程度の具体的な分量(ml数を明記)で鍋に張り、具材をそのスープでしっかり煮て、スープごと食べるスタイルにすること。フライパンで炒めてから少量の煮汁を絡める"焼き鍋"のような調理法は禁止。必ず「鍋に水◯ml(または、だし◯ml)を入れ」という一文をrecipeに含めてください。',
       'スープ': '具だくさんのスープ料理にしてください。汁物として仕上げること。',
       'カレー': 'カレー料理にしてください。ルーまたはスパイスベースのカレーとして仕上げること。',
       '丼': '丼ものにしてください。ご飯にのせる主菜として仕上げること。',
@@ -413,7 +413,7 @@
 
     let conditionBlock, keywordLine;
     if (styleKey) {
-      const flavorDirs = ['和風だし','中華だし・にんにく生姜','コチュジャン・韓国風','塩・シンプル系','味噌ベース','トマト・洋風'];
+      const flavorDirs = ['和風だし(かつお・昆布)','和風だし(鶏がら)','中華だし・にんにく生姜','コチュジャン・韓国風','塩・シンプル系','味噌ベース','トマト・洋風'];
       const flavor = flavorDirs[Math.floor(Math.random()*flavorDirs.length)];
       conditionBlock = `【今回の条件(必ず反映すること・最優先)】\n料理形式: ${styleMap[styleKey]}\n味付けの方向性: ${flavor}\nこれまでにない新しい提案にしてください。(参照番号:${seed}、この番号は無視してよい)`;
       keywordLine = keyword !== styleKey ? `【追加の指定】\n${keyword}\n` : '';
