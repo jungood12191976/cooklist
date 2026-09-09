@@ -392,14 +392,40 @@
     const ci = cycleInfo();
     const phase = ci ? ci.phaseLabel : '不明';
     const lowP = weatherIsLowPressure() ? 'はい(体を温める食材を優先)' : 'いいえ';
-    const genres = ['和食','洋食','中華','韓国風','エスニック(タイ・ベトナム系)','家庭的な酒場風おつまみ'];
-    const methods = ['焼く','煮る','蒸す','和える(生・サラダ系)','炒める','揚げずに揚げ物風(オーブン/レンジ)'];
-    const genre = genres[Math.floor(Math.random()*genres.length)];
-    const method = methods[Math.floor(Math.random()*methods.length)];
     const seed = Math.floor(Math.random()*100000);
-    const keywordLine = keyword
-      ? `【必ず反映するキーワード・追加食材】\n${keyword}\n(これが「鍋」のような調理スタイルなら、ジャンル・調理法よりこちらを優先。食材名なら、主役食材と組み合わせて使ってください。)\n`
-      : '';
+
+    // dish-style keywords take priority over random genre/method (avoids conflicts like "鍋"+"和える" producing a salad)
+    const styleMap = {
+      '鍋': '本格的な鍋料理にしてください。だし割りスープを鍋で作り、具材をそのスープで煮ながら食べるスタイルにすること。和え物・サラダ・汁なし料理にはしないでください。',
+      'スープ': '具だくさんのスープ料理にしてください。汁物として仕上げること。',
+      'カレー': 'カレー料理にしてください。ルーまたはスパイスベースのカレーとして仕上げること。',
+      '丼': '丼ものにしてください。ご飯にのせる主菜として仕上げること。',
+      'どんぶり': '丼ものにしてください。ご飯にのせる主菜として仕上げること。',
+      'パスタ': 'パスタ料理にしてください。麺と絡めるソースを作ること。',
+      'サラダ': 'サラダ料理にしてください。生野菜中心の和え物として仕上げること。',
+      '炒め': 'フライパンで炒める炒め物料理にしてください。',
+      '揚げ': '揚げ物、または揚げずに揚げ物風(オーブン/レンジ)の料理にしてください。'
+    };
+    let styleKey = null;
+    if (keyword) {
+      for (const k of Object.keys(styleMap)) { if (keyword.includes(k)) { styleKey = k; break; } }
+    }
+
+    let conditionBlock, keywordLine;
+    if (styleKey) {
+      const flavorDirs = ['和風だし','中華だし・にんにく生姜','コチュジャン・韓国風','塩・シンプル系','味噌ベース','トマト・洋風'];
+      const flavor = flavorDirs[Math.floor(Math.random()*flavorDirs.length)];
+      conditionBlock = `【今回の条件(必ず反映すること・最優先)】\n料理形式: ${styleMap[styleKey]}\n味付けの方向性: ${flavor}\nこれまでにない新しい提案にしてください。(参照番号:${seed}、この番号は無視してよい)`;
+      keywordLine = keyword !== styleKey ? `【追加の指定】\n${keyword}\n` : '';
+    } else {
+      const genres = ['和食','洋食','中華','韓国風','エスニック(タイ・ベトナム系)','家庭的な酒場風おつまみ'];
+      const methods = ['焼く','煮る','蒸す','和える(生・サラダ系)','炒める','揚げずに揚げ物風(オーブン/レンジ)'];
+      const genre = genres[Math.floor(Math.random()*genres.length)];
+      const method = methods[Math.floor(Math.random()*methods.length)];
+      conditionBlock = `【今回の条件(必ず反映すること)】\nジャンル: ${genre}\n調理法: ${method}\nこのジャンルと調理法に沿った、これまでにない新しい提案にしてください。(参照番号:${seed}、この番号は無視してよい)`;
+      keywordLine = keyword ? `【必ず反映する追加食材・要望】\n${keyword}\n主役食材と組み合わせて使ってください。\n` : '';
+    }
+
     const prompt = `あなたは管理栄養士です。以下の人物の遺伝的な栄養特性と今日の状況、今日使いたい主な食材をもとに、実用的で美味しく作れる家庭料理レシピを1つだけ提案してください。
 
 【遺伝的な特徴】
@@ -412,10 +438,7 @@ ${GENE_PROFILE}
 【今日使いたい主な食材】
 ${mainIngredient}
 
-${keywordLine}【今回の条件(必ず反映すること)】
-ジャンル: ${genre}
-調理法: ${method}
-このジャンルと調理法に沿った、これまでにない新しい提案にしてください。(参照番号:${seed}、この番号は無視してよい)
+${keywordLine}${conditionBlock}
 
 以下のJSON形式のみを出力してください。他のテキストや説明、コードブロック記法は一切含めないでください。
 {"name":"料理名(主な食材を含む)","meaning":"なぜこの人の遺伝的特徴に合うか。100字程度、日本語。","recipe":"作り方。150字程度、簡潔な手順、日本語。"}`;
