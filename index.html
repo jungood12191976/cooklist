@@ -47,11 +47,18 @@
 
   /* ---- pixel hero sprite ---- */
   .rpg-scene{ position:relative; height: 118px; display:flex; align-items:flex-end; justify-content:center; margin-bottom: 10px; padding-bottom: 14px; }
-  .rpg-bed{ position:relative; width: 90px; height: 46px; }
-  .rpg-bed .b-frame{ position:absolute; bottom:0; left:0; width:90px; height:14px; background:#7a4a2a; border:2px solid #1b1f4a; }
-  .rpg-bed .b-mattress{ position:absolute; bottom:12px; left:4px; width:82px; height:14px; background:#dfe6ee; border:2px solid #1b1f4a; }
-  .rpg-bed .b-pillow{ position:absolute; bottom:22px; left:6px; width:20px; height:10px; background:#fff; border:2px solid #1b1f4a; }
-  .rpg-bed .b-hero{ position:absolute; bottom:22px; left:22px; width:44px; height:10px; background:#3e6bd8; border:2px solid #1b1f4a; }
+  .rpg-bed{ position:relative; width: 130px; height: 76px; margin: 0 auto; }
+  .rpg-bed .b-frame{ position:absolute; bottom:0; left:0; width:130px; height:16px; background:#7a4a2a; border:2px solid #12163a; }
+  .rpg-bed .b-legL{ position:absolute; bottom:-10px; left:4px; width:8px; height:10px; background:#5a3418; border:2px solid #12163a; }
+  .rpg-bed .b-legR{ position:absolute; bottom:-10px; right:4px; width:8px; height:10px; background:#5a3418; border:2px solid #12163a; }
+  .rpg-bed .b-mattress{ position:absolute; bottom:14px; left:5px; width:120px; height:22px; background:#dfe6ee; border:2px solid #12163a; }
+  .rpg-bed .b-blanket{ position:absolute; bottom:14px; left:5px; width:120px; height:14px; background:#6ea8ff; border:2px solid #12163a; border-top:none; }
+  .rpg-bed .b-pillow{ position:absolute; bottom:26px; left:8px; width:26px; height:12px; background:#fff; border:2px solid #12163a; border-radius: 3px; }
+  .rpg-bed .b-hero-img{
+    position:absolute; bottom:16px; left:34px; height:52px;
+    transform: rotate(90deg); transform-origin: left bottom;
+    image-rendering: pixelated; image-rendering: crisp-edges;
+  }
   .rpg-zzz{ position:absolute; top:-6px; right:4px; font-size: 14px; color:#9db4ff; animation: zzzfloat 2s ease-in-out infinite; }
   @keyframes zzzfloat{ 0%{ transform:translateY(0); opacity:0.3; } 50%{ transform:translateY(-8px); opacity:1; } 100%{ transform:translateY(-16px); opacity:0; } }
   .rpg-scene-caption{ position:absolute; bottom:-2px; font-size:10.5px; color:#9db4ff; }
@@ -403,27 +410,39 @@
       if (ci.phase === 'ovulation') parts.push(pick([
         '排卵期でエストロゲンが変動中。<b>まずカカオ85%を一かけ</b>、それから今日の冒険に出ましょう。',
         '排卵期特有のホルモンの波の中にいます。<b>マグネシウムを一口補給</b>してから動き出しましょう。',
-        '今日は排卵期。自律神経が揺れやすい日です。<b>白湯を一口</b>飲んでから始めましょう。'
+        '今日は排卵期。自律神経が揺れやすい日です。<b>白湯を一口</b>飲んでから始めましょう。',
+        '排卵期のホルモン変動中です。<b>豆腐かナッツを一口</b>、それから今日のクエストへ。',
+        '今日はエストロゲンが大きく動く日。<b>深呼吸を3回</b>してから出発しましょう。',
+        '排卵期特有の揺らぎの中にいます。<b>甘いものより先に水分補給</b>を。'
       ]));
       else if (ci.phase === 'luteal_late') parts.push(pick([
         `生理予定まであと${ci.daysToPeriod}日、セロトニン・マグネシウム需要が上がる時期。<b>先に一口補給</b>してから進みましょう。`,
         `生理予定まであと${ci.daysToPeriod}日。<b>鉄分かカカオを一口</b>、それから今日のクエストに向かいましょう。`,
-        `あと${ci.daysToPeriod}日で生理予定。プロゲステロンが下がる時期です。<b>甘いものより、まずマグネシウム</b>を。`
+        `あと${ci.daysToPeriod}日で生理予定。プロゲステロンが下がる時期です。<b>甘いものより、まずマグネシウム</b>を。`,
+        `生理まで${ci.daysToPeriod}日。セロトニン材料が不足しがちな時期です。<b>バナナを一口</b>どうぞ。`,
+        `あと${ci.daysToPeriod}日で生理予定日。<b>今日は無理に詰め込まず、1つずつ</b>進めましょう。`,
+        `生理予定まで${ci.daysToPeriod}日。<b>温かい飲み物を一杯</b>、それから始めましょう。`
       ]));
       else if (ci.phase === 'menstrual') parts.push(pick([
         '生理が近い、または始まっている時期。<b>鉄分を意識した一皿を先に</b>。',
-        '生理周期の終盤です。<b>無理に飛ばさず、鉄分補給から</b>始めましょう。'
+        '生理周期の終盤です。<b>無理に飛ばさず、鉄分補給から</b>始めましょう。',
+        '経血に備える時期です。<b>ひじきや赤身肉を一口</b>意識してみてください。'
       ]));
     }
     if (weatherIsLowPressure()) parts.push(pick([
       '低気圧・高湿度のフィールド。<b>白湯+生姜を一口</b>飲んでから進むと切り替えが早くなります。',
       '今日は低気圧のフィールド。<b>体を温める一口</b>から始めると、動き出しが軽くなります。',
-      '気圧が低い日です。<b>まず1杯の温かい飲み物</b>で自律神経を整えましょう。'
+      '気圧が低い日です。<b>まず1杯の温かい飲み物</b>で自律神経を整えましょう。',
+      '低気圧・高湿度の一日。<b>肩を大きく回してから</b>動き出しましょう。',
+      '今日は自律神経に負荷がかかりやすいフィールドです。<b>にんにくや生姜を意識した一皿</b>を。',
+      '低気圧の影響が出やすい日。<b>いつもより一呼吸多めに</b>深呼吸してから始めましょう。'
     ]));
     if (dayData.sleepHours && parseFloat(dayData.sleepHours) < 6.5) parts.push(pick([
       '睡眠がやや短めですね。<b>今ここで1分だけ深呼吸</b>、それだけで今日は十分取り戻せます。',
       '昨夜は少し眠りが短かったですね。<b>白湯を一杯</b>飲んでから今日を始めましょう。',
-      '睡眠不足のじょうたいです。<b>今日は夜、いつもより早めに宿へ</b>戻りましょう。'
+      '睡眠不足のじょうたいです。<b>今日は夜、いつもより早めに宿へ</b>戻りましょう。',
+      '睡眠時間が短めの日です。<b>カフェインは控えめに</b>、水分から始めましょう。',
+      '睡眠がやや不足気味。<b>無理に全力を出さず、ペース配分</b>を意識しましょう。'
     ]));
     if (isNightMode()) parts.push(pick([
       'もう夜も遅い時間。<b>今日はここまでにして、宿でしっかり休みましょう。</b>',
@@ -644,7 +663,9 @@ ${keywordLine}${conditionBlock}
     if (isNightMode()) {
       scene.innerHTML = `
         <div class="rpg-bed">
-          <div class="b-frame"></div><div class="b-mattress"></div><div class="b-pillow"></div><div class="b-hero"></div>
+          <div class="b-legL"></div><div class="b-legR"></div>
+          <div class="b-frame"></div><div class="b-mattress"></div><div class="b-blanket"></div><div class="b-pillow"></div>
+          <img class="b-hero-img" src="${SPRITE_IDLE}" alt="ねむる勇者">
           <div class="rpg-zzz">Z</div>
         </div>
         <div class="rpg-scene-caption">宿でおやすみ中…(5時に起きます)</div>
