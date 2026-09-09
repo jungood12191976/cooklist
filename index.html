@@ -53,8 +53,8 @@
     filter: drop-shadow(0 4px 3px rgba(0,0,0,0.4));
   }
   .rpg-bed-wrap{ position:relative; width: fit-content; margin: 0 auto; }
-  .rpg-zzz{ position:absolute; top:0px; left:20px; font-size: 16px; color:#9db4ff; animation: zzzfloat 2s ease-in-out infinite; }
-  @keyframes zzzfloat{ 0%{ transform:translateY(0); opacity:0.3; } 50%{ transform:translateY(-8px); opacity:1; } 100%{ transform:translateY(-16px); opacity:0; } }
+  .rpg-zzz{ position:absolute; top:-4px; left:50%; transform: translateX(-50%); font-size: 16px; color:#9db4ff; animation: zzzfloat 2s ease-in-out infinite; }
+  @keyframes zzzfloat{ 0%{ transform:translateX(-50%) translateY(0); opacity:0.3; } 50%{ transform:translateX(-50%) translateY(-8px); opacity:1; } 100%{ transform:translateX(-50%) translateY(-16px); opacity:0; } }
   .rpg-scene-caption{ position:absolute; bottom:-2px; font-size:10.5px; color:#9db4ff; }
 
   .rpg-energy-wrap{ text-align:center; margin-bottom: 10px; }
@@ -280,7 +280,7 @@
   function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
   const STATE_ADVICE = {
-    damage: { label:'💀‼️ ダメージを受けた',
+    damage: { label:'💀‼️ 攻撃からの回復の呪文',
       lines: (phase) => [
         pick([
           `<b>今すぐ1つだけ:</b> マグネシウム入りの温かい飲み物(カカオ85%を溶かした豆乳ココア)を一口。`,
@@ -305,7 +305,7 @@
           `<b>反撃:</b> ここで足を止めたら、ダンジョンの1フロアが今日は進みません。それだけの話です。動きましょう。`
         ])
       ]},
-    unmotivated: { label:'⤵️ やる気が出ない',
+    unmotivated: { label:'⤵️ やる気がワクワク呪文',
       lines: () => [
         pick([
           `<b>今すぐ1つだけ:</b> 白湯にすりおろし生姜を少し加えて一口。体温を上げることがDIO2の変換サポートに。`,
@@ -323,7 +323,7 @@
           `<b>切り替え:</b> 冒険家は「今日の天気」ではなく「今日の一歩」で前に進みます。5分だけ体を動かしてみてください。`
         ])
       ]},
-    worst: { label:'🙀🌀 絶不調〜',
+    worst: { label:'🙀🌀 元気になる呪文',
       lines: () => [
         pick([
           `<b>今すぐ1つだけ:</b> 水を1杯、ゆっくり飲んでください。`,
@@ -336,6 +336,38 @@
         pick([
           `<b>今日できる最小の一手:</b> 深呼吸を4秒吸って7秒止めて8秒吐く、を3セット。それ以上は求めません。`,
           `<b>今日できる最小の一手:</b> 今日は「休む」も立派な戦略です。5分だけ目を閉じて、それから次を考えましょう。`
+        ])
+      ]},
+    complete: { label:'🏆 コンプリートの呪文',
+      lines: () => [
+        pick([
+          `<b>今日という1日を終えたあなたへ:</b> 忘れているかもしれませんが、今日もたくさんのことを経験しました。食事を選び、体を動かし、いくつものクエストに向き合った1日です。`,
+          `<b>ガーディアンより:</b> 今日、あなたの体の中では数えきれないほどの化学反応が起き、それをあなたは食事と行動で支え続けました。それだけで十分にコンプリートです。`,
+          `<b>今日の記録:</b> 完璧な1日である必要はありません。今日のあなたが選んだ小さな選択の積み重ねが、そのままダンジョンの1フロアになっています。`
+        ]),
+        pick([
+          `<b>体からの報告:</b> 遺伝子的な弱点を知った上で、今日もそれに配慮した選択ができました。これは知らなければできないことです。`,
+          `<b>体からの報告:</b> 今日摂った栄養、今日動かした体、今日交わした呼吸。すべてが明日のあなたの土台になっています。`
+        ]),
+        pick([
+          `<b>おやすみ前に:</b> 今日のあなたを、今日のうちに認めてあげてください。続きはまた明日で大丈夫です。`,
+          `<b>おやすみ前に:</b> 今日という日は、もう二度と来ません。それをちゃんと生きた自分を、ひとこと褒めてから眠りましょう。`
+        ])
+      ]},
+    dream: { label:'🌙 よい夢がみられる呪文',
+      lines: () => [
+        pick([
+          `<b>睡眠の豆知識:</b> 深いノンレム睡眠の間、成長ホルモンが分泌され、体の修復と代謝の調整が進みます。眠っている間も体は働き続けています。`,
+          `<b>睡眠の豆知識:</b> 甲状腺ホルモンの調整や自律神経のリセットは、主に睡眠中に行われます。DIO2が弱い体質だからこそ、睡眠の質が変換効率を左右します。`,
+          `<b>睡眠の豆知識:</b> 体内時計の関連遺伝子(NPAS2・CLOCK)に個性があるタイプは、就寝・起床時刻が一定であるほど眠りの質が安定しやすいと言われています。`
+        ]),
+        pick([
+          `<b>あなたにとっての最重要ポイント:</b> 7時間の睡眠がとれた日は、きょうのエネルギー値が100からスタートします。6時間では70。この差はそのまま1日の粘り強さの差になります。`,
+          `<b>あなたにとっての最重要ポイント:</b> BDNFの個性を持つ体質は、睡眠と運動の組み合わせで気分の安定効果が特に出やすいタイプです。今夜の7時間は、明日の気分への投資です。`
+        ]),
+        pick([
+          `<b>おやすみなさい:</b> 部屋を暗くして、今日はここまで。良い夢を。`,
+          `<b>おやすみなさい:</b> 明日のクエストは、今夜の眠りの質から始まっています。良い夢を。`
         ])
       ]}
   };
@@ -586,7 +618,7 @@ ${keywordLine}${conditionBlock}
     bar.innerHTML = `<div class="rpg-date">${fmtDateShort(today)}</div>`;
     root.appendChild(bar);
     const cd = document.createElement('div'); cd.className='rpg-countdown';
-    cd.innerHTML = `退職(会社の任期満了)まで あと <b>${countdownDays()}</b> にち`;
+    cd.innerHTML = `雇われ冒険人期限まで あと <b>${countdownDays()}</b> にち`;
     root.appendChild(cd);
     const h1 = document.createElement('div'); h1.className='rpg-h1'; h1.textContent='しゅっぱつ準備'; root.appendChild(h1);
 
@@ -594,7 +626,7 @@ ${keywordLine}${conditionBlock}
     const t = document.createElement('div'); t.className='pw-title'; t.textContent='せってい確認'; wrap.appendChild(t);
 
     const row1 = document.createElement('div'); row1.className='rpg-setup-row';
-    row1.innerHTML = `<span>周期(排卵日)</span>`;
+    row1.innerHTML = `<span>周期(お届け日)</span>`;
     const ovInput = document.createElement('input');
     ovInput.type='date'; ovInput.className='rpg-date-input'; ovInput.value = ovulationDate || '';
     ovInput.addEventListener('change', e => { ovulationDate = e.target.value; saveCycle(); render(); });
