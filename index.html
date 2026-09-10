@@ -61,13 +61,13 @@
   .wfx-cloud:after{ width:16px; height:16px; top:-5px; left:24px; }
   @keyframes wfxdrift{ from{ transform: translateX(-60px); } to{ transform: translateX(340px); } }
   .rpg-ground-letter{
-    position:absolute; right: 8%; bottom: 10px; width: 30px; height:30px;
+    position:absolute; left: 8%; bottom: 10px; width: 30px; height:30px;
     cursor:pointer; z-index:2; animation: letterglow 1.8s ease-in-out infinite;
     filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
   }
   @keyframes letterglow{ 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.12); } }
   .rpg-enemy-img{
-    position:absolute; left: 4%; bottom: 14px; height: 64px;
+    position:absolute; right: 4%; bottom: 14px; height: 64px;
     cursor:pointer; z-index:1; image-rendering: pixelated; image-rendering: crisp-edges;
     filter: drop-shadow(0 3px 3px rgba(0,0,0,0.4));
     animation: enemyfloat 1.6s ease-in-out infinite;
@@ -75,7 +75,7 @@
   @keyframes enemyfloat{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-6px); } }
   .rpg-enemy-img.engaged{ filter: drop-shadow(0 0 10px rgba(255,107,107,0.8)); }
   .rpg-battle-tag{
-    position:absolute; left: 4%; top: 4px; font-size: 10px; color:#ff6b6b;
+    position:absolute; right: 4%; top: 4px; font-size: 10px; color:#ff6b6b;
     background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; z-index:2;
   }
   .rpg-bed-img{
