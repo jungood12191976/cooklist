@@ -422,7 +422,39 @@
     else { phase='luteal_mid'; phaseLabel='黄体期'; }
     return {diffDays, daysToPeriod, phase, phaseLabel};
   }
-  function weatherIsLowPressure(){ return dayData.weather === 'rain_low' || dayData.weather === 'humid'; }
+  function getYesterdayPressure(){
+    const y = new Date(today); y.setDate(y.getDate() - 1);
+    const key = 'wd3:' + y.toISOString().slice(0,10);
+    const raw = lsGet(key);
+    return (raw && raw.weatherAuto && typeof raw.weatherAuto.pressure === 'number') ? raw.weatherAuto.pressure : null;
+  }
+  function pressurePenalty(){
+    if (!dayData.weatherAuto) return 0;
+    const p = dayData.weatherAuto.pressure;
+    const baseDev = Math.max(0, 1013 - p);
+    let penalty = Math.min(15, Math.round(baseDev / 2));
+    const yest = getYesterdayPressure();
+    if (yest !== null) {
+      const drop = yest - p;
+      if (drop > 0) penalty += Math.min(10, Math.round(drop / 3));
+    }
+    return Math.min(20, penalty);
+  }
+  function humidityPenalty(){
+    if (!dayData.weatherAuto) return 0;
+    const h = dayData.weatherAuto.humidity;
+    const excess = Math.max(0, h - 60);
+    return Math.min(10, Math.round(excess / 10));
+  }
+  function weatherIsLowPressure(){ return (pressurePenalty() + humidityPenalty()) >= 5; }
+  function moodStatus(){
+    if (!dayData.weatherAuto) return null;
+    const code = dayData.weatherAuto.code;
+    if (code === 0 || code === 1) return { text:'陽光バフ：セロトニン合成に追い風', tone:'ok' };
+    if (code >= 51) return { text:'日照不足：気分がやや沈みやすい日', tone:'warn' };
+    if (code === 2 || code === 3) return { text:'曇天：日照がやや少なめ', tone:'info' };
+    return null;
+  }
 
   const SLEEP_ENERGY = {'5':40,'5.5':55,'6':70,'6.5':85,'7':100,'7.5':100,'8':100};
   function energyValue(){
@@ -430,7 +462,8 @@
     const ci = cycleInfo();
     if (ci && ci.phase === 'luteal_late') e -= 30;
     if (ci && ci.phase === 'ovulation') e -= 15;
-    if (weatherIsLowPressure()) e -= 10;
+    e -= pressurePenalty();
+    e -= humidityPenalty();
     return Math.max(0, Math.min(100, e));
   }
 
@@ -645,27 +678,19 @@ ${keywordLine}${conditionBlock}
     wrap.appendChild(row1);
 
     const row2 = document.createElement('div'); row2.className='rpg-setup-row';
-    const weatherLabels = {sunny:'晴れ',cloudy:'曇り',rain_low:'雨・台風',humid:'高湿度'};
-    row2.innerHTML = `<span>てんき</span><span class="rpg-setup-val" id="rpgWeatherVal">${dayData.weather ? weatherLabels[dayData.weather] : '未取得'}</span>`;
+    row2.innerHTML = `<span>てんき(自動取得)</span><span class="rpg-setup-val" id="rpgWeatherVal">${dayData.weatherAuto ? '取得済み' : '未取得'}</span>`;
     wrap.appendChild(row2);
     const autoBtn = document.createElement('button');
     autoBtn.className='rpg-btn secondary wide'; autoBtn.textContent='📍 天気を取得';
     autoBtn.addEventListener('click', fetchWeatherAuto);
     wrap.appendChild(autoBtn);
     const autoStatus = document.createElement('div'); autoStatus.id='rpgAutoStatus'; autoStatus.className='rpg-auto-status';
-    if (dayData.weatherAuto) autoStatus.textContent = `気温${dayData.weatherAuto.temp}℃ 湿度${dayData.weatherAuto.humidity}% 気圧${dayData.weatherAuto.pressure}hPa`;
+    if (dayData.weatherAuto) {
+      const yest = getYesterdayPressure();
+      const deltaTxt = yest !== null ? `(前日比 ${dayData.weatherAuto.pressure - yest >= 0 ? '+' : ''}${dayData.weatherAuto.pressure - yest}hPa)` : '';
+      autoStatus.innerHTML = `気温${dayData.weatherAuto.temp}℃ 湿度${dayData.weatherAuto.humidity}% 気圧${dayData.weatherAuto.pressure}hPa ${deltaTxt}<br>エネルギー影響: 気圧-${pressurePenalty()} 湿度-${humidityPenalty()}`;
+    }
     wrap.appendChild(autoStatus);
-
-    const chipRow = document.createElement('div'); chipRow.style.cssText='display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;';
-    Object.keys(weatherLabels).forEach(k => {
-      const b = document.createElement('button');
-      b.className = 'rpg-toggle' + (dayData.weather===k?' active':'');
-      b.style.flex = '1 1 45%';
-      b.textContent = weatherLabels[k];
-      b.addEventListener('click', () => { playSelect(); dayData.weather=k; dayData.weatherAuto=null; saveDay(); render(); });
-      chipRow.appendChild(b);
-    });
-    wrap.appendChild(chipRow);
 
     const row3 = document.createElement('div'); row3.className='rpg-setup-row'; row3.style.marginTop='10px';
     row3.innerHTML = `<span>すいみん時間</span>`;
@@ -749,7 +774,11 @@ ${keywordLine}${conditionBlock}
     const effects = document.createElement('div'); effects.className='rpg-status-effects';
     if (ci && ci.phase === 'ovulation') effects.innerHTML += `<span class="rpg-badge warn">じょうたい：ホルモン変動</span>`;
     if (ci && ci.phase === 'luteal_late') effects.innerHTML += `<span class="rpg-badge warn">じょうたい：生理前</span>`;
-    if (weatherIsLowPressure()) effects.innerHTML += `<span class="rpg-badge info">フィールド：低気圧</span>`;
+    const pPen = pressurePenalty(), hPen = humidityPenalty();
+    if (pPen > 0) effects.innerHTML += `<span class="rpg-badge info">きあつ -${pPen}</span>`;
+    if (hPen > 0) effects.innerHTML += `<span class="rpg-badge info">しつど -${hPen}</span>`;
+    const mood = moodStatus();
+    if (mood) effects.innerHTML += `<span class="rpg-badge ${mood.tone}">${mood.text}</span>`;
     if (dayData.sleepHours && parseFloat(dayData.sleepHours) < 6.5) effects.innerHTML += `<span class="rpg-badge warn">じょうたい：寝不足</span>`;
     if (dayData.bathGood === true) effects.innerHTML += `<span class="rpg-badge ok">バフ：入浴済み</span>`;
     eWrap.appendChild(effects);
@@ -815,7 +844,7 @@ ${keywordLine}${conditionBlock}
         geminiKey = v; saveGeminiKey(); playSelect(); render();
       });
       gWrap.appendChild(saveKeyBtn);
-    } else if (!ovulationDate || !dayData.weather) {
+    } else if (!ovulationDate || !dayData.weatherAuto) {
       const note = document.createElement('div'); note.style.cssText='font-size:13px;color:#9db4ff;';
       note.textContent = 'せってい画面で周期と天気を記録すると、鍋を仕込めます。';
       gWrap.appendChild(note);
@@ -999,20 +1028,13 @@ ${keywordLine}${conditionBlock}
         const cur = json.current;
         const temp = Math.round(cur.temperature_2m), humidity = Math.round(cur.relative_humidity_2m), pressure = Math.round(cur.surface_pressure);
         const code = cur.weather_code, precip = cur.precipitation;
-        let category;
-        if (precip > 0 || (code >= 51 && code <= 99)) category = 'rain_low';
-        else if (pressure < 1005) category = 'rain_low';
-        else if (humidity >= 75) category = 'humid';
-        else if (code === 0 || code === 1) category = 'sunny';
-        else category = 'cloudy';
-        dayData.weather = category;
-        dayData.weatherAuto = {temp, humidity, pressure, fetchedAt: Date.now()};
+        dayData.weatherAuto = {temp, humidity, pressure, code, precip, fetchedAt: Date.now()};
         saveDay(); render();
       } catch (e) {
-        if (statusEl) statusEl.textContent = 'この環境では自動取得がブロックされました。下のボタンで手動選択してください。';
+        if (statusEl) statusEl.textContent = 'この環境では自動取得がブロックされました。GitHub Pagesなど公開したサイトから開いてお試しください。';
         console.error('weather fetch error', e);
       }
-    }, () => { if (statusEl) statusEl.textContent = '位置情報が許可されませんでした。'; }, {timeout: 8000});
+    }, () => { if (statusEl) statusEl.textContent = '位置情報が許可されませんでした。設定から位置情報を許可してください。'; }, {timeout: 8000});
   }
 
   // ================= MODALS =================
