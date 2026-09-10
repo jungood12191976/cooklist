@@ -751,15 +751,18 @@ ${keywordLine}${conditionBlock}
         <div class="rpg-scene-caption">宿でおやすみ中…(5時に起きます)</div>
       `;
     } else {
-      const startSrc = heroEv < 40 ? SPRITE_CROUCH1 : SPRITE_WALK1;
-      const bounceClass = heroEv < 40 ? '' : ' bounce';
+      const startSrc = heroEv < 40 ? SPRITE_CROUCH1 : (heroEv >= 90 ? SPRITE_WINDUP : SPRITE_WALK1);
+      const bounceClass = (heroEv < 55) ? '' : ' bounce';
       scene.innerHTML = `<img class="rpg-hero-img${bounceClass}" id="rpgHero" src="${startSrc}" alt="勇者">`;
     }
     root.appendChild(scene);
     if (!isNightMode()) {
       let frames, frameMs;
-      if (heroEv < 40) { frames = [SPRITE_CROUCH1, SPRITE_CROUCH_DOWN]; frameMs = 900; }
-      else if (heroEv < 70) { frames = [SPRITE_WALK1, SPRITE_WALK2]; frameMs = 320; }
+      let bounceOn = true;
+      if (heroEv < 40) { frames = [SPRITE_CROUCH1, SPRITE_CROUCH_DOWN]; frameMs = 900; bounceOn = false; }
+      else if (heroEv < 55) { frames = [SPRITE_WALK1, SPRITE_WALK2]; frameMs = 480; bounceOn = false; }
+      else if (heroEv < 75) { frames = [SPRITE_WALK1, SPRITE_WALK2]; frameMs = 320; }
+      else if (heroEv < 90) { frames = [SPRITE_WALK1, SPRITE_WALK2]; frameMs = 200; }
       else { frames = [SPRITE_WINDUP, SPRITE_RISING, SPRITE_PEAK, SPRITE_RISING, SPRITE_LANDING, SPRITE_IDLE]; frameMs = 150; }
       let fi = 0;
       heroWalkTimer = setInterval(() => {
