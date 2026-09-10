@@ -148,6 +148,26 @@
 
   .rpg-sound-toggle{ position: fixed; top: 14px; right: 14px; z-index: 60; background:#0c1230; border: 2px solid #ffd76b; color:#ffd76b; font-size: 18px; width: 40px; height: 40px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 
+  .rpg-cast-overlay{
+    position: fixed; inset: 0; z-index: 90;
+    background: rgba(0,0,0,0);
+    display:flex; align-items:center; justify-content:center;
+    opacity: 0; transition: opacity .18s ease, background .18s ease;
+    pointer-events: none;
+  }
+  .rpg-cast-overlay.show{ opacity: 1; background: rgba(0,0,0,0.82); }
+  .rpg-cast-overlay.fade{ opacity: 0; }
+  .rpg-cast-burst{
+    position:absolute; inset:-20%; opacity:0;
+    animation: castburst 1.1s ease-out forwards;
+  }
+  @keyframes castburst{ 0%{ opacity:0; transform:scale(0.3);} 25%{ opacity:1; transform:scale(1);} 100%{ opacity:0; transform:scale(1.3);} }
+  .rpg-cast-phrase{
+    position:relative; z-index:2; font-size: 20px; font-weight:bold; text-align:center;
+    line-height:1.7; padding: 0 24px;
+    animation: castphrase 1.1s ease-out forwards;
+  }
+  @keyframes castphrase{ 0%{ opacity:0; transform: scale(0.7);} 15%{ opacity:1; transform: scale(1.08);} 25%{ transform: scale(1);} 80%{ opacity:1;} 100%{ opacity:0;} }
   .rpg-modal-backdrop{ position: fixed; inset: 0; background: rgba(10,10,30,0.75); display:none; align-items: flex-end; justify-content:center; z-index: 50; }
   .rpg-modal-backdrop.open{ display:flex; }
   .rpg-modal{ width:100%; max-width: 480px; background: linear-gradient(180deg,#1c2a5e,#111a3d); border-top: 3px solid #ffd76b; box-shadow: inset 0 0 0 3px #1c2a5e, inset 0 0 0 6px #6ea8ff; padding: 20px 16px 26px; max-height: 85vh; overflow-y: auto; }
@@ -1241,6 +1261,36 @@ ${keywordLine}${conditionBlock}
   }
 
   // ================= MODALS =================
+  const CASTING_CONFIG = {
+    damage: {
+      phrase: (phase) => (phase === 'ovulation' || phase === 'luteal_late')
+        ? 'キング、これはホルモンの波。\n乗りこなすか、飲まれるかは、\nキングが選ぶ。'
+        : 'キング、原因が何であれ、\n次の一手はキングが選ぶ。',
+      color: '#ff6b4a', vibrate: [80,60,80,60,220]
+    },
+    unmotivated: { phrase: () => 'キング、5分後のキングは\nもう動いている。', color: '#ffc93c', vibrate: [60,40,60,40,60] },
+    worst: { phrase: () => 'キング、今のキングの\nままでいい。', color: '#6ee7b7', vibrate: [320] },
+    complete: { phrase: () => 'キング、今日という区切りを、\nキングが確定させた。', color: '#ffd76b', vibrate: [60,40,60,40,60,40,220] },
+    dream: { phrase: () => 'キング、今日のキングの仕事は、\nもう終わっている。', color: '#a78bfa', vibrate: [180] }
+  };
+
+  function castSpell(stateKey, onDone){
+    const cfg = CASTING_CONFIG[stateKey];
+    if (!cfg) { onDone(); return; }
+    const ci = cycleInfo();
+    const phrase = cfg.phrase(ci ? ci.phase : null);
+    if (navigator.vibrate) { try { navigator.vibrate(cfg.vibrate); } catch(e){} }
+    const overlay = document.createElement('div');
+    overlay.className = 'rpg-cast-overlay';
+    overlay.innerHTML = `<div class="rpg-cast-burst" style="background: radial-gradient(circle, ${cfg.color}55 0%, ${cfg.color}22 40%, transparent 70%);"></div><div class="rpg-cast-phrase" style="color:${cfg.color}; text-shadow: 0 0 14px ${cfg.color}, 0 2px 4px rgba(0,0,0,0.8);">${phrase.replace(/\n/g,'<br>')}</div>`;
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('show'));
+    setTimeout(() => {
+      overlay.classList.add('fade');
+      setTimeout(() => { overlay.remove(); onDone(); }, 350);
+    }, 1150);
+  }
+
   function openHelpModal(){
     const backdrop = document.getElementById('rpgModalBackdrop'); const content = document.getElementById('rpgModalContent');
     backdrop.classList.add('open');
@@ -1248,7 +1298,7 @@ ${keywordLine}${conditionBlock}
     const btnWrap = document.getElementById('rpgStateButtons');
     Object.keys(STATE_ADVICE).forEach(key => {
       const b = document.createElement('button'); b.className='rpg-state-btn'; b.textContent = STATE_ADVICE[key].label;
-      b.addEventListener('click', () => { playSelect(); showAdvice(key); });
+      b.addEventListener('click', () => { playSelect(); castSpell(key, () => showAdvice(key)); });
       btnWrap.appendChild(b);
     });
     const closeBtn = document.createElement('button'); closeBtn.className='rpg-btn secondary wide'; closeBtn.textContent='とじる';
