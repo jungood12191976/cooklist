@@ -47,6 +47,19 @@
 
   /* ---- pixel hero sprite ---- */
   .rpg-scene{ position:relative; height: 230px; display:flex; align-items:flex-end; justify-content:center; margin-bottom: 10px; padding-bottom: 14px; overflow: visible; }
+  .wfx-layer{ position:absolute; inset:0; overflow:hidden; pointer-events:none; border-radius: 6px; }
+  .wfx-drop{ position:absolute; top:-20px; width:2px; height:14px; background: linear-gradient(180deg, rgba(160,200,255,0), rgba(160,200,255,0.85)); animation: wfxfall linear infinite; }
+  @keyframes wfxfall{ to { transform: translateY(260px); } }
+  .wfx-sun{ position:absolute; top:6px; right:14px; width:34px; height:34px; border-radius:50%; background: radial-gradient(circle, #fff6c8 0%, #ffd76b 60%, rgba(255,215,107,0) 75%); box-shadow: 0 0 18px 6px rgba(255,215,107,0.5); animation: wfxpulse 3s ease-in-out infinite; }
+  @keyframes wfxpulse{ 0%,100%{ opacity:0.85; } 50%{ opacity:1; } }
+  .wfx-ray{ position:absolute; top:6px; right:14px; width:34px; height:34px; }
+  .wfx-ray:before{ content:''; position:absolute; inset:-14px; border-radius:50%; background: conic-gradient(from 0deg, rgba(255,215,107,0.25) 0deg 8deg, transparent 8deg 30deg); animation: wfxspin 14s linear infinite; }
+  @keyframes wfxspin{ to { transform: rotate(360deg); } }
+  .wfx-cloud{ position:absolute; top:14px; width:46px; height:16px; background:#c9d4e0; border-radius:10px; opacity:0.55; animation: wfxdrift linear infinite; }
+  .wfx-cloud:before, .wfx-cloud:after{ content:''; position:absolute; background:#c9d4e0; border-radius:50%; }
+  .wfx-cloud:before{ width:20px; height:20px; top:-8px; left:6px; }
+  .wfx-cloud:after{ width:16px; height:16px; top:-5px; left:24px; }
+  @keyframes wfxdrift{ from{ transform: translateX(-60px); } to{ transform: translateX(340px); } }
   .rpg-bed-img{
     display:block; max-width: 44%; width: 100%; height: auto; margin: 0 auto;
     image-rendering: pixelated; image-rendering: crisp-edges;
@@ -439,18 +452,20 @@
     const p = dayData.weatherAuto.pressure;
     const baseDev = Math.max(0, 1013 - p);
     let penalty = Math.min(15, Math.round(baseDev / 2));
+    if (p < 1000) penalty += 5; // 気象病の症状が出やすいとされる一般的な目安ライン
     const yest = getYesterdayPressure();
     if (yest !== null) {
       const drop = yest - p;
-      if (drop > 0) penalty += Math.min(10, Math.round(drop / 3));
+      if (drop >= 4) penalty += Math.min(10, Math.round(drop * 1.2)); // 前日比4〜6hPa以上の変化が症状の目安
     }
     return Math.min(20, penalty);
   }
   function humidityPenalty(){
     if (!dayData.weatherAuto) return 0;
     const h = dayData.weatherAuto.humidity;
-    const excess = Math.max(0, h - 60);
-    return Math.min(10, Math.round(excess / 10));
+    if (h >= 40 && h <= 60) return 0; // 快適とされる湿度レンジ
+    const dist = h > 60 ? (h - 60) : (40 - h);
+    return Math.min(10, Math.round(dist / 8));
   }
   function weatherIsLowPressure(){ return (pressurePenalty() + humidityPenalty()) >= 5; }
   function moodStatus(){
@@ -740,6 +755,37 @@ ${keywordLine}${conditionBlock}
     root.appendChild(bar);
 
     // scene
+  function buildWeatherFx(){
+    if (!dayData.weatherAuto) return '';
+    const code = dayData.weatherAuto.code;
+    const precip = dayData.weatherAuto.precip || 0;
+    if (code >= 51) {
+      // rain family: scale drop count and fall speed by intensity
+      const heavy = precip >= 2 || code >= 65 && code <= 67 || code >= 80 && code <= 82 || code >= 95;
+      const count = heavy ? 34 : 14;
+      let drops = '';
+      for (let i = 0; i < count; i++) {
+        const left = Math.round(Math.random() * 96);
+        const delay = (Math.random() * 1.2).toFixed(2);
+        const dur = (heavy ? 0.5 + Math.random()*0.2 : 0.9 + Math.random()*0.3).toFixed(2);
+        drops += `<div class="wfx-drop" style="left:${left}%; animation-duration:${dur}s; animation-delay:${delay}s;"></div>`;
+      }
+      return `<div class="wfx-layer">${drops}</div>`;
+    }
+    if (code === 0 || code === 1) {
+      return `<div class="wfx-layer"><div class="wfx-ray"></div><div class="wfx-sun"></div></div>`;
+    }
+    if (code === 2 || code === 3) {
+      let clouds = '';
+      const positions = [{left:-40,top:10,dur:34},{left:120,top:26,dur:44}];
+      positions.forEach(p => {
+        clouds += `<div class="wfx-cloud" style="top:${p.top}px; animation-duration:${p.dur}s; animation-delay:-${Math.random()*p.dur}s;"></div>`;
+      });
+      return `<div class="wfx-layer">${clouds}</div>`;
+    }
+    return '';
+  }
+
     const scene = document.createElement('div'); scene.className='rpg-scene';
     const heroEv = energyValue();
     if (isNightMode()) {
@@ -753,7 +799,7 @@ ${keywordLine}${conditionBlock}
     } else {
       const startSrc = heroEv < 40 ? SPRITE_CROUCH1 : (heroEv >= 90 ? SPRITE_WINDUP : SPRITE_WALK1);
       const bounceClass = (heroEv < 55 || heroEv >= 90) ? '' : ' bounce';
-      scene.innerHTML = `<img class="rpg-hero-img${bounceClass}" id="rpgHero" src="${startSrc}" alt="勇者">`;
+      scene.innerHTML = `${buildWeatherFx()}<img class="rpg-hero-img${bounceClass}" id="rpgHero" src="${startSrc}" alt="勇者" style="position:relative; z-index:1;">`;
     }
     root.appendChild(scene);
     if (!isNightMode()) {
@@ -765,7 +811,7 @@ ${keywordLine}${conditionBlock}
       else if (heroEv < 90) { frames = [SPRITE_WALK1, SPRITE_WALK2]; frameMs = 200; }
       else {
         frames = [SPRITE_WINDUP, SPRITE_RISING, SPRITE_PEAK, SPRITE_RISING, SPRITE_LANDING, SPRITE_IDLE];
-        offsets = [4, -22, -40, -22, 2, 0]; // exaggerated hop arc in px, matched to each frame
+        offsets = [4, -18, -30, -18, 2, 0]; // hop arc in px, matched to each frame
         frameMs = 150;
         bounceOn = false; // art + explicit offsets already convey motion; avoid compounding with generic CSS bounce
       }
