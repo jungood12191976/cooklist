@@ -1034,7 +1034,13 @@ ${keywordLine}${conditionBlock}
         if (statusEl) statusEl.textContent = 'この環境では自動取得がブロックされました。GitHub Pagesなど公開したサイトから開いてお試しください。';
         console.error('weather fetch error', e);
       }
-    }, () => { if (statusEl) statusEl.textContent = '位置情報が許可されませんでした。設定から位置情報を許可してください。'; }, {timeout: 8000});
+    }, (geoErr) => {
+      if (!statusEl) return;
+      if (geoErr.code === 1) statusEl.textContent = 'このサイトでの位置情報が拒否されています。ブラウザのサイト設定から許可してください。';
+      else if (geoErr.code === 2) statusEl.textContent = '位置情報を取得できませんでした。端末の「設定→位置情報」がオンになっているか確認してください。';
+      else if (geoErr.code === 3) statusEl.textContent = '位置情報の取得がタイムアウトしました。電波の良い場所でもう一度お試しください。';
+      else statusEl.textContent = '位置情報の取得に失敗しました。もう一度お試しください。';
+    }, {timeout: 8000});
   }
 
   // ================= MODALS =================
