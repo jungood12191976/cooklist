@@ -155,19 +155,26 @@
     opacity: 0; transition: opacity .18s ease, background .18s ease;
     pointer-events: none;
   }
-  .rpg-cast-overlay.show{ opacity: 1; background: rgba(0,0,0,0.82); }
+  .rpg-cast-overlay.show{ opacity: 1; background: rgba(0,0,0,0.94); }
   .rpg-cast-overlay.fade{ opacity: 0; }
+  .rpg-cast-flash{
+    position: fixed; inset:0; z-index: 95; background:#fff;
+    animation: castflash 0.22s ease-out forwards; pointer-events:none;
+  }
+  @keyframes castflash{ 0%{ opacity:0.9; } 100%{ opacity:0; } }
   .rpg-cast-burst{
     position:absolute; inset:-20%; opacity:0;
-    animation: castburst 1.1s ease-out forwards;
+    animation: castburst 2.4s ease-out forwards;
   }
-  @keyframes castburst{ 0%{ opacity:0; transform:scale(0.3);} 25%{ opacity:1; transform:scale(1);} 100%{ opacity:0; transform:scale(1.3);} }
+  @keyframes castburst{ 0%{ opacity:0; transform:scale(0.3);} 15%{ opacity:1; transform:scale(1);} 85%{ opacity:0.9;} 100%{ opacity:0; transform:scale(1.35);} }
   .rpg-cast-phrase{
-    position:relative; z-index:2; font-size: 20px; font-weight:bold; text-align:center;
-    line-height:1.7; padding: 0 24px;
-    animation: castphrase 1.1s ease-out forwards;
+    position:relative; z-index:2; font-size: 32px; font-weight:900; text-align:center;
+    line-height:1.6; padding: 0 22px; letter-spacing: 1px;
+    animation: castphrase 2.4s cubic-bezier(.2,.9,.3,1) forwards;
   }
-  @keyframes castphrase{ 0%{ opacity:0; transform: scale(0.7);} 15%{ opacity:1; transform: scale(1.08);} 25%{ transform: scale(1);} 80%{ opacity:1;} 100%{ opacity:0;} }
+  .rpg-cast-phrase.shake{ animation: castphrase 2.4s cubic-bezier(.2,.9,.3,1) forwards, castshake 0.4s ease-in-out 1; }
+  @keyframes castphrase{ 0%{ opacity:0; transform: scale(0.5);} 10%{ opacity:1; transform: scale(1.15);} 18%{ transform: scale(1);} 88%{ opacity:1;} 100%{ opacity:0;} }
+  @keyframes castshake{ 0%,100%{ margin-left:0;} 20%{ margin-left:-10px;} 40%{ margin-left:9px;} 60%{ margin-left:-6px;} 80%{ margin-left:4px;} }
   .rpg-modal-backdrop{ position: fixed; inset: 0; background: rgba(10,10,30,0.75); display:none; align-items: flex-end; justify-content:center; z-index: 50; }
   .rpg-modal-backdrop.open{ display:flex; }
   .rpg-modal{ width:100%; max-width: 480px; background: linear-gradient(180deg,#1c2a5e,#111a3d); border-top: 3px solid #ffd76b; box-shadow: inset 0 0 0 3px #1c2a5e, inset 0 0 0 6px #6ea8ff; padding: 20px 16px 26px; max-height: 85vh; overflow-y: auto; }
@@ -1266,12 +1273,25 @@ ${keywordLine}${conditionBlock}
       phrase: (phase) => (phase === 'ovulation' || phase === 'luteal_late')
         ? 'キング、これはホルモンの波。\n乗りこなすか、飲まれるかは、\nキングが選ぶ。'
         : 'キング、原因が何であれ、\n次の一手はキングが選ぶ。',
-      color: '#ff6b4a', vibrate: [80,60,80,60,220]
+      color: '#ff6b4a', vibrate: [90,50,90,50,90,200,300], shake:true,
+      sound: () => { tone(70,0,0.22,'sawtooth',0.09); tone(1300,0.04,0.07,'square',0.06); tone(900,0.09,0.06,'square',0.05); tone(140,0.14,0.28,'sawtooth',0.07); }
     },
-    unmotivated: { phrase: () => 'キング、5分後のキングは\nもう動いている。', color: '#ffc93c', vibrate: [60,40,60,40,60] },
-    worst: { phrase: () => 'キング、今のキングの\nままでいい。', color: '#6ee7b7', vibrate: [320] },
-    complete: { phrase: () => 'キング、今日という区切りを、\nキングが確定させた。', color: '#ffd76b', vibrate: [60,40,60,40,60,40,220] },
-    dream: { phrase: () => 'キング、今日のキングの仕事は、\nもう終わっている。', color: '#a78bfa', vibrate: [180] }
+    unmotivated: {
+      phrase: () => 'キング、5分後のキングは\nもう動いている。', color: '#ffc93c', vibrate: [50,30,50,30,50,30,150],
+      sound: () => { tone(392,0,0.07,'square',0.05); tone(659,0.09,0.07,'square',0.05); tone(988,0.18,0.07,'square',0.06); tone(1319,0.27,0.16,'square',0.07); }
+    },
+    worst: {
+      phrase: () => 'キング、今のキングの\nままでいい。', color: '#6ee7b7', vibrate: [280],
+      sound: () => { tone(523,0,0.5,'sine',0.035); tone(659,0.2,0.6,'sine',0.03); tone(784,0.4,0.7,'sine',0.025); }
+    },
+    complete: {
+      phrase: () => 'キング、今日という区切りを、\nキングが確定させた。', color: '#ffd76b', vibrate: [60,40,60,40,60,40,60,40,260],
+      sound: () => { [523,659,784,1047,1319].forEach((f,i)=>tone(f,i*0.13,0.2,'square',0.065)); }
+    },
+    dream: {
+      phrase: () => 'キング、今日のキングの仕事は、\nもう終わっている。', color: '#a78bfa', vibrate: [200],
+      sound: () => { tone(880,0,0.35,'sine',0.03); tone(659,0.25,0.4,'sine',0.028); tone(523,0.5,0.6,'sine',0.025); }
+    }
   };
 
   function castSpell(stateKey, onDone){
@@ -1280,15 +1300,22 @@ ${keywordLine}${conditionBlock}
     const ci = cycleInfo();
     const phrase = cfg.phrase(ci ? ci.phase : null);
     if (navigator.vibrate) { try { navigator.vibrate(cfg.vibrate); } catch(e){} }
+    if (cfg.sound) cfg.sound();
+
+    const flash = document.createElement('div');
+    flash.className = 'rpg-cast-flash';
+    document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 220);
+
     const overlay = document.createElement('div');
     overlay.className = 'rpg-cast-overlay';
-    overlay.innerHTML = `<div class="rpg-cast-burst" style="background: radial-gradient(circle, ${cfg.color}55 0%, ${cfg.color}22 40%, transparent 70%);"></div><div class="rpg-cast-phrase" style="color:${cfg.color}; text-shadow: 0 0 14px ${cfg.color}, 0 2px 4px rgba(0,0,0,0.8);">${phrase.replace(/\n/g,'<br>')}</div>`;
+    overlay.innerHTML = `<div class="rpg-cast-burst" style="background: radial-gradient(circle, ${cfg.color}70 0%, ${cfg.color}30 40%, transparent 72%);"></div><div class="rpg-cast-phrase${cfg.shake ? ' shake' : ''}" style="color:${cfg.color}; text-shadow: 0 0 20px ${cfg.color}, 0 0 40px ${cfg.color}88, 0 2px 6px rgba(0,0,0,0.9);">${phrase.replace(/\n/g,'<br>')}</div>`;
     document.body.appendChild(overlay);
     requestAnimationFrame(() => overlay.classList.add('show'));
     setTimeout(() => {
       overlay.classList.add('fade');
-      setTimeout(() => { overlay.remove(); onDone(); }, 350);
-    }, 1150);
+      setTimeout(() => { overlay.remove(); onDone(); }, 400);
+    }, 2400);
   }
 
   function openHelpModal(){
