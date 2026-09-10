@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>KING THE QUEST ―年収1億円―</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap" rel="stylesheet">
 <style>
   html, body{ margin:0; padding:0; background:#1b1f4a; }
   .rpg-root, .rpg-root *{ box-sizing: border-box; font-family: "MS Gothic","ＭＳ ゴシック","DotGothic16","Osaka-mono",monospace; }
@@ -205,9 +208,11 @@
   @keyframes guardianclimax{ 0%{ transform: scale(1.15); } 100%{ transform: scale(1); } }
   .rpg-cast-phrase-wrap{ position:relative; z-index:2; margin-top: 10px; }
   .rpg-cast-phrase{
-    position:relative; z-index:2; font-size: 34px; font-weight:900; text-align:center;
-    line-height:1.65; padding: 0 22px; letter-spacing: 1.5px; font-style: italic;
-    transform: skewX(-3deg);
+    position:relative; z-index:2; font-size: 27px; font-weight:400; text-align:center;
+    line-height:1.7; padding: 0 20px; letter-spacing: 1px;
+    font-family: 'Yuji Syuku', 'MS Gothic', serif;
+    max-width: 92vw; margin: 0 auto;
+    word-break: normal; overflow-wrap: break-word;
   }
   .rpg-cast-phrase.materialize{
     animation: castmaterialize 0.55s cubic-bezier(.2,.9,.3,1) forwards, castpulse 1.4s ease-in-out 0.6s infinite, castwave 2.6s ease-in-out 0.6s infinite;
@@ -218,9 +223,9 @@
   .rpg-cast-phrase.dissipate{
     animation: castdissipate 0.6s ease-in forwards;
   }
-  @keyframes castmaterialize{ 0%{ opacity:0; filter: blur(18px); transform: skewX(-3deg) scale(0.6) translateY(14px);} 60%{ opacity:1; filter: blur(2px); transform: skewX(-3deg) scale(1.06) translateY(-4px);} 100%{ opacity:1; filter: blur(0); transform: skewX(-3deg) scale(1) translateY(0);} }
-  @keyframes castdissipate{ 0%{ opacity:1; filter: blur(0); transform: skewX(-3deg) scale(1) translateY(0);} 100%{ opacity:0; filter: blur(16px); transform: skewX(-3deg) scale(1.1) translateY(-26px);} }
-  @keyframes castwave{ 0%,100%{ transform: skewX(-3deg) rotate(0deg);} 50%{ transform: skewX(-3deg) rotate(0.6deg);} }
+  @keyframes castmaterialize{ 0%{ opacity:0; filter: blur(18px); transform: scale(0.6) translateY(14px);} 60%{ opacity:1; filter: blur(2px); transform: scale(1.06) translateY(-4px);} 100%{ opacity:1; filter: blur(0); transform: scale(1) translateY(0);} }
+  @keyframes castdissipate{ 0%{ opacity:1; filter: blur(0); transform: scale(1) translateY(0);} 100%{ opacity:0; filter: blur(16px); transform: scale(1.1) translateY(-26px);} }
+  @keyframes castwave{ 0%,100%{ transform: rotate(0deg);} 50%{ transform: rotate(0.5deg);} }
   .rpg-cast-shimmer{
     position:absolute; inset:0; mix-blend-mode: overlay; opacity:0.8; pointer-events:none;
     background-size: 250% 100%; background-position: -100% 0;
@@ -1383,25 +1388,25 @@ ${keywordLine}${conditionBlock}
   const CASTING_CONFIG = {
     damage: {
       phrase: (phase) => (phase === 'ovulation' || phase === 'luteal_late')
-        ? 'キング、これはホルモンの波。\n乗りこなすか、飲まれるかは、\nキングが選ぶ。'
-        : 'キング、原因が何であれ、\n次の一手はキングが選ぶ。',
+        ? 'キング、これはホルモンの波。乗りこなすか、飲まれるかは、キングが選ぶ。'
+        : 'キング、原因が何であれ、次の一手はキングが選ぶ。',
       color: '#ff6b4a', vibrate: [40,30,200,40,90,50,90,50,300], shake:true, chargeType:'sawtooth', chargeFrom:180, chargeTo:70,
       sound: () => { tone(1300,0.02,0.08,'square',0.06); tone(900,0.07,0.07,'square',0.05); tone(140,0.1,0.3,'sawtooth',0.08); }
     },
     unmotivated: {
-      phrase: () => 'キング、5分後のキングは\nもう動いている。', color: '#ffc93c', vibrate: [40,30,200,50,30,50,30,50,180], chargeType:'triangle', chargeFrom:220, chargeTo:520,
+      phrase: () => 'キング、5分後のキングはもう動いている。', color: '#ffc93c', vibrate: [40,30,200,50,30,50,30,50,180], chargeType:'triangle', chargeFrom:220, chargeTo:520,
       sound: () => { tone(392,0,0.07,'square',0.05); tone(659,0.09,0.07,'square',0.05); tone(988,0.18,0.07,'square',0.06); tone(1319,0.27,0.16,'square',0.07); }
     },
     worst: {
-      phrase: () => 'キング、今のキングの\nままでいい。', color: '#6ee7b7', vibrate: [40,30,200,280], soft:true, chargeType:'sine', chargeFrom:300, chargeTo:500,
+      phrase: () => 'キング、今のキングのままでいい。', color: '#6ee7b7', vibrate: [40,30,200,280], soft:true, chargeType:'sine', chargeFrom:300, chargeTo:500,
       sound: () => { tone(523,0,0.5,'sine',0.035); tone(659,0.2,0.6,'sine',0.03); tone(784,0.4,0.7,'sine',0.025); }
     },
     complete: {
-      phrase: () => 'キング、今日という区切りを、\nキングが確定させた。', color: '#ffd76b', vibrate: [40,30,200,60,40,60,40,60,40,260], chargeType:'triangle', chargeFrom:260, chargeTo:700,
+      phrase: () => 'キング、今日という区切りを、キングが確定させた。', color: '#ffd76b', vibrate: [40,30,200,60,40,60,40,60,40,260], chargeType:'triangle', chargeFrom:260, chargeTo:700,
       sound: () => { [523,659,784,1047,1319].forEach((f,i)=>tone(f,i*0.13,0.2,'square',0.065)); }
     },
     dream: {
-      phrase: () => 'キング、今日のキングの仕事は、\nもう終わっている。', color: '#a78bfa', vibrate: [40,30,200,200], soft:true, chargeType:'sine', chargeFrom:340, chargeTo:480,
+      phrase: () => 'キング、今日のキングの仕事は、もう終わっている。', color: '#a78bfa', vibrate: [40,30,200,200], soft:true, chargeType:'sine', chargeFrom:340, chargeTo:480,
       sound: () => { tone(880,0,0.35,'sine',0.03); tone(659,0.25,0.4,'sine',0.028); tone(523,0.5,0.6,'sine',0.025); }
     }
   };
