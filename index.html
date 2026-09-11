@@ -526,6 +526,99 @@
   function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
   // ================= GUARDIAN'S LETTERS (from the real genetic report + Instagram content project) =================
+  const TASTE_RATIOS = [
+    {genre:'和食', dish:'煮物の基本', ratio:'だし:醤油:みりん:砂糖 = 6:1:1:0.5'},
+    {genre:'和食', dish:'肉じゃが', ratio:'だし:醤油:みりん:砂糖 = 6:1:1:1'},
+    {genre:'和食', dish:'筑前煮', ratio:'だし:醤油:みりん = 6:1:1'},
+    {genre:'和食', dish:'大根の煮物', ratio:'だし:醤油:みりん = 6:1:1'},
+    {genre:'和食', dish:'厚揚げの煮物', ratio:'だし:醤油:みりん = 6:1:1'},
+    {genre:'和食', dish:'かぼちゃの煮物', ratio:'だし:醤油:砂糖 = 6:1:1'},
+    {genre:'和食', dish:'ごぼうの煮物', ratio:'だし:醤油:みりん = 6:1:1'},
+    {genre:'和食', dish:'いわし生姜煮', ratio:'醤油:みりん:酒 = 2:2:2'},
+    {genre:'和食', dish:'鶏手羽の煮物', ratio:'だし:醤油:みりん:砂糖 = 6:1:1:1'},
+    {genre:'和食', dish:'高野豆腐', ratio:'だし:醤油:みりん:砂糖 = 6:1:1:0.5'},
+    {genre:'和食', dish:'照り焼きのたれ', ratio:'醤油:みりん:酒:砂糖 = 1:1:1:0.5'},
+    {genre:'和食', dish:'丼つゆ', ratio:'だし:醤油:みりん:砂糖 = 10:2:2:0.5'},
+    {genre:'和食', dish:'生姜焼きのたれ', ratio:'醤油:酒:みりん = 1:1:1'},
+    {genre:'和食', dish:'にんにく醤油(唐揚げ下味)', ratio:'醤油:酒:にんにく = 1:1:0.5、塩少々'},
+    {genre:'和食', dish:'すまし汁', ratio:'塩:うすくち醤油:だし = 1:3:160'},
+    {genre:'和食', dish:'味噌汁', ratio:'味噌:だし = 1:15'},
+    {genre:'和食', dish:'胡麻だれ/胡麻和え', ratio:'醤油:みりん:胡麻 = 1:1:1'},
+    {genre:'和食', dish:'三杯酢/酢の物', ratio:'醤油:みりん:酢 = 1:1:1'},
+    {genre:'和食', dish:'だし巻き卵', ratio:'卵3個:だし大さじ4:薄口しょうゆ小さじ1:砂糖小さじ1:塩ひとつまみ'},
+    {genre:'中華', dish:'麻婆豆腐(基本版)', ratio:'甜麺醤:醤油:豆板醤 = 1:1:小さじ1(中華スープ150ml)'},
+    {genre:'中華', dish:'麻婆豆腐(しっかり版)', ratio:'甜麺醤:豆板醤:醤油 = 2:1:1'},
+    {genre:'中華', dish:'青椒肉絲', ratio:'醤油:オイスターソース:酒 = 2:1:1'},
+    {genre:'中華', dish:'油淋鶏のたれ', ratio:'醤油:酢:砂糖:胡麻油 = 1:1:1:小さじ1'},
+    {genre:'中華', dish:'冷やし中華のたれ', ratio:'水:酢:醤油:砂糖:胡麻油 = 4:3:3:2:1'},
+    {genre:'中華', dish:'中華ドレッシング', ratio:'醤油:酢:胡麻油:すり胡麻:砂糖 = 3:3:2:2:1'},
+    {genre:'中華', dish:'万能中華だれ', ratio:'醤油:酢:ごま油 = 2:2:1'},
+    {genre:'中華', dish:'酢豚のたれ', ratio:'酢:砂糖:ケチャップ = 3:2:2'},
+    {genre:'中華', dish:'回鍋肉', ratio:'甜麺醤:味噌:醤油 = 2:1:1'},
+    {genre:'中華', dish:'中華スープの基本', ratio:'水:鶏がらスープの素 = 6:1'},
+    {genre:'中華', dish:'担々麺のたれ', ratio:'ごまペースト:豆板醤:醤油 = 2:1:1'},
+    {genre:'中華', dish:'炒飯の味付け', ratio:'ご飯:醤油:ごま油 = 5:1:1'},
+    {genre:'中華', dish:'餃子のたれ', ratio:'醤油:酢:ラー油 = 2:2:1'},
+    {genre:'中華', dish:'春雨サラダのたれ', ratio:'醤油:酢:砂糖:ごま油 = 2:2:1:1'},
+    {genre:'韓国', dish:'ヤンニョムチキン', ratio:'コチュジャン:ケチャップ:砂糖:醤油 = 2:1:1:1'},
+    {genre:'韓国', dish:'ビビンバのたれ', ratio:'コチュジャン:ごま油:砂糖 = 2:1:1'},
+    {genre:'韓国', dish:'チャプチェ', ratio:'醤油:砂糖:ごま油 = 2:1:1'},
+    {genre:'韓国', dish:'スンドゥブの味付け', ratio:'コチュジャン:味噌:にんにく = 2:1:1'},
+    {genre:'韓国', dish:'プルコギ', ratio:'醤油:砂糖:ごま油:にんにく = 2:1:1:1'},
+    {genre:'韓国', dish:'キンパの味付け', ratio:'ごま油:塩 = 2:1'},
+    {genre:'韓国', dish:'チヂミのたれ', ratio:'醤油:酢:ごま油 = 2:1:1'},
+    {genre:'韓国', dish:'キムチ鍋', ratio:'キムチ:だし:味噌 = 3:5:1'},
+    {genre:'韓国', dish:'トッポギ', ratio:'コチュジャン:砂糖:醤油 = 2:2:1'},
+    {genre:'韓国', dish:'ナムルの味付け', ratio:'ごま油:塩 = 2:1'},
+    {genre:'洋食', dish:'ハンバーグソース(基本)', ratio:'ケチャップ:ウスターソース = 2:1'},
+    {genre:'洋食', dish:'デミグラス風ソース', ratio:'ケチャップ:赤ワイン:ウスターソース = 2:1:1'},
+    {genre:'洋食', dish:'ビーフシチュー', ratio:'デミグラス缶:赤ワイン = 3:1'},
+    {genre:'洋食', dish:'カルボナーラ', ratio:'卵黄:チーズ:生クリーム = 2:2:3'},
+    {genre:'洋食', dish:'ナポリタン', ratio:'ケチャップ:ウスターソース = 2:1'},
+    {genre:'洋食', dish:'ミートソース', ratio:'トマト缶:赤ワイン = 3:1'},
+    {genre:'洋食', dish:'ホワイトソース', ratio:'牛乳:小麦粉:バター = 5:1:1'},
+    {genre:'洋食', dish:'グラタン', ratio:'ホワイトソース:チーズ = 2:1'},
+    {genre:'洋食', dish:'フレンチドレッシング', ratio:'オイル:酢 = 3:1'},
+    {genre:'洋食', dish:'バーニャカウダ', ratio:'オイル:牛乳:アンチョビ = 2:2:1'},
+    {genre:'鍋・スープ', dish:'塩鍋', ratio:'水1000ml:鶏ガラ小さじ2〜2.5(or白だし大さじ2):塩小さじ1弱:酒大さじ2:みりん大さじ1'},
+    {genre:'鍋・スープ', dish:'醤油鍋', ratio:'醤油:みりん:酒 = 2:2:1'},
+    {genre:'鍋・スープ', dish:'鴨鍋', ratio:'醤油:みりん:酒:だし = 2:2:2:15'},
+    {genre:'鍋・スープ', dish:'塩こうじ味噌汁', ratio:'だし:味噌:塩こうじ = 6:1:1'},
+    {genre:'鍋・スープ', dish:'醤油こうじ中華スープ', ratio:'水:鶏がら:醤油こうじ = 6:1:1'},
+    {genre:'鍋・スープ', dish:'玉ねぎ麹ポタージュ', ratio:'玉ねぎ麹:牛乳 = 1:3'},
+    {genre:'鍋・スープ', dish:'トマト麹スープ', ratio:'トマト麹:水:オリーブオイル = 2:2:1'},
+    {genre:'鍋・スープ', dish:'甘酒コーンスープ', ratio:'牛乳:コーン:甘酒 = 4:2:1'},
+    {genre:'鍋・スープ', dish:'にんにく麹スープ', ratio:'水:にんにく麹:オイル = 5:1:1'},
+    {genre:'鍋・スープ', dish:'レモン塩こうじスープ', ratio:'水:塩こうじ:レモン汁 = 5:1:1'},
+    {genre:'鍋・スープ', dish:'味噌こうじ豆乳スープ', ratio:'豆乳:味噌こうじ = 3:1'},
+    {genre:'鍋・スープ', dish:'バジル麹ミネストローネ', ratio:'トマト:バジル麹:野菜 = 2:1:2'},
+    {genre:'鍋・スープ', dish:'発酵卵スープ', ratio:'水:鶏がら:醤油こうじ:卵 = 5:1:1:2'},
+    {genre:'ドレッシング', dish:'和風ドレッシング', ratio:'醤油:酢:みりん:ごま油 = 2:1:1:1'},
+    {genre:'ドレッシング', dish:'ごまドレッシング', ratio:'ごま:醤油:砂糖:酢 = 2:1:1:1'},
+    {genre:'ドレッシング', dish:'玉ねぎドレッシング', ratio:'玉ねぎ:酢:オイル = 2:1:1'},
+    {genre:'ドレッシング', dish:'にんにくドレッシング', ratio:'醤油:酢:にんにく:油 = 2:1:1:1'},
+    {genre:'ドレッシング', dish:'レモンドレッシング', ratio:'レモン汁:オイル:塩 = 2:3:0.5'},
+    {genre:'ドレッシング', dish:'トマトドレッシング', ratio:'トマト:酢:オイル = 3:1:1'},
+    {genre:'ドレッシング', dish:'ポン酢ドレッシング', ratio:'ポン酢:オイル = 2:1'},
+    {genre:'ドレッシング', dish:'塩麹ドレッシング', ratio:'塩麹:レモン汁:オイル = 2:1:1'},
+    {genre:'ドレッシング', dish:'醤油麹ドレッシング', ratio:'醤油麹:酢:オイル = 2:2:1'},
+    {genre:'ドレッシング', dish:'甘酒ドレッシング', ratio:'甘酒:酢:オイル = 2:1:1'},
+    {genre:'ドレッシング', dish:'塩こうじレモンドレッシング', ratio:'塩こうじ:レモン汁:オリーブオイル = 2:1:2'},
+    {genre:'ドレッシング', dish:'味噌こうじドレッシング', ratio:'味噌こうじ:酢 = 2:1'},
+    {genre:'ドレッシング', dish:'発酵シーザードレッシング', ratio:'塩こうじ:ヨーグルト:粉チーズ = 2:2:1'},
+    {genre:'ドレッシング', dish:'バジル麹ドレッシング', ratio:'バジル:塩こうじ:オイル = 1:2:2'},
+    {genre:'漬け込みだれ', dish:'醤油麹の魚漬け焼き', ratio:'醤油麹:酒 = 1:1'},
+    {genre:'漬け込みだれ', dish:'醤油麹ステーキソース', ratio:'醤油麹:にんにく = 2:1'},
+    {genre:'漬け込みだれ', dish:'醤油麹照り焼き', ratio:'醤油麹:みりん = 2:1'},
+    {genre:'漬け込みだれ', dish:'醤油麹ナムル', ratio:'醤油麹:ごま油 = 2:1'},
+    {genre:'漬け込みだれ', dish:'醤油麹バターソテー', ratio:'醤油麹:バター = 2:1'},
+    {genre:'漬け込みだれ', dish:'醤油麹コク旨炒め', ratio:'醤油麹:味噌 = 1:1'},
+    {genre:'漬け込みだれ', dish:'醤油麹甘辛タレ', ratio:'醤油麹:はちみつ = 2:1'},
+    {genre:'漬け込みだれ', dish:'醤油麹和風パスタ', ratio:'醤油麹:オリーブオイル = 2:1'},
+    {genre:'漬け込みだれ', dish:'醤油麹さっぱりマリネ', ratio:'醤油麹:レモン汁 = 3:1'},
+    {genre:'エスニック', dish:'アジアごはんだれ(ガパオ等)', ratio:'オイスターソース:ナンプラー = 1:1'}
+  ];
+
   const GUARDIAN_LETTERS = [
     "早朝に目が覚めやすいこと、ありませんか？セロトニンはトリプトファンという材料から、TPH2という酵素を使って作られます。あなたはこのTPH2の遺伝子(rs4290270)がTT型で、変換効率が生まれつき低いタイプです。研究では早朝覚醒や気分の波との関連が報告されています。意志の弱さではなく、材料をセロトニンに変える「工場のライン」がもともとゆっくりな設計だという話です。バナナやナッツなどトリプトファンを含む食品を、特に午後〜夕方に摂ると変換の材料補給になります。",
     "新しいことに強く惹かれる性格、自覚はありますか？ドーパミンを運ぶ役目のSLC6A3(DAT)遺伝子がTT型、受け取る側のDRD2/ANKK1もCT型、さらにCHRNA4もGG型と、報酬系に関わる遺伝子が軒並み「新規性・達成に強く反応する」タイプで揃っています。同じことの繰り返しでは脳の報酬が得にくく、新しい発見や達成のたびにやる気が湧きやすい設計です。このアプリが「回復の鍋」で毎回違うメニューを出したり、ダンジョンでフロアを進めたりする仕組みにしているのは、実はこの体質に理由があります。",
@@ -684,6 +777,7 @@
   let ovulationDate = null;
   let quests = [];
   let menuLog = [];
+  let customRatios = [];
   let dungeon = null; // { totalFloors, currentFloor, lastAdvanceDate, createdAt }
   let geminiKey = null;
   let geminiKeys = [];
@@ -715,6 +809,7 @@
     try { const raw2 = lsGet('wd3:cycle'); if (raw2) ovulationDate = raw2.ovulationDate || null; } catch(e){}
     try { const raw3 = lsGet('wd3:quests'); if (raw3) quests = raw3.quests || []; } catch(e){}
     try { const rawML = lsGet('wd3:menulog'); if (rawML) menuLog = rawML.menuLog || []; } catch(e){}
+    try { const rawCR = lsGet('wd3:customratios'); if (rawCR) customRatios = rawCR.customRatios || []; } catch(e){}
     try { const raw4 = lsGet('wd3:dungeon'); if (raw4) dungeon = raw4; } catch(e){}
     if (!dungeon) {
       const totalDays = Math.max(1, Math.ceil((TARGET_DATE - new Date()) / 86400000));
@@ -731,6 +826,7 @@
   async function saveCycle(){ lsSet('wd3:cycle', {ovulationDate}); }
   async function saveQuests(){ lsSet('wd3:quests', {quests}); }
   async function saveMenuLog(){ lsSet('wd3:menulog', {menuLog}); }
+  async function saveCustomRatios(){ lsSet('wd3:customratios', {customRatios}); }
   async function saveDungeon(){ lsSet('wd3:dungeon', dungeon); }
   async function saveSound(){ lsSet('wd3:sound', {on: soundOn}); }
   async function saveGeminiKey(){ lsSet('wd3:geminikey', {key: geminiKey}); }
@@ -1106,6 +1202,52 @@ ${keywordLine}${conditionBlock}
     row4.appendChild(bathSel);
     wrap.appendChild(row4);
     root.appendChild(wrap);
+
+    // taste ratio library
+    const ratioWrap = document.createElement('div'); ratioWrap.className='pw';
+    const ratioTitle = document.createElement('div'); ratioTitle.className='pw-title'; ratioTitle.textContent='味の黄金比ノート'; ratioWrap.appendChild(ratioTitle);
+    const ratioSub = document.createElement('div'); ratioSub.style.cssText='font-size:12px;color:#9db4ff;margin-bottom:8px;';
+    ratioSub.textContent = `今日わかっている黄金比: ${TASTE_RATIOS.length + customRatios.length}個`;
+    ratioWrap.appendChild(ratioSub);
+    const ratioBox = document.createElement('div'); ratioBox.id='rpgRatioBox'; ratioBox.style.cssText='min-height:60px; background:rgba(0,0,0,0.2); border-radius:6px; padding:10px; font-size:13.5px; color:#dbe4ff; line-height:1.7; margin-bottom:8px;';
+    ratioBox.textContent = 'ボタンを押すと、ランダムに1つ表示されます。';
+    ratioWrap.appendChild(ratioBox);
+    const ratioBtn = document.createElement('button'); ratioBtn.className='rpg-btn secondary wide'; ratioBtn.textContent='🎲 1つ見てみる';
+    ratioBtn.addEventListener('click', () => {
+      playSelect();
+      const pool = TASTE_RATIOS.concat(customRatios);
+      const pick = pool[Math.floor(Math.random()*pool.length)];
+      document.getElementById('rpgRatioBox').innerHTML = `<b style="color:#ffd76b;">【${pick.genre}】${pick.dish}</b><br>${pick.ratio}`;
+    });
+    ratioWrap.appendChild(ratioBtn);
+
+    const addRatioLabel = document.createElement('div'); addRatioLabel.style.cssText='font-size:12px;color:#9db4ff;margin-top:12px;margin-bottom:4px;';
+    addRatioLabel.textContent = '自分の黄金比・気になるレシピを追加:';
+    ratioWrap.appendChild(addRatioLabel);
+    const addRatioInput = document.createElement('input');
+    addRatioInput.type='text'; addRatioInput.placeholder='例: あんかけ豆腐 しょうゆ:酢:砂糖=2:1:1';
+    addRatioInput.className='rpg-date-input'; addRatioInput.style.width='100%'; addRatioInput.style.marginBottom='6px';
+    ratioWrap.appendChild(addRatioInput);
+    const addRatioBtn = document.createElement('button'); addRatioBtn.className='rpg-btn wide'; addRatioBtn.textContent='追加する';
+    addRatioBtn.addEventListener('click', () => {
+      const v = addRatioInput.value.trim(); if (!v) return;
+      customRatios.push({genre:'マイレシピ', dish:v, ratio:''});
+      saveCustomRatios(); playSelect(); render();
+    });
+    ratioWrap.appendChild(addRatioBtn);
+    if (customRatios.length > 0) {
+      const listWrap = document.createElement('div'); listWrap.style.cssText='margin-top:10px;';
+      customRatios.forEach((r, idx) => {
+        const row = document.createElement('div'); row.style.cssText='display:flex; align-items:center; gap:8px; font-size:12px; color:#dbe4ff; margin-bottom:5px;';
+        row.innerHTML = `<span style="flex:1;">${r.dish}</span>`;
+        const rmBtn = document.createElement('button'); rmBtn.className='rpg-toggle'; rmBtn.style.padding='2px 8px'; rmBtn.textContent='削除';
+        rmBtn.addEventListener('click', () => { customRatios.splice(idx,1); saveCustomRatios(); render(); });
+        row.appendChild(rmBtn);
+        listWrap.appendChild(row);
+      });
+      ratioWrap.appendChild(listWrap);
+    }
+    root.appendChild(ratioWrap);
 
     const chestBtn = document.createElement('button'); chestBtn.className='rpg-chest-btn';
     chestBtn.innerHTML = `<div class="rpg-chest"><div class="c-lid"></div><div class="c-body"></div><div class="c-band"></div><div class="c-gem"></div></div><div class="rpg-chest-label">たっせいログ</div>`;
