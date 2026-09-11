@@ -965,8 +965,9 @@ ${keywordLine}${conditionBlock}
 
     const keys = (geminiKeys && geminiKeys.length) ? geminiKeys : (geminiKey ? [geminiKey] : []);
     if (keys.length === 0) throw new Error('NO_KEY: APIキーが登録されていません');
-    let res = null, finalErr = null;
+    let res = null, finalErr = null, triedCount = 0;
     for (let ki = 0; ki < keys.length; ki++) {
+      triedCount++;
       try {
         res = await tryOneKey(keys[ki]);
         finalErr = null;
@@ -978,7 +979,10 @@ ${keywordLine}${conditionBlock}
         throw e; // NETWORK_BLOCKED or other hard errors: no point rotating keys
       }
     }
-    if (!res) throw finalErr;
+    if (!res) {
+      const em = finalErr.message || String(finalErr);
+      throw new Error(em + ` (登録済み${keys.length}個中${triedCount}個のキーを試して全滅)`);
+    }
 
     const json = await res.json();
     const text = (json.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('\n');
