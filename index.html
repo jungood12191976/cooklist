@@ -1430,7 +1430,10 @@ ${keywordLine}${conditionBlock}
       if (msg.startsWith('NETWORK_BLOCKED')) {
         gachaError = 'この環境ではAPI通信がブロックされている可能性があります(Claudeのアプリ内プレビューなど)。GitHub Pagesなど公開したサイトから開いてお試しください。';
       } else if (msg.startsWith('QUOTA')) {
-        gachaError = '検索連携(Grounding)の割り当てに達しています。少し時間をおいてから、もう一度「鍋を仕込む」を押してください。詳細: ' + msg.replace('QUOTA: ','').slice(0,150);
+        const keyCountMatch = msg.match(/(\(登録済み\d+個中\d+個のキーを試して全滅\))$/);
+        const keyCountNote = keyCountMatch ? ' ' + keyCountMatch[1] : '';
+        const mainDetail = msg.replace('QUOTA: ','').replace(/\s*\(登録済み\d+個中\d+個のキーを試して全滅\)$/,'');
+        gachaError = '検索連携(Grounding)の割り当てに達しています。少し時間をおいてから、もう一度「鍋を仕込む」を押してください。' + keyCountNote + '<br>詳細: ' + mainDetail.slice(0,150);
       } else if (msg.startsWith('BUSY')) {
         gachaError = 'Geminiのサーバーが今かなり混み合っています。少し時間をおいてから、もう一度「鍋を仕込む」を押してみてください。';
       } else {
