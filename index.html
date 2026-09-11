@@ -39,9 +39,15 @@
   .rpg-open-scene{
     position:relative; width:100%; height: 200px; margin-bottom: 14px; border-radius: 8px; overflow:hidden;
     border: 3px solid #ffd76b; background-size: cover; background-position: center;
-    display:flex; align-items:flex-end; justify-content:center;
+    display:flex; align-items:flex-end; justify-content:center; padding-bottom: 34px;
   }
-  .rpg-open-talk{ max-width: 55%; max-height: 108px; object-fit:contain; transition: opacity 0.26s ease; margin-bottom: 4px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); }
+  .rpg-open-talk{
+    position:absolute; left:50%; bottom: 34px; transform: translateX(-50%);
+    max-width: 55%; max-height: 108px; object-fit:contain;
+    transition: opacity 0.7s ease; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+  }
+  .rpg-open-talk.layer-a{ opacity: 1; }
+  .rpg-open-talk.layer-b{ opacity: 0; }
   .rpg-tool-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .rpg-tool-item{
     background: linear-gradient(180deg,#1c2a5e,#111a3d); border: 2px solid #6ea8ff; border-radius: 8px;
@@ -1013,19 +1019,26 @@ ${keywordLine}${conditionBlock}
 
     const openScene = document.createElement('div'); openScene.className='rpg-open-scene';
     openScene.style.backgroundImage = `url('${CAVE_BG}')`;
-    openScene.innerHTML = `<img class="rpg-open-talk" id="rpgOpenTalk" src="${TALK_PANEL1}" alt="そうだん">`;
+    openScene.innerHTML = `
+      <img class="rpg-open-talk layer-a" id="rpgOpenTalkA" src="${TALK_PANEL1}" alt="そうだん">
+      <img class="rpg-open-talk layer-b" id="rpgOpenTalkB" src="${TALK_PANEL2}" alt="そうだん">
+    `;
     root.appendChild(openScene);
     let talkFrame = 0;
     const talkFrames = [TALK_PANEL1, TALK_PANEL2, TALK_PANEL3];
+    let showingA = true;
     openTalkTimer = setInterval(() => {
-      const el = document.getElementById('rpgOpenTalk');
-      if (!el) { clearInterval(openTalkTimer); return; }
-      el.style.opacity = '0';
-      setTimeout(() => {
-        talkFrame = (talkFrame + 1) % talkFrames.length;
-        el.src = talkFrames[talkFrame];
-        el.style.opacity = '1';
-      }, 260);
+      const elA = document.getElementById('rpgOpenTalkA');
+      const elB = document.getElementById('rpgOpenTalkB');
+      if (!elA || !elB) { clearInterval(openTalkTimer); return; }
+      talkFrame = (talkFrame + 1) % talkFrames.length;
+      const nextSrc = talkFrames[talkFrame];
+      const showEl = showingA ? elB : elA;
+      const hideEl = showingA ? elA : elB;
+      showEl.src = nextSrc;
+      showEl.style.opacity = '1';
+      hideEl.style.opacity = '0';
+      showingA = !showingA;
     }, 1900);
 
     // instrument toolbox
