@@ -135,8 +135,10 @@
   .rpg-rare-tag{ display:inline-block; background:#ffd76b; color:#2c1f5c; font-size:11px; font-weight:bold; padding:3px 7px; margin-bottom:8px; }
   .rpg-item-name{ font-size: 19px; font-weight: bold; color: #ffd76b; margin-bottom: 10px; line-height:1.4; }
   .rpg-item-name:before{ content:"◆ "; }
-  .rpg-item-meaning{ font-size: 16.5px; line-height: 1.75; color: #dbe4ff; background: rgba(110,168,255,0.14); padding: 12px 13px; margin-bottom: 10px; }
-  .rpg-item-recipe{ font-size: 16px; line-height: 1.75; color: #c8d3f5; }
+  .rpg-item-meaning{ font-size: 16.5px; line-height: 1.8; color: #3a2a10; background: linear-gradient(135deg, #ffe9b8, #ffd76b33); border-left: 5px solid #ffd76b; padding: 12px 14px; margin-bottom: 12px; border-radius: 0 8px 8px 0; }
+  .rpg-item-meaning:before{ content: "🧬 遺伝子メモ"; display:block; font-size:11px; font-weight:bold; color:#a9741f; margin-bottom:5px; letter-spacing:1px; }
+  .rpg-item-recipe{ font-size: 16px; line-height: 1.75; color: #c8d3f5; background: rgba(255,255,255,0.04); padding: 10px 12px; border-radius: 6px; }
+  .rpg-item-recipe:before{ content: "🍳 つくりかた"; display:block; font-size:11px; font-weight:bold; color:#6ea8ff; margin-bottom:5px; letter-spacing:1px; }
   .rpg-item-cap{ font-size: 12px; color:#ff9b6a; margin-top: 8px; }
 
   .rpg-dungeon{ background:#0c1230; border: 2px solid #6ea8ff; padding: 12px 13px; margin-bottom: 10px; }
@@ -594,9 +596,10 @@
   // ================= STATE =================
   let today = new Date();
   let todayKey = today.toISOString().slice(0,10);
-  let dayData = { weather:null, weatherAuto:null, sleepHours:null, bathGood:null, mainIngredient:'', keyword:'', quickMode:false };
+  let dayData = { weather:null, weatherAuto:null, sleepHours:null, bathGood:null, bathSlot:null, mainIngredient:'', keyword:'', quickMode:false };
   let ovulationDate = null;
   let quests = [];
+  let menuLog = [];
   let dungeon = null; // { totalFloors, currentFloor, lastAdvanceDate, createdAt }
   let geminiKey = null;
   let screen = 'setup';
@@ -617,6 +620,7 @@
     try { const raw = lsGet('wd3:' + todayKey); if (raw) dayData = Object.assign(dayData, raw); } catch(e){}
     try { const raw2 = lsGet('wd3:cycle'); if (raw2) ovulationDate = raw2.ovulationDate || null; } catch(e){}
     try { const raw3 = lsGet('wd3:quests'); if (raw3) quests = raw3.quests || []; } catch(e){}
+    try { const rawML = lsGet('wd3:menulog'); if (rawML) menuLog = rawML.menuLog || []; } catch(e){}
     try { const raw4 = lsGet('wd3:dungeon'); if (raw4) dungeon = raw4; } catch(e){}
     if (!dungeon) {
       const totalDays = Math.max(1, Math.ceil((TARGET_DATE - new Date()) / 86400000));
@@ -630,6 +634,7 @@
   async function saveDay(){ lsSet('wd3:' + todayKey, dayData); }
   async function saveCycle(){ lsSet('wd3:cycle', {ovulationDate}); }
   async function saveQuests(){ lsSet('wd3:quests', {quests}); }
+  async function saveMenuLog(){ lsSet('wd3:menulog', {menuLog}); }
   async function saveDungeon(){ lsSet('wd3:dungeon', dungeon); }
   async function saveSound(){ lsSet('wd3:sound', {on: soundOn}); }
   async function saveGeminiKey(){ lsSet('wd3:geminikey', {key: geminiKey}); }
@@ -909,7 +914,7 @@ ${keywordLine}${conditionBlock}
     row2.innerHTML = `<span>てんき(自動取得)</span><span class="rpg-setup-val" id="rpgWeatherVal">${dayData.weatherAuto ? '取得済み' : '未取得'}</span>`;
     wrap.appendChild(row2);
     const autoBtn = document.createElement('button');
-    autoBtn.className='rpg-btn secondary wide'; autoBtn.textContent='📍 天気を取得';
+    autoBtn.className='rpg-btn secondary wide'; autoBtn.textContent='📍 エネルギー環境を取得';
     autoBtn.addEventListener('click', fetchWeatherAuto);
     wrap.appendChild(autoBtn);
     const autoStatus = document.createElement('div'); autoStatus.id='rpgAutoStatus'; autoStatus.className='rpg-auto-status';
@@ -934,16 +939,16 @@ ${keywordLine}${conditionBlock}
     wrap.appendChild(row3);
 
     const row4 = document.createElement('div'); row4.className='rpg-setup-row';
-    row4.innerHTML = `<span>21時台に入浴</span>`;
-    const bathToggle = document.createElement('div'); bathToggle.className='rpg-toggle-row'; bathToggle.style.width='140px';
-    ['できた','できず'].forEach((l,i) => {
-      const b = document.createElement('button');
-      b.className = 'rpg-toggle' + (dayData.bathGood===(i===0)?' active':'');
-      b.textContent = l;
-      b.addEventListener('click', () => { playSelect(); dayData.bathGood=(i===0); saveDay(); render(); });
-      bathToggle.appendChild(b);
+    row4.innerHTML = `<span>お浄め時間</span>`;
+    const bathSel = document.createElement('select'); bathSel.className='rpg-select';
+    const bathOpt0 = document.createElement('option'); bathOpt0.value=''; bathOpt0.textContent='選択'; bathSel.appendChild(bathOpt0);
+    ['20時前','20時台','21時台','22時台','23時台','日をまたいで'].forEach(slot => {
+      const o = document.createElement('option'); o.value=slot; o.textContent=slot;
+      if (dayData.bathSlot === slot) o.selected = true;
+      bathSel.appendChild(o);
     });
-    row4.appendChild(bathToggle);
+    bathSel.addEventListener('change', e => { dayData.bathSlot = e.target.value || null; saveDay(); render(); });
+    row4.appendChild(bathSel);
     wrap.appendChild(row4);
     root.appendChild(wrap);
 
@@ -1077,7 +1082,9 @@ ${keywordLine}${conditionBlock}
     const mood = moodStatus();
     if (mood) effects.innerHTML += `<span class="rpg-badge ${mood.tone}">${mood.text}</span>`;
     if (dayData.sleepHours && parseFloat(dayData.sleepHours) < 6.5) effects.innerHTML += `<span class="rpg-badge warn">じょうたい：寝不足</span>`;
-    if (dayData.bathGood === true) effects.innerHTML += `<span class="rpg-badge ok">バフ：入浴済み</span>`;
+    const goodBathSlots = ['20時前','20時台','21時台'];
+    if (dayData.bathSlot && goodBathSlots.includes(dayData.bathSlot)) effects.innerHTML += `<span class="rpg-badge ok">バフ：お浄め済み</span>`;
+    else if (dayData.bathSlot) effects.innerHTML += `<span class="rpg-badge warn">じょうたい：お浄め遅め</span>`;
     eWrap.appendChild(effects);
     root.appendChild(eWrap);
 
@@ -1166,22 +1173,10 @@ ${keywordLine}${conditionBlock}
       kwRow.appendChild(kwLabel); kwRow.appendChild(kwInput);
       gWrap.appendChild(kwRow);
 
-      const modeRow = document.createElement('div'); modeRow.className = 'rpg-toggle-row'; modeRow.style.marginBottom = '10px';
-      const researchedBtn = document.createElement('button');
-      researchedBtn.className = 'rpg-toggle' + (dayData.quickMode !== true ? ' active' : '');
-      researchedBtn.textContent = 'じっくり検索(正確・やや遅い)';
-      researchedBtn.addEventListener('click', () => { playSelect(); dayData.quickMode = false; saveDay(); render(); });
-      const quickBtn = document.createElement('button');
-      quickBtn.className = 'rpg-toggle' + (dayData.quickMode === true ? ' active' : '');
-      quickBtn.textContent = '素早く生成(速い)';
-      quickBtn.addEventListener('click', () => { playSelect(); dayData.quickMode = true; saveDay(); render(); });
-      modeRow.appendChild(researchedBtn); modeRow.appendChild(quickBtn);
-      gWrap.appendChild(modeRow);
-
       const potWrap = document.createElement('div'); potWrap.className='rpg-pot-wrap'; potWrap.id='rpgPotWrap';
       potWrap.innerHTML = `<div class="rpg-pot-emoji">🍲</div><div class="rpg-pot-status" id="rpgPotStatus"></div>`;
       const brewBtn = document.createElement('button'); brewBtn.className='rpg-btn wide'; brewBtn.textContent='🧙‍♀️ 鍋を仕込む';
-      brewBtn.addEventListener('click', () => brewGacha(gWrap, brewBtn, ingInput.value.trim(), kwInput.value.trim(), dayData.quickMode === true));
+      brewBtn.addEventListener('click', () => brewGacha(gWrap, brewBtn, ingInput.value.trim(), kwInput.value.trim(), false));
       gWrap.appendChild(potWrap);
       gWrap.appendChild(brewBtn);
       const smallSettings = document.createElement('button');
@@ -1205,8 +1200,7 @@ ${keywordLine}${conditionBlock}
     const pct = Math.min(100, Math.round((dungeon.currentFloor/dungeon.totalFloors)*100));
     dc.innerHTML = `
       <div class="rpg-dungeon-floor-bar"><div class="rpg-dungeon-floor-fill" style="width:${pct}%"></div></div>
-      <div class="rpg-dungeon-meta">${dungeon.currentFloor} / ${dungeon.totalFloors} フロア (${pct}%) ・ 任期満了日にゴール到達</div>
-      <div class="rpg-dungeon-note">クエストを1件以上達成した日ごとに、1フロア進みます(1日1フロアまで)。毎日コツコツ進めれば、ちょうど任期満了までにゴールする設計です。</div>
+      <div class="rpg-dungeon-meta">${dungeon.currentFloor} / ${dungeon.totalFloors} フロア</div>
     `;
     dWrap.appendChild(dc);
     root.appendChild(dWrap);
@@ -1228,6 +1222,8 @@ ${keywordLine}${conditionBlock}
     const eatBtn = document.createElement('button'); eatBtn.className='rpg-btn wide'; eatBtn.textContent='つかった！';
     eatBtn.addEventListener('click', () => {
       playComplete(); spawnConfetti();
+      menuLog.unshift({ name: g.name, date: new Date().toISOString() });
+      saveMenuLog();
       currentGacha = null; render();
     });
     card.appendChild(eatBtn);
@@ -1388,25 +1384,25 @@ ${keywordLine}${conditionBlock}
   const CASTING_CONFIG = {
     damage: {
       phrase: (phase) => (phase === 'ovulation' || phase === 'luteal_late')
-        ? 'キング、これはホルモンの波。乗りこなすか、飲まれるかは、キングが選ぶ。'
-        : 'キング、原因が何であれ、次の一手はキングが選ぶ。',
+        ? '「キング、<br>これは<br>ホルモンの波。<br>乗りこなすか<br>飲まれるかは、<br>キングが選ぶ。」'
+        : '「キング、<br>原因が<br>何であれ、<br>次の一手は<br>キングが選ぶ。」',
       color: '#ff6b4a', vibrate: [40,30,200,40,90,50,90,50,300], shake:true, chargeType:'sawtooth', chargeFrom:180, chargeTo:70,
       sound: () => { tone(1300,0.02,0.08,'square',0.06); tone(900,0.07,0.07,'square',0.05); tone(140,0.1,0.3,'sawtooth',0.08); }
     },
     unmotivated: {
-      phrase: () => 'キング、5分後のキングはもう動いている。', color: '#ffc93c', vibrate: [40,30,200,50,30,50,30,50,180], chargeType:'triangle', chargeFrom:220, chargeTo:520,
+      phrase: () => '「キング、<br>5分後の<br>キングは<br>もう動いている。」', color: '#ffc93c', vibrate: [40,30,200,50,30,50,30,50,180], chargeType:'triangle', chargeFrom:220, chargeTo:520,
       sound: () => { tone(392,0,0.07,'square',0.05); tone(659,0.09,0.07,'square',0.05); tone(988,0.18,0.07,'square',0.06); tone(1319,0.27,0.16,'square',0.07); }
     },
     worst: {
-      phrase: () => 'キング、今のキングのままでいい。', color: '#6ee7b7', vibrate: [40,30,200,280], soft:true, chargeType:'sine', chargeFrom:300, chargeTo:500,
+      phrase: () => '「キング、<br>今のキングの<br>ままでいい。」', color: '#6ee7b7', vibrate: [40,30,200,280], soft:true, chargeType:'sine', chargeFrom:300, chargeTo:500,
       sound: () => { tone(523,0,0.5,'sine',0.035); tone(659,0.2,0.6,'sine',0.03); tone(784,0.4,0.7,'sine',0.025); }
     },
     complete: {
-      phrase: () => 'キング、今日という区切りを、キングが確定させた。', color: '#ffd76b', vibrate: [40,30,200,60,40,60,40,60,40,260], chargeType:'triangle', chargeFrom:260, chargeTo:700,
+      phrase: () => '「キング、<br>今日という<br>区切りを、<br>キングが<br>確定させた。」', color: '#ffd76b', vibrate: [40,30,200,60,40,60,40,60,40,260], chargeType:'triangle', chargeFrom:260, chargeTo:700,
       sound: () => { [523,659,784,1047,1319].forEach((f,i)=>tone(f,i*0.13,0.2,'square',0.065)); }
     },
     dream: {
-      phrase: () => 'キング、今日のキングの仕事は、もう終わっている。', color: '#a78bfa', vibrate: [40,30,200,200], soft:true, chargeType:'sine', chargeFrom:340, chargeTo:480,
+      phrase: () => '「キング、<br>今日のキングの<br>仕事は、<br>もう<br>終わっている。」', color: '#a78bfa', vibrate: [40,30,200,200], soft:true, chargeType:'sine', chargeFrom:340, chargeTo:480,
       sound: () => { tone(880,0,0.35,'sine',0.03); tone(659,0.25,0.4,'sine',0.028); tone(523,0.5,0.6,'sine',0.025); }
     }
   };
@@ -1532,9 +1528,9 @@ ${keywordLine}${conditionBlock}
     let idx = Math.floor(Math.random() * GUARDIAN_LETTERS.length);
     if (GUARDIAN_LETTERS.length > 1 && idx === lastLetterIndex) idx = (idx + 1) % GUARDIAN_LETTERS.length;
     lastLetterIndex = idx;
-    content.innerHTML = `<div class="rpg-modal-title">📬 ガーディアンからの手紙</div><div class="rpg-advice-box"><div class="rpg-advice-line" id="rpgLetterText"></div></div>`;
+    content.innerHTML = `<div class="rpg-modal-title">📬 ガーディアンからの手紙</div><div class="rpg-advice-box"><div class="rpg-advice-line" id="rpgLetterText" style="font-size:27px; line-height:1.8;"></div></div>`;
     const letterEl = document.getElementById('rpgLetterText');
-    typewrite(letterEl, GUARDIAN_LETTERS[idx], 14);
+    typewrite(letterEl, '🧙 ' + GUARDIAN_LETTERS[idx], 14);
     const closeBtn = document.createElement('button'); closeBtn.className='rpg-btn secondary wide'; closeBtn.style.marginTop='12px'; closeBtn.textContent='とじる';
     closeBtn.addEventListener('click', closeModal);
     content.appendChild(closeBtn);
@@ -1551,6 +1547,18 @@ ${keywordLine}${conditionBlock}
       done.forEach(q => {
         const row = document.createElement('div'); row.className='rpg-log-row';
         row.innerHTML = `<span class="rpg-log-date">${fmtDateLog(q.completedAt)}</span>${q.text}`;
+        content.appendChild(row);
+      });
+    }
+    const menuTitle = document.createElement('div'); menuTitle.className='rpg-modal-title'; menuTitle.style.marginTop='18px'; menuTitle.textContent='料理ログ';
+    content.appendChild(menuTitle);
+    if (menuLog.length === 0) {
+      const empty = document.createElement('div'); empty.className='rpg-quest-empty'; empty.textContent='まだ記録がありません。';
+      content.appendChild(empty);
+    } else {
+      menuLog.forEach(m => {
+        const row = document.createElement('div'); row.className='rpg-log-row';
+        row.innerHTML = `<span class="rpg-log-date">${fmtDateLog(m.date)}</span>${m.name}`;
         content.appendChild(row);
       });
     }
