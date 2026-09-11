@@ -69,6 +69,11 @@
     animation: rewardpop 0.5s cubic-bezier(.3,1.6,.5,1) forwards;
   }
   @keyframes rewardpop{ 0%{ opacity:0; transform: scale(0) rotate(-20deg);} 70%{ transform: scale(1.15) rotate(6deg);} 100%{ opacity:1; transform: scale(1) rotate(0deg);} }
+  .rpg-scene-level{
+    position:absolute; top: 4px; left: 4px; z-index: 3;
+    background:#ffd76b; color:#2c1f5c; font-weight:bold; font-size: 13px;
+    padding: 4px 10px; border: 2px solid #a9741f;
+  }
   .rpg-ground-letter{
     position:absolute; left: 8%; bottom: 10px; width: 30px; height:30px;
     cursor:pointer; z-index:2; animation: letterglow 1.8s ease-in-out infinite;
@@ -1060,6 +1065,7 @@ ${keywordLine}${conditionBlock}
       if (!todaysEnemy) todaysEnemy = ENEMIES[Math.floor(Math.random() * ENEMIES.length)];
       const battleTag = battleEngaged ? `<div class="rpg-battle-tag">⚔️ せんとうモード</div>` : '';
       scene.innerHTML = `${buildWeatherFx()}${buildRewardIcons()}
+        <div class="rpg-scene-level">Lv.${quests.filter(q=>q.done).length}</div>
         <img class="rpg-enemy-img${battleEngaged ? ' engaged' : ''}" id="rpgEnemy" src="${todaysEnemy.img}" alt="${todaysEnemy.name}" title="${todaysEnemy.name}">
         ${battleTag}
         <img class="rpg-hero-img${bounceClass}" id="rpgHero" src="${startSrc}" alt="勇者" style="position:relative; z-index:1;">
@@ -1113,10 +1119,6 @@ ${keywordLine}${conditionBlock}
     const eVal = document.createElement('div'); eVal.className='rpg-energy-wrap';
     eVal.innerHTML = `<div class="rpg-energy-num" style="color:${evColor}">${ev}</div><div class="rpg-energy-label">きょうのエネルギー</div>`;
     eWrap.appendChild(eVal);
-    const lvWrap = document.createElement('div'); lvWrap.style.textAlign='center';
-    const level = quests.filter(q=>q.done).length;
-    lvWrap.innerHTML = `<div class="rpg-level-badge">Lv.${level}</div>`;
-    eWrap.appendChild(lvWrap);
 
     const ci = cycleInfo();
     const effects = document.createElement('div'); effects.className='rpg-status-effects';
@@ -1133,6 +1135,11 @@ ${keywordLine}${conditionBlock}
     else if (dayData.bathSlot) effects.innerHTML += `<span class="rpg-badge warn">じょうたい：お浄め遅め</span>`;
     eWrap.appendChild(effects);
     root.appendChild(eWrap);
+
+    // SOS (moved directly under Status)
+    const sos = document.createElement('button'); sos.className='rpg-sos-btn'; sos.textContent='回復の呪文';
+    sos.addEventListener('click', () => { playOpen(); openHelpModal(); });
+    root.appendChild(sos);
 
     // narrator (guardian icon inline in title)
     const narWrap = document.createElement('div'); narWrap.className='pw';
@@ -1250,11 +1257,6 @@ ${keywordLine}${conditionBlock}
     `;
     dWrap.appendChild(dc);
     root.appendChild(dWrap);
-
-    // SOS
-    const sos = document.createElement('button'); sos.className='rpg-sos-btn'; sos.textContent='回復の呪文';
-    sos.addEventListener('click', () => { playOpen(); openHelpModal(); });
-    root.appendChild(sos);
   }
 
   function renderGachaResult(wrap, g){
@@ -1327,6 +1329,26 @@ ${keywordLine}${conditionBlock}
       await saveQuests();
       const newLevel = quests.filter(x=>x.done).length;
       if (newLevel % 5 === 0) playLevelUp();
+      const stillActive = quests.filter(x => !x.done).length;
+      if (stillActive === 0) {
+        playFanfare();
+        if (navigator.vibrate) { try { navigator.vibrate([50,40,50,40,200]); } catch(e){} }
+        const flash = document.createElement('div');
+        flash.className = 'rpg-cast-flash';
+        flash.style.background = '#ffd76b';
+        flash.style.opacity = '0.6';
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 260);
+        spawnConfetti();
+        const overlay = document.createElement('div');
+        overlay.className = 'rpg-cast-overlay impact show';
+        overlay.innerHTML = `<div class="rpg-cast-phrase" style="color:#ffd76b; text-shadow: 0 0 20px #ffd76b, 0 2px 6px rgba(0,0,0,0.9);">キングは達成した！</div>`;
+        document.body.appendChild(overlay);
+        setTimeout(() => {
+          overlay.classList.add('fade');
+          setTimeout(() => overlay.remove(), 500);
+        }, 1400);
+      }
       render();
     }, 480);
   }
