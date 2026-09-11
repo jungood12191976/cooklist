@@ -7,6 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1b1f4a">
 <style>
   html, body{ margin:0; padding:0; background:#1b1f4a; }
   .rpg-root, .rpg-root *{ box-sizing: border-box; font-family: "MS Gothic","ＭＳ ゴシック","DotGothic16","Osaka-mono",monospace; }
@@ -159,7 +163,7 @@
   .rpg-dungeon-meta{ font-size: 11.5px; color:#9db4ff; }
   .rpg-dungeon-note{ font-size: 11px; color:#9db4ff; margin-top:6px; line-height:1.6; }
 
-  .rpg-sos-btn{ width:100%; background: linear-gradient(180deg,#ff9b6a,#e0521f); color: #fff; border: 3px solid #ffd76b; padding: 15px; font-size: 15px; font-weight: bold; cursor:pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.4); margin-top:6px; }
+  .rpg-sos-btn{ width:100%; background: linear-gradient(180deg,#ff9b6a,#e0521f); color: #fff; border: 3px solid #ffd76b; padding: 15px; font-size: 15px; font-weight: bold; cursor:pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.4); margin-top:6px; margin-bottom:16px; }
   .rpg-sos-btn:before{ content:"📜 "; }
 
   .rpg-sound-toggle{ position: fixed; top: 14px; right: 14px; z-index: 60; background:#0c1230; border: 2px solid #ffd76b; color:#ffd76b; font-size: 18px; width: 40px; height: 40px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
@@ -635,6 +639,7 @@
   let menuLog = [];
   let dungeon = null; // { totalFloors, currentFloor, lastAdvanceDate, createdAt }
   let geminiKey = null;
+  let geminiKeys = [];
   let screen = 'setup';
   const ENEMIES = [
     { key:'jellyfish', img: ENEMY_JELLYFISH, name:'なぞのクラゲ' },
@@ -643,6 +648,7 @@
   ];
   let todaysEnemy = null;
   let battleEngaged = false;
+  let geminiKeyManageOpen = false;
   let currentGacha = null;
   let gachaError = null;
   let heroWalkTimer = null;
@@ -662,6 +668,8 @@
     }
     try { const raw5 = lsGet('wd3:sound'); if (raw5) soundOn = raw5.on !== false; } catch(e){}
     try { const raw6 = lsGet('wd3:geminikey'); if (raw6) geminiKey = raw6.key || null; } catch(e){}
+    try { const raw6b = lsGet('wd3:geminikeys'); if (raw6b && raw6b.keys) geminiKeys = raw6b.keys; } catch(e){}
+    if (geminiKeys.length === 0 && geminiKey) geminiKeys = [geminiKey];
     render();
   }
   async function saveDay(){ lsSet('wd3:' + todayKey, dayData); }
@@ -671,6 +679,7 @@
   async function saveDungeon(){ lsSet('wd3:dungeon', dungeon); }
   async function saveSound(){ lsSet('wd3:sound', {on: soundOn}); }
   async function saveGeminiKey(){ lsSet('wd3:geminikey', {key: geminiKey}); }
+  async function saveGeminiKeys(){ lsSet('wd3:geminikeys', {keys: geminiKeys}); }
 
   function cycleInfo(){
     if (!ovulationDate) return null;
@@ -870,7 +879,6 @@ ${keywordLine}${conditionBlock}
 {"name":"料理名(主な食材を含む)","meaning":"${quickMode ? 'この人の遺伝的特徴に合わせてどう工夫したか。100字程度、日本語。' : '検索で見つけた元レシピがどんなものか一言と、この人の遺伝的特徴に合わせてどう工夫したか。120字程度、日本語。'}","recipe":"作り方。分量も具体的に。150〜200字程度、日本語。"}`;
 
     const modelName = quickMode ? 'gemini-3.5-flash-lite' : 'gemini-3.6-flash';
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(geminiKey)}`;
     const requestPayload = {
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { temperature: quickMode ? 1.1 : 0.9, topP: 0.97, topK: 64 }
@@ -878,34 +886,51 @@ ${keywordLine}${conditionBlock}
     if (!quickMode) requestPayload.tools = [{ google_search: {} }];
     const body = JSON.stringify(requestPayload);
 
-    let res, lastErr;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
-      } catch (networkErr) {
-        // fetch itself threw = likely blocked/sandboxed environment, not worth retrying
-        throw new Error('NETWORK_BLOCKED: ' + networkErr.message);
-      }
-      if (res.ok) { lastErr = null; break; }
-      if (res.status === 429) {
-        // quota exceeded — this is NOT transient; retrying won't help until quota resets, so fail fast with the real reason
-        const errText429 = await res.text();
-        let detail = errText429.slice(0,300);
+    async function tryOneKey(apiKey){
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      let res, lastErr;
+      for (let attempt = 0; attempt < 2; attempt++) {
         try {
-          const parsed429 = JSON.parse(errText429);
-          detail = parsed429.error?.message || detail;
-        } catch(e){}
-        throw new Error('QUOTA: ' + detail);
+          res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+        } catch (networkErr) {
+          throw new Error('NETWORK_BLOCKED: ' + networkErr.message);
+        }
+        if (res.ok) { lastErr = null; break; }
+        if (res.status === 429) {
+          const errText429 = await res.text();
+          let detail = errText429.slice(0,300);
+          try { detail = JSON.parse(errText429).error?.message || detail; } catch(e){}
+          throw new Error('QUOTA: ' + detail);
+        }
+        if (res.status === 503) {
+          lastErr = new Error('Gemini API error 503 (一時的な高負荷)');
+          await new Promise(r => setTimeout(r, 1200 * (attempt + 1)));
+          continue;
+        }
+        const errText = await res.text();
+        throw new Error('Gemini API error ' + res.status + ': ' + errText.slice(0,200));
       }
-      if (res.status === 503) {
-        lastErr = new Error('Gemini API error 503 (一時的な高負荷)');
-        await new Promise(r => setTimeout(r, 1200 * (attempt + 1)));
-        continue;
-      }
-      const errText = await res.text();
-      throw new Error('Gemini API error ' + res.status + ': ' + errText.slice(0,200));
+      if (lastErr) throw new Error('BUSY: ' + lastErr.message);
+      return res;
     }
-    if (lastErr) throw new Error('BUSY: ' + lastErr.message);
+
+    const keys = (geminiKeys && geminiKeys.length) ? geminiKeys : (geminiKey ? [geminiKey] : []);
+    if (keys.length === 0) throw new Error('NO_KEY: APIキーが登録されていません');
+    let res = null, finalErr = null;
+    for (let ki = 0; ki < keys.length; ki++) {
+      try {
+        res = await tryOneKey(keys[ki]);
+        finalErr = null;
+        break;
+      } catch (e) {
+        finalErr = e;
+        const msg = e.message || String(e);
+        if (msg.startsWith('QUOTA') || msg.startsWith('BUSY')) continue; // try next key
+        throw e; // NETWORK_BLOCKED or other hard errors: no point rotating keys
+      }
+    }
+    if (!res) throw finalErr;
+
     const json = await res.json();
     const text = (json.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('\n');
     let clean = text.replace(/```json|```/g, '').trim();
@@ -1111,36 +1136,6 @@ ${keywordLine}${conditionBlock}
       }, frameMs);
     }
 
-    // status
-    const eWrap = document.createElement('div'); eWrap.className='pw';
-    const eTitle = document.createElement('div'); eTitle.className='pw-title'; eTitle.textContent='ステータス'; eWrap.appendChild(eTitle);
-    const ev = energyValue();
-    const evColor = ev >= 70 ? '#4ade80' : ev >= 40 ? '#ffd76b' : '#ff6b6b';
-    const eVal = document.createElement('div'); eVal.className='rpg-energy-wrap';
-    eVal.innerHTML = `<div class="rpg-energy-num" style="color:${evColor}">${ev}</div><div class="rpg-energy-label">きょうのエネルギー</div>`;
-    eWrap.appendChild(eVal);
-
-    const ci = cycleInfo();
-    const effects = document.createElement('div'); effects.className='rpg-status-effects';
-    if (ci && ci.phase === 'ovulation') effects.innerHTML += `<span class="rpg-badge warn">じょうたい：ホルモン変動</span>`;
-    if (ci && ci.phase === 'luteal_late') effects.innerHTML += `<span class="rpg-badge warn">じょうたい：生理前</span>`;
-    const pPen = pressurePenalty(), hPen = humidityPenalty();
-    if (pPen > 0) effects.innerHTML += `<span class="rpg-badge info">きあつ -${pPen}</span>`;
-    if (hPen > 0) effects.innerHTML += `<span class="rpg-badge info">しつど -${hPen}</span>`;
-    const mood = moodStatus();
-    if (mood) effects.innerHTML += `<span class="rpg-badge ${mood.tone}">${mood.text}</span>`;
-    if (dayData.sleepHours && parseFloat(dayData.sleepHours) < 6.5) effects.innerHTML += `<span class="rpg-badge warn">じょうたい：寝不足</span>`;
-    const goodBathSlots = ['20時前','20時台','21時台'];
-    if (dayData.bathSlot && goodBathSlots.includes(dayData.bathSlot)) effects.innerHTML += `<span class="rpg-badge ok">バフ：お浄め済み</span>`;
-    else if (dayData.bathSlot) effects.innerHTML += `<span class="rpg-badge warn">じょうたい：お浄め遅め</span>`;
-    eWrap.appendChild(effects);
-    root.appendChild(eWrap);
-
-    // SOS (moved directly under Status)
-    const sos = document.createElement('button'); sos.className='rpg-sos-btn'; sos.textContent='回復の呪文';
-    sos.addEventListener('click', () => { playOpen(); openHelpModal(); });
-    root.appendChild(sos);
-
     // narrator (guardian icon inline in title)
     const narWrap = document.createElement('div'); narWrap.className='pw';
     const narTitle = document.createElement('div'); narTitle.className='pw-title'; narTitle.innerHTML = `<span>🧙</span><span>ガーディアンのことば</span>`; narWrap.appendChild(narTitle);
@@ -1183,22 +1178,52 @@ ${keywordLine}${conditionBlock}
     qWrap.appendChild(chestBtn);
     root.appendChild(qWrap);
 
+    // status
+    const eWrap = document.createElement('div'); eWrap.className='pw';
+    const eTitle = document.createElement('div'); eTitle.className='pw-title'; eTitle.textContent='ステータス'; eWrap.appendChild(eTitle);
+    const ev = energyValue();
+    const evColor = ev >= 70 ? '#4ade80' : ev >= 40 ? '#ffd76b' : '#ff6b6b';
+    const eVal = document.createElement('div'); eVal.className='rpg-energy-wrap';
+    eVal.innerHTML = `<div class="rpg-energy-num" style="color:${evColor}">${ev}</div><div class="rpg-energy-label">きょうのエネルギー</div>`;
+    eWrap.appendChild(eVal);
+
+    const ci = cycleInfo();
+    const effects = document.createElement('div'); effects.className='rpg-status-effects';
+    if (ci && ci.phase === 'ovulation') effects.innerHTML += `<span class="rpg-badge warn">じょうたい：ホルモン変動</span>`;
+    if (ci && ci.phase === 'luteal_late') effects.innerHTML += `<span class="rpg-badge warn">じょうたい：生理前</span>`;
+    const pPen = pressurePenalty(), hPen = humidityPenalty();
+    if (pPen > 0) effects.innerHTML += `<span class="rpg-badge info">きあつ -${pPen}</span>`;
+    if (hPen > 0) effects.innerHTML += `<span class="rpg-badge info">しつど -${hPen}</span>`;
+    const mood = moodStatus();
+    if (mood) effects.innerHTML += `<span class="rpg-badge ${mood.tone}">${mood.text}</span>`;
+    if (dayData.sleepHours && parseFloat(dayData.sleepHours) < 6.5) effects.innerHTML += `<span class="rpg-badge warn">じょうたい：寝不足</span>`;
+    const goodBathSlots = ['20時前','20時台','21時台'];
+    if (dayData.bathSlot && goodBathSlots.includes(dayData.bathSlot)) effects.innerHTML += `<span class="rpg-badge ok">バフ：お浄め済み</span>`;
+    else if (dayData.bathSlot) effects.innerHTML += `<span class="rpg-badge warn">じょうたい：お浄め遅め</span>`;
+    eWrap.appendChild(effects);
+    root.appendChild(eWrap);
+
+    // SOS (moved directly under Status)
+    const sos = document.createElement('button'); sos.className='rpg-sos-btn'; sos.textContent='回復の呪文';
+    sos.addEventListener('click', () => { playOpen(); openHelpModal(); });
+    root.appendChild(sos);
+
     // gacha (Gemini-powered)
     const gWrap = document.createElement('div'); gWrap.className='pw';
     const gTitle = document.createElement('div'); gTitle.className='pw-title'; gTitle.textContent='回復の鍋'; gWrap.appendChild(gTitle);
 
-    if (!geminiKey) {
+    if (geminiKeys.length === 0) {
       const note = document.createElement('div'); note.style.cssText='font-size:13px;color:#9db4ff;line-height:1.7;margin-bottom:8px;';
-      note.innerHTML = '鍋を仕込むにはGemini APIキーが必要です。<br>aistudio.google.com/app/apikey でGoogleアカウントからログインし「Create API key」で発行(無料枠・カード登録不要)。<br><b style="color:#ff9b6a;">このURLは他人と共有しないでください。</b>';
+      note.innerHTML = '鍋を仕込むにはGemini APIキーが必要です。<br>aistudio.google.com/app/apikey でGoogleアカウントからログインし「Create API key」で発行(無料枠・カード登録不要)。<br><b style="color:#ff9b6a;">このURLは他人と共有しないでください。</b><br><br>無料枠は<b>プロジェクト単位</b>で割り当てられるため、<b>「新しいプロジェクトを作成」してから発行したキーを複数登録</b>すると、1つの枠を使い切っても次のキーに自動で切り替わり、使える回数が実質的に増えます。';
       gWrap.appendChild(note);
       const keyInput = document.createElement('input');
       keyInput.type = 'password'; keyInput.placeholder = 'AIza...';
       keyInput.className = 'rpg-date-input'; keyInput.style.width = '100%'; keyInput.style.marginBottom = '8px';
       gWrap.appendChild(keyInput);
-      const saveKeyBtn = document.createElement('button'); saveKeyBtn.className = 'rpg-btn wide'; saveKeyBtn.textContent = 'キーを保存';
+      const saveKeyBtn = document.createElement('button'); saveKeyBtn.className = 'rpg-btn wide'; saveKeyBtn.textContent = 'キーを追加';
       saveKeyBtn.addEventListener('click', () => {
         const v = keyInput.value.trim(); if (!v) return;
-        geminiKey = v; saveGeminiKey(); playSelect(); render();
+        geminiKeys.push(v); geminiKey = geminiKeys[0]; saveGeminiKeys(); saveGeminiKey(); playSelect(); render();
       });
       gWrap.appendChild(saveKeyBtn);
     } else if (!ovulationDate || !dayData.weatherAuto) {
@@ -1234,9 +1259,28 @@ ${keywordLine}${conditionBlock}
       gWrap.appendChild(brewBtn);
       const smallSettings = document.createElement('button');
       smallSettings.className = 'rpg-settings-link'; smallSettings.style.display='block'; smallSettings.style.marginTop='6px';
-      smallSettings.textContent = 'APIキーを変更';
-      smallSettings.addEventListener('click', () => { geminiKey = null; saveGeminiKey(); render(); });
+      smallSettings.textContent = `APIキーを管理(現在${geminiKeys.length}個登録)`;
+      smallSettings.addEventListener('click', () => { geminiKeyManageOpen = true; render(); });
       gWrap.appendChild(smallSettings);
+      if (geminiKeyManageOpen) {
+        const mgWrap = document.createElement('div'); mgWrap.style.cssText='margin-top:8px; padding:10px; background:rgba(0,0,0,0.2); border-radius:6px;';
+        geminiKeys.forEach((k, idx) => {
+          const row = document.createElement('div'); row.style.cssText='display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:12px; color:#9db4ff;';
+          row.innerHTML = `<span style="flex:1;">キー${idx+1}: ${k.slice(0,6)}…${k.slice(-4)}</span>`;
+          const rmBtn = document.createElement('button'); rmBtn.className='rpg-toggle'; rmBtn.style.padding='2px 8px'; rmBtn.textContent='削除';
+          rmBtn.addEventListener('click', () => { geminiKeys.splice(idx,1); saveGeminiKeys(); render(); });
+          row.appendChild(rmBtn);
+          mgWrap.appendChild(row);
+        });
+        const addInput = document.createElement('input');
+        addInput.type = 'password'; addInput.placeholder = '新しいキーを追加: AIza...';
+        addInput.className = 'rpg-date-input'; addInput.style.width = '100%'; addInput.style.marginBottom='6px'; addInput.style.marginTop='6px';
+        mgWrap.appendChild(addInput);
+        const addBtn = document.createElement('button'); addBtn.className='rpg-btn secondary wide'; addBtn.textContent='追加';
+        addBtn.addEventListener('click', () => { const v=addInput.value.trim(); if(!v) return; geminiKeys.push(v); saveGeminiKeys(); render(); });
+        mgWrap.appendChild(addBtn);
+        gWrap.appendChild(mgWrap);
+      }
       if (currentGacha) renderGachaResult(gWrap, currentGacha);
       if (gachaError) {
         const errBox = document.createElement('div'); errBox.style.cssText='font-size:12px;color:#ff6b6b;margin-top:8px;line-height:1.6;';
@@ -1329,26 +1373,23 @@ ${keywordLine}${conditionBlock}
       await saveQuests();
       const newLevel = quests.filter(x=>x.done).length;
       if (newLevel % 5 === 0) playLevelUp();
-      const stillActive = quests.filter(x => !x.done).length;
-      if (stillActive === 0) {
-        playFanfare();
-        if (navigator.vibrate) { try { navigator.vibrate([50,40,50,40,200]); } catch(e){} }
-        const flash = document.createElement('div');
-        flash.className = 'rpg-cast-flash';
-        flash.style.background = '#ffd76b';
-        flash.style.opacity = '0.6';
-        document.body.appendChild(flash);
-        setTimeout(() => flash.remove(), 260);
-        spawnConfetti();
-        const overlay = document.createElement('div');
-        overlay.className = 'rpg-cast-overlay impact show';
-        overlay.innerHTML = `<div class="rpg-cast-phrase" style="color:#ffd76b; text-shadow: 0 0 20px #ffd76b, 0 2px 6px rgba(0,0,0,0.9);">キングは達成した！</div>`;
-        document.body.appendChild(overlay);
-        setTimeout(() => {
-          overlay.classList.add('fade');
-          setTimeout(() => overlay.remove(), 500);
-        }, 1400);
-      }
+      playFanfare();
+      if (navigator.vibrate) { try { navigator.vibrate([50,40,50,40,200]); } catch(e){} }
+      const flash = document.createElement('div');
+      flash.className = 'rpg-cast-flash';
+      flash.style.background = '#ffd76b';
+      flash.style.opacity = '0.6';
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 260);
+      spawnConfetti();
+      const overlay = document.createElement('div');
+      overlay.className = 'rpg-cast-overlay impact show';
+      overlay.innerHTML = `<div class="rpg-cast-phrase" style="color:#ffd76b; text-shadow: 0 0 20px #ffd76b, 0 2px 6px rgba(0,0,0,0.9);">キングは達成した！</div>`;
+      document.body.appendChild(overlay);
+      setTimeout(() => {
+        overlay.classList.add('fade');
+        setTimeout(() => overlay.remove(), 500);
+      }, 1400);
       render();
     }, 480);
   }
