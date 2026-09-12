@@ -377,7 +377,7 @@
 <div id="rpgTitleScreen" class="rpg-title-screen">
   <img class="rpg-title-splash" id="rpgTitleSplashImg" alt="">
   <div class="rpg-title-logo">KING THE QUEST</div>
-  <div class="rpg-title-sub2">―金貨の袋（1億円）―</div>
+  <div class="rpg-title-sub2" id="rpgTitleSub2">―雇われ冒険人、最後の863日―</div>
   <button class="rpg-press-start" id="rpgStartBtn">▶ ぼうけんをはじめる</button>
   <div class="rpg-title-hint">タップして冒険をスタート(音が鳴ります)</div>
 </div>
@@ -1513,7 +1513,141 @@ ${keywordLine}${bpBlock}${conditionBlock}
     if (openTalkTimer) { clearInterval(openTalkTimer); openTalkTimer = null; }
     const root = document.getElementById('rpgRoot');
     root.innerHTML = '';
-    if (screen === 'setup') renderSetup(root); else renderHub(root);
+    if (screen === 'setup') renderSetup(root);
+    else if (screen === 'graph') renderGraph(root);
+    else renderHub(root);
+  }
+
+
+  // ================= PAGE 3: お浄め時間 × 翌日エネルギー =================
+  const BATH_SLOT_VALUE = { '20時前':1, '20時台':2, '21時台':3, '22時台':4, '23時台':5, '日をまたいで':6 };
+
+  // Recompute a past day's energy from its own stored record (not today's state).
+  function energyOfRecord(rec){
+    if (!rec) return null;
+    let e = rec.sleepHours ? (SLEEP_ENERGY[String(rec.sleepHours)] ?? 70) : null;
+    if (e === null) return null;
+    const w = rec.weatherAuto;
+    if (w) {
+      if (typeof w.pressure === 'number') {
+        let p = 0;
+        const dev = 1013 - w.pressure;
+        if (dev > 0) p += Math.min(10, Math.round(dev / 3));
+        if (w.pressure <= 1000) p += 5;
+        e -= p;
+      }
+      if (typeof w.humidity === 'number') {
+        const hm = w.humidity;
+        let hp = 0;
+        if (hm > 60) hp = Math.round((hm - 60) / 8);
+        else if (hm < 40) hp = Math.round((40 - hm) / 8);
+        e -= hp;
+      }
+    }
+    return Math.max(0, Math.min(100, e));
+  }
+
+  function collectHistory(days){
+    const out = [];
+    const base = new Date();
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(base.getFullYear(), base.getMonth(), base.getDate() - i);
+      const key = d.toISOString().slice(0,10);
+      let rec = null;
+      try { rec = lsGet('wd3:' + key); } catch(e){}
+      out.push({ key, date: d, rec });
+    }
+    return out;
+  }
+
+  function renderGraph(root){
+    const bar = document.createElement('div'); bar.className='rpg-topbar';
+    const back = document.createElement('button'); back.className='rpg-settings-link'; back.textContent='← もどる';
+    back.addEventListener('click', () => { playSelect(); screen='hub'; render(); });
+    bar.appendChild(back);
+    root.appendChild(bar);
+
+    const h1 = document.createElement('div'); h1.className='rpg-h1'; h1.textContent='お浄めの記録'; root.appendChild(h1);
+
+    const wrap = document.createElement('div'); wrap.className='pw';
+    const t = document.createElement('div'); t.className='pw-title'; t.textContent='お浄め時間と、翌日のエネルギー'; wrap.appendChild(t);
+    const note = document.createElement('div'); note.style.cssText='font-size:12.5px;color:#9db4ff;line-height:1.7;margin-bottom:10px;';
+    note.innerHTML = 'お風呂が早い日ほど、<b>次の日</b>のエネルギーが高いか調べるグラフです。<br>金色＝その日のお浄め時間（上ほど早い）／緑＝翌日のエネルギー。';
+    wrap.appendChild(note);
+
+    const hist = collectHistory(31);
+    // pair: bath on day i, energy on day i+1
+    const pairs = [];
+    for (let i = 0; i < hist.length - 1; i++) {
+      const slot = hist[i].rec && hist[i].rec.bathSlot;
+      const nextE = energyOfRecord(hist[i+1].rec);
+      pairs.push({ date: hist[i].date, slot: slot || null, nextE });
+    }
+
+    const W = 320, H = 190, PL = 30, PR = 12, PT = 12, PB = 22;
+    const iw = W - PL - PR, ih = H - PT - PB;
+    const x = i => PL + (pairs.length <= 1 ? iw/2 : (i / (pairs.length - 1)) * iw);
+    const yBath = v => PT + ((v - 1) / 5) * ih;          // 1(早い)→上, 6(遅い)→下
+    const yEn   = v => PT + (1 - v / 100) * ih;
+
+    const bathPts = pairs.map((p,i) => p.slot ? `${x(i).toFixed(1)},${yBath(BATH_SLOT_VALUE[p.slot]||3).toFixed(1)}` : null).filter(Boolean);
+    const enPts   = pairs.map((p,i) => (p.nextE !== null) ? `${x(i).toFixed(1)},${yEn(p.nextE).toFixed(1)}` : null).filter(Boolean);
+
+    const svg = `
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;background:#0e1430;border-radius:6px;">
+        ${[0,25,50,75,100].map(v=>`<line x1="${PL}" y1="${yEn(v).toFixed(1)}" x2="${W-PR}" y2="${yEn(v).toFixed(1)}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+           <text x="4" y="${(yEn(v)+3).toFixed(1)}" fill="#6ee7b7" font-size="8">${v}</text>`).join('')}
+        ${bathPts.length>1 ? `<polyline points="${bathPts.join(' ')}" fill="none" stroke="#ffd76b" stroke-width="2"/>`:''}
+        ${bathPts.map(p=>`<circle cx="${p.split(',')[0]}" cy="${p.split(',')[1]}" r="2.6" fill="#ffd76b"/>`).join('')}
+        ${enPts.length>1 ? `<polyline points="${enPts.join(' ')}" fill="none" stroke="#6ee7b7" stroke-width="2"/>`:''}
+        ${enPts.map(p=>`<circle cx="${p.split(',')[0]}" cy="${p.split(',')[1]}" r="2.6" fill="#6ee7b7"/>`).join('')}
+        <text x="${PL}" y="${H-6}" fill="#9db4ff" font-size="8">30日前</text>
+        <text x="${W-PR-22}" y="${H-6}" fill="#9db4ff" font-size="8">昨日</text>
+      </svg>`;
+    const holder = document.createElement('div'); holder.innerHTML = svg; wrap.appendChild(holder);
+
+    // simple correlation readout
+    const usable = pairs.filter(p => p.slot && p.nextE !== null);
+    const stat = document.createElement('div'); stat.style.cssText='font-size:13.5px;color:#dbe4ff;line-height:1.8;margin-top:10px;';
+    if (usable.length < 5) {
+      stat.innerHTML = `記録が${usable.length}日分しかありません。<br>お浄め時間と睡眠時間を毎日つけていくと、ここに傾向が出ます（5日分から表示）。`;
+    } else {
+      const early = usable.filter(p => BATH_SLOT_VALUE[p.slot] <= 3);
+      const late  = usable.filter(p => BATH_SLOT_VALUE[p.slot] >= 4);
+      const avg = a => a.length ? a.reduce((s,p)=>s+p.nextE,0)/a.length : null;
+      const ae = avg(early), al = avg(late);
+      stat.innerHTML = `使えた記録: ${usable.length}日分<br>`;
+      if (ae !== null) stat.innerHTML += `21時台までにお浄め → 翌日の平均エネルギー <b style="color:#6ee7b7;">${ae.toFixed(1)}</b>（${early.length}日）<br>`;
+      if (al !== null) stat.innerHTML += `22時以降にお浄め → 翌日の平均エネルギー <b style="color:#ff8f8f;">${al.toFixed(1)}</b>（${late.length}日）<br>`;
+      if (ae !== null && al !== null) {
+        const diff = ae - al;
+        stat.innerHTML += diff > 3
+          ? `<br>早めのお浄めの日は、翌日が平均 <b>${diff.toFixed(1)}ポイント高い</b>という結果が出ています。`
+          : (diff < -3 ? `<br>今のところ、遅い日の方が翌日が高く出ています。記録を増やすと変わるかもしれません。`
+                       : `<br>今のところ、はっきりした差は出ていません。もう少し記録を重ねてみましょう。`);
+      }
+    }
+    wrap.appendChild(stat);
+    root.appendChild(wrap);
+
+    // raw log
+    const logWrap = document.createElement('div'); logWrap.className='pw';
+    const lt = document.createElement('div'); lt.className='pw-title'; lt.textContent='記録の中身'; logWrap.appendChild(lt);
+    let any = false;
+    pairs.slice().reverse().forEach(p => {
+      if (!p.slot && p.nextE === null) return;
+      any = true;
+      const row = document.createElement('div'); row.style.cssText='font-size:13px;color:#dbe4ff;margin-bottom:6px;';
+      row.innerHTML = `<span style="color:#9db4ff;">${p.date.getMonth()+1}/${p.date.getDate()}</span>　`
+        + `お浄め: <b style="color:#ffd76b;">${p.slot||'—'}</b>　`
+        + `翌日エネルギー: <b style="color:#6ee7b7;">${p.nextE!==null?p.nextE:'—'}</b>`;
+      logWrap.appendChild(row);
+    });
+    if (!any) {
+      const e = document.createElement('div'); e.className='rpg-quest-empty'; e.textContent='まだ記録がありません。';
+      logWrap.appendChild(e);
+    }
+    root.appendChild(logWrap);
   }
 
   function renderSetup(root){
@@ -1522,6 +1656,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
     root.appendChild(bar);
     const cd = document.createElement('div'); cd.className='rpg-countdown';
     cd.innerHTML = `雇われ冒険人期限まで あと <b>${countdownDays()}</b> にち`;
+    const sub2 = document.getElementById('rpgTitleSub2');
+    if (sub2) sub2.textContent = `―雇われ冒険人、最後の${countdownDays()}日―`;
     root.appendChild(cd);
     const h1 = document.createElement('div'); h1.className='rpg-h1'; h1.textContent='しゅっぱつ準備'; root.appendChild(h1);
 
@@ -1646,6 +1782,10 @@ ${keywordLine}${bpBlock}${conditionBlock}
     bar.innerHTML = `<div class="rpg-date">${fmtDateShort(today)}</div>`;
     const backBtn = document.createElement('button'); backBtn.className='rpg-settings-link'; backBtn.textContent='ほこらに帰る';
     backBtn.addEventListener('click', () => { screen='setup'; render(); });
+    const graphBtn = document.createElement('button'); graphBtn.className='rpg-settings-link'; graphBtn.textContent='お浄めの記録';
+    graphBtn.style.marginRight = '10px';
+    graphBtn.addEventListener('click', () => { playSelect(); screen='graph'; render(); });
+    bar.appendChild(graphBtn);
     bar.appendChild(backBtn);
     root.appendChild(bar);
 
@@ -2447,31 +2587,50 @@ ${keywordLine}${bpBlock}${conditionBlock}
 
   // Try several public quote endpoints; the first that works from the user's browser wins.
   async function fetchQuote(code){
-    const t = code.replace(/\.T$/i,'');
-    const attempts = [
-      { src:'stooq', url:`https://stooq.com/q/l/?s=${t.toLowerCase()}.jp&f=sd2t2ohlcv&h&e=csv`,
-        parse: async res => {
-          const txt = await res.text();
-          const rows = txt.trim().split('\n');
-          if (rows.length < 2) return null;
-          const cols = rows[1].split(',');
-          const close = parseFloat(cols[6]);
-          return isFinite(close) && close > 0 ? close : null;
-        } },
-      { src:'yahoo', url:`https://query1.finance.yahoo.com/v8/finance/chart/${t}.T?interval=1d&range=1d`,
-        parse: async res => {
-          const j = await res.json();
-          const p = j?.chart?.result?.[0]?.meta?.regularMarketPrice;
-          return isFinite(p) && p > 0 ? p : null;
-        } }
+    const t = code.replace(/\.T$/i,'').toUpperCase();
+    const PROXIES = [
+      u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+      u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
+      u => 'https://r.jina.ai/' + u
     ];
-    for (const a of attempts) {
+    const parseStooq = txt => {
+      const rows = String(txt).trim().split('\n');
+      if (rows.length < 2) return null;
+      const cols = rows[rows.length-1].split(',');
+      const close = parseFloat(cols[6]);
+      return isFinite(close) && close > 0 ? close : null;
+    };
+    const parseYahoo = txt => {
       try {
-        const res = await fetch(a.url);
-        if (!res.ok) continue;
-        const v = await a.parse(res);
-        if (v) return { price: v, src: a.src };
-      } catch(e) { /* blocked by CORS or offline — try the next source */ }
+        const j = typeof txt === 'string' ? JSON.parse(txt) : txt;
+        const p = j?.chart?.result?.[0]?.meta?.regularMarketPrice;
+        return isFinite(p) && p > 0 ? p : null;
+      } catch(e){ return null; }
+    };
+
+    const stooqUrl = `https://stooq.com/q/l/?s=${t.toLowerCase()}.jp&f=sd2t2ohlcv&h&e=csv`;
+    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${t}.T?interval=1d&range=5d`;
+
+    const plans = [
+      { src:'stooq',       url: stooqUrl, parse: parseStooq },
+      { src:'yahoo',       url: yahooUrl, parse: parseYahoo }
+    ];
+    // direct first, then through each public CORS proxy
+    for (const p of plans) {
+      try {
+        const res = await fetch(p.url);
+        if (res.ok) { const v = p.parse(await res.text()); if (v) return { price:v, src:p.src }; }
+      } catch(e){}
+    }
+    for (const mk of PROXIES) {
+      for (const p of plans) {
+        try {
+          const res = await fetch(mk(p.url));
+          if (!res.ok) continue;
+          const v = p.parse(await res.text());
+          if (v) return { price:v, src: p.src + '(経由)' };
+        } catch(e){}
+      }
     }
     return null;
   }
