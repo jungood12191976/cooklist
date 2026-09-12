@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>KING THE QUEST ―年収1億円―</title>
+<title>KING THE QUEST ―金貨の袋―</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap" rel="stylesheet">
@@ -315,6 +315,26 @@
   .sp-name{ font-size:15px; color:#fff; font-weight:bold; }
   .sp-amt{ font-size:13px; color:#ffd76b; margin-left:8px; font-weight:normal; }
   .sp-purpose{ font-size:13px; color:#c8d3f5; line-height:1.65; margin-top:2px; }
+  .gv-goal{ background:rgba(0,0,0,0.25); border:2px solid #ffd76b; border-radius:8px; padding:12px; margin-bottom:12px; text-align:center; }
+  .gv-total{ font-size:30px; font-weight:bold; color:#ffd76b; }
+  .gv-sub{ font-size:12.5px; color:#9db4ff; margin-bottom:8px; }
+  .gv-bar{ height:12px; background:rgba(255,255,255,0.1); border-radius:6px; overflow:hidden; margin-bottom:8px; }
+  .gv-fill{ height:100%; background:linear-gradient(90deg,#ffd76b,#6ee7b7); }
+  .gv-pl{ font-size:15px; font-weight:bold; }
+  .gv-pl.plus, .plus{ color:#6ee7b7; }
+  .gv-pl.minus, .minus{ color:#ff8f8f; }
+  .gv-warn{ font-size:11.5px; color:#ffb86b; margin-top:5px; }
+  .gv-status{ font-size:12.5px; color:#9db4ff; margin-bottom:8px; min-height:16px; }
+  .gv-row{ background:rgba(255,255,255,0.04); border-radius:6px; padding:10px 11px; margin-bottom:9px; }
+  .gv-name{ font-size:15px; font-weight:bold; color:#fff; }
+  .gv-code{ font-size:11.5px; color:#9db4ff; margin-left:8px; font-weight:normal; }
+  .gv-detail{ font-size:13.5px; color:#dbe4ff; margin-top:3px; }
+  .gv-detail.muted{ color:#9db4ff; }
+  .gv-src{ font-size:11px; color:#9db4ff; margin-top:2px; }
+  .gv-actions{ display:flex; gap:5px; margin-top:7px; align-items:center; }
+  .gv-add{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px; }
+  .gv-mini{ background:#0e1430; border:2px solid #6ea8ff; color:#fff; padding:7px 8px; font-size:13px; border-radius:4px; width:100%; }
+  .gv-btn{ padding:6px 10px; font-size:12px; white-space:nowrap; }
   .rpg-modal-backdrop{ position: fixed; inset: 0; background: rgba(10,10,30,0.75); display:none; align-items: flex-end; justify-content:center; z-index: 50; }
   .rpg-modal-backdrop.open{ display:flex; }
   .rpg-modal{ width:100%; max-width: 480px; background: linear-gradient(180deg,#1c2a5e,#111a3d); border-top: 3px solid #ffd76b; box-shadow: inset 0 0 0 3px #1c2a5e, inset 0 0 0 6px #6ea8ff; padding: 20px 16px 26px; max-height: 85vh; overflow-y: auto; }
@@ -357,7 +377,7 @@
 <div id="rpgTitleScreen" class="rpg-title-screen">
   <img class="rpg-title-splash" id="rpgTitleSplashImg" alt="">
   <div class="rpg-title-logo">KING THE QUEST</div>
-  <div class="rpg-title-sub2">―年収1億円―</div>
+  <div class="rpg-title-sub2">―金貨の袋（1億円）―</div>
   <button class="rpg-press-start" id="rpgStartBtn">▶ ぼうけんをはじめる</button>
   <div class="rpg-title-hint">タップして冒険をスタート(音が鳴ります)</div>
 </div>
@@ -948,6 +968,20 @@
     {y:'2026', t:'AI創薬への投資が「実証フェーズ」へ', s:'2025年上半期は世界のVC資金の53%がAI企業に向かいましたが、ヘルスケアAIへの投資は2021年のピーク220億ドルから2024年は105億ドルへ減少。投資家が話題性ではなく臨床での結果を求める段階に移ったことを示しています。', u:'https://intuitionlabs.ai/articles/ai-biologics-discovery-pharma-investment-trends'},
     {y:'2026', t:'タンパク質の「凝集しやすさ」をAIで解析', s:'AlphaFoldの予測構造を使い、ヒトのタンパク質20,500種類以上について凝集しやすさを解析するデータベースが構築されました。アルツハイマー病やパーキンソン病など、タンパク質の異常な固まりが関わる病気の仕組み解明に直結しています。', u:'https://www.patsnap.com/resources/blog/articles/ai-protein-structure-prediction-landscape-2026/'},
     {y:'2026', t:'BindCraft — 狙った相手にくっつくタンパク質を設計', s:'AlphaFoldの仕組みを「良し悪しの判定役」として使い、特定の標的に高い親和性で結合する新規タンパク質を設計する手法。抗体医薬の設計が大きく変わる可能性があります。', u:'https://www.nature.com/articles/s42003-026-10112-3'},
+    {y:'2026', t:'DNAを切らずに遺伝子をオンにするCRISPR', s:'DNAを切断せず、遺伝子を黙らせている化学的なタグ(メチル基)だけを外すことで、遺伝子を再び働かせる手法が実証されました。従来のCRISPRより予期せぬ副作用のリスクが低いとされ、鎌状赤血球症などへの応用が期待されています。「DNAの配列そのものは変えずに、スイッチだけ切り替える」という発想の転換です。', u:'https://www.sciencedaily.com/releases/2026/01/260104202813.htm'},
+    {y:'2026', t:'細胞の若返り治療が、世界で初めて人での試験へ', s:'2026年1月28日、Life Biosciences社のER-100という遺伝子治療について、FDAが人での臨床試験を承認しました。「部分的エピジェネティック・リプログラミング」という手法で、細胞の生物学的な年齢を部分的に巻き戻すことを狙ったものです。細胞の若返り治療が人で試されるのは史上初です。', u:'https://healthcarediscovery.ai/epigenetic-reprogramming-reaches-human-trials-as-ai-accelerates-longevity-drug-discovery/'},
+    {y:'2026', t:'毎日のマルチビタミンが、生物学的な老化を遅らせる可能性', s:'高齢者を対象にした大規模臨床試験で、マルチビタミンを2年間摂取した群は、DNAのメチル化から算出する「エピジェネティック時計」で測った老化速度が遅かったという結果が出ました。サプリの効果を、体感ではなくDNAレベルの指標で測った点が新しいところです。', u:'https://www.sciencedaily.com/news/health_medicine/epigenetics/'},
+    {y:'2026', t:'腸内細菌が、生まれる前から脳の発達に関わっている', s:'赤ちゃんの遺伝子と、母親の腸内細菌の組み合わせが、生まれる前の段階から脳の発達の土台を形づくっている可能性を示した大規模研究です。自閉症やADHDのリスクとの関連も示唆されています。腸内環境が「消化の話」にとどまらないことを示す一例です。', u:'https://www.sciencedaily.com/news/health_medicine/epigenetics/'},
+    {y:'2026', t:'エピゲノム編集が「臨床応用」の段階に到達', s:'これまで効果が長続きしない・精度が足りない・体内に届けられない、という3つの壁がありましたが、2024〜2025年に転換点を迎えたと報告されています。試験管内で450回以上の細胞分裂を経ても効果が持続し、肝臓・筋肉・脳全体へ50%以上の効率で届けられるようになりました。AIによる設計がこれを後押ししています。', u:'https://pubmed.ncbi.nlm.nih.gov/42421085/'},
+    {y:'2026', t:'CRISPR臨床試験の現在地', s:'コレステロールを下げるPCSK9という遺伝子を編集する試験では、多くの症例でLDLが約50%低下し、重篤な副作用は報告されませんでした。また、DNAを編集も破壊もせず「エピゲノム(遺伝子の活動量を決める化学的な信号)」だけを変える治療が、筋ジストロフィーの第I相試験で4名に投与されています。', u:'https://innovativegenomics.org/news/crispr-clinical-trials-2026/'},
+    {y:'2026', t:'腸の幹細胞にたまる「エピジェネティックな老化」', s:'腸は絶えず自分を作り替えていますが、その幹細胞には加齢に伴う分子レベルの変化が静かに蓄積し、遺伝子のオン・オフのパターンを少しずつ変えていくことが分かりました。腸内環境のケアが、見た目以上に長期的な意味を持つ可能性を示しています。', u:'https://www.sciencedaily.com/news/health_medicine/epigenetics/'},
+    {y:'2026', t:'DNAの「折りたたまれ方」が遺伝子の働きを決める', s:'DNAは細胞の中でじっとしているわけではなく、折りたたまれ、ループを作り、組み替わることで遺伝子の振る舞いを左右しています。この隠れた立体構造がこれまでにない精度で解読されました。同じ遺伝子を持っていても働き方が違う理由の一端がここにあります。', u:'https://www.sciencedaily.com/news/health_medicine/epigenetics/'},
+    {y:'2026', t:'エピジェネティック時計が、数十年先の死亡率を予測', s:'長期追跡研究により、細胞の老化速度を測る「エピジェネティック時計」が、数十年先の死亡リスクをかなりの精度で予測できることが確認されました。生物学的な年齢は測定でき、かつ変えられるものだという考え方が、データで裏づけられつつあります。', u:'https://healthcarediscovery.ai/epigenetic-reprogramming-reaches-human-trials-as-ai-accelerates-longevity-drug-discovery/'},
+    {y:'2026', t:'AIが栄養研究の手法そのものを変えつつある', s:'安定同位体トレーサーで栄養素の吸収を体内で精密に測り、オミクス解析で分子レベルの反応を見て、AIがそれらを統合して因果関係を推定する。従来の食事アンケート中心の調査では捉えられなかった個人差が、ようやく扱えるようになってきました。', u:'https://www.sciencedirect.com/science/article/pii/S2772502225002884'},
+    {y:'2026', t:'ニュートリゲノミクスのデータベース整備が進む', s:'食事と遺伝子発現の関係を一元的に集めたデータベースの構築が進み、臨床の現場で個人の遺伝子プロフィールに沿った食事指導ができる基盤が整いつつあります。AIと組み合わせることで、大量のデータから新しい発見を引き出すことも視野に入っています。', u:'https://arxiv.org/pdf/2506.19093'},
+    {y:'2025', t:'タンパク質版の「言語モデル」が新しい配列を提案', s:'ESM3のような、タンパク質を言語のように学習したAIが、自然界に存在しない全く新しいタンパク質の配列や機能を提案できるようになりました。文章を生成するAIと同じ仕組みが、分子の設計に使われています。', u:'https://intuitionlabs.ai/articles/ai-biologics-discovery-pharma-investment-trends'},
+    {y:'2026', t:'FGF21と、たんぱく質摂取量と、脂肪肝の関係', s:'FGF21という経路の遺伝子の違いによって、たんぱく質の摂取量が脂肪肝リスクに与える影響が変わることが示されました。特に女性で顕著で、「たんぱく質は多く摂るほど良い」という一般論が、遺伝子型によっては当てはまらない可能性を示しています。', u:'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12252080/'},
+    {y:'2026', t:'AIが遺伝子から病気の原因変異を見つけ出す', s:'ディープラーニングにより、遺伝子の機能予測、病気を引き起こす変異の特定、タンパク質構造のモデリングが大きく進歩しました。DNAの配列から機能を持つ分子までの道筋をAIが繋ぐことで、創薬と個別化医療が加速しています。', u:'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12562255/'},
     {y:'2023-2026', t:'キムチが脂肪肝リスクを下げる — 遺伝子型しだいで', s:'PNPLA3という遺伝子の型によって非アルコール性脂肪肝(NAFLD)のなりやすさが変わり、そのリスクがキムチ摂取量が多い人では下がっていたという報告。発酵食品が、遺伝的素因を持つ人の予防策になりうることを示した具体例です。', u:'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12251461/'}
   ];
 
@@ -1033,7 +1067,7 @@
           `<b>体の中で起きていること:</b> 一時的なストレス反応が出ているだけです。`
         ]),
         pick([
-          `<b>反撃:</b> 年収1億円になるんでしょ？そんな人が小さい不調を待ち受けてどうするの？！`,
+          `<b>反撃:</b> 金貨の袋を1億円にするんでしょ？そんな人が小さい不調を待ち受けてどうするの？！`,
           `<b>反撃:</b> イーロン・マスクは、勝算が薄く見えても重要なことなら動き続ける姿勢を貫いてきたと言われています。今のこれは、その"重要なこと"の途中の1コマに過ぎません。`,
           `<b>反撃:</b> ジェフ・ベゾスは、将来後悔しないための選択を軸に据える考え方(リグレット・ミニマイゼーション)を大切にしてきたそうです。今ここで止まる後悔と、進む後悔、どちらが軽いですか。`,
           `<b>反撃:</b> 探検家シャクルトンは、絶望的な状況でも「次の一歩」だけを見て乗組員を導いたと言われています。今のあなたに必要なのも、次の一歩だけです。`,
@@ -1179,6 +1213,9 @@
     try { const raw3 = lsGet('wd3:quests'); if (raw3) quests = raw3.quests || []; } catch(e){}
     try { const rawML = lsGet('wd3:menulog'); if (rawML) menuLog = rawML.menuLog || []; } catch(e){}
     try { const rawCR = lsGet('wd3:customratios'); if (rawCR) customRatios = rawCR.customRatios || []; } catch(e){}
+    try { const rawH = lsGet('wd3:holdings'); if (rawH) holdings = rawH.holdings || []; } catch(e){}
+    try { const rawPC = lsGet('wd3:pricecache'); if (rawPC) priceCache = rawPC.priceCache || {}; } catch(e){}
+    try { const rawNR = lsGet('wd3:newsread'); if (rawNR) newsRead = rawNR.newsRead || []; } catch(e){}
     try { const raw4 = lsGet('wd3:dungeon'); if (raw4) dungeon = raw4; } catch(e){}
     if (!dungeon) {
       const totalDays = Math.max(1, Math.ceil((TARGET_DATE - new Date()) / 86400000));
@@ -1949,7 +1986,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
 
     // dungeon (single, fixed)
     const dWrap = document.createElement('div'); dWrap.className='pw';
-    const dTitle = document.createElement('div'); dTitle.className='pw-title'; dTitle.textContent='ダンジョン：年収1億円'; dWrap.appendChild(dTitle);
+    const dTitle = document.createElement('div'); dTitle.className='pw-title'; dTitle.textContent='ダンジョン：金貨の袋（1億円）'; dWrap.appendChild(dTitle);
     const dc = document.createElement('div'); dc.className='rpg-dungeon';
     const pct = Math.min(100, Math.round((dungeon.currentFloor/dungeon.totalFloors)*100));
     dc.innerHTML = `
@@ -2363,17 +2400,28 @@ ${keywordLine}${bpBlock}${conditionBlock}
     openToolModal('📜 レシピの紙', html);
   }
 
+  let newsRead = [];
+  async function saveNewsRead(){ lsSet('wd3:newsread', {newsRead}); }
   function openGeneNewsModal(){
-    let html = `<div class="tw-desc small">遺伝子研究 × AI の最近の動き（2024〜2026）</div>`;
-    GENE_AI_NEWS.forEach(n => {
-      html += `<div class="gn-item">
+    // prefer entries she hasn't seen yet, so it stays fresh
+    let pool = GENE_AI_NEWS.map((_,i)=>i).filter(i => !newsRead.includes(i));
+    if (!pool.length) { newsRead = []; pool = GENE_AI_NEWS.map((_,i)=>i); }
+    const idx = pool[Math.floor(Math.random()*pool.length)];
+    if (!newsRead.includes(idx)) { newsRead.push(idx); saveNewsRead(); }
+    const n = GENE_AI_NEWS[idx];
+    const left = GENE_AI_NEWS.length - newsRead.length;
+    openToolModal('🧬 遺伝子の書物', `
+      <div class="gn-item">
         <div class="gn-year">${n.y}</div>
         <div class="gn-title">${n.t}</div>
         <div class="gn-sum">${n.s}</div>
         <a class="gn-link" href="${n.u}" target="_blank" rel="noopener">くわしく読む →</a>
-      </div>`;
-    });
-    openToolModal('🧬 遺伝子の書物', html);
+      </div>
+      <button class="rpg-btn secondary wide" id="gnNext" style="margin-bottom:8px;">📖 次のニュース</button>
+      <div class="tw-no">全${GENE_AI_NEWS.length}件 / まだ読んでいない記事 ${left}件</div>
+    `);
+    const nb = document.getElementById('gnNext');
+    if (nb) nb.addEventListener('click', () => { playSelect(); openGeneNewsModal(); });
   }
 
   function openSupplementModal(){
@@ -2391,9 +2439,153 @@ ${keywordLine}${bpBlock}${conditionBlock}
     openToolModal('🧪 魔法のサプリ', html);
   }
 
-  function openGoldModal(){
-    openToolModal('💰 金貨のふくろ', `<div class="tw-desc">ここはまだ何も入っていません。<br>使い道が決まったら教えてください。</div>`);
+
+  // ================= PORTFOLIO (金貨のふくろ) =================
+  let holdings = [];       // [{code, name, shares, buyPrice}]
+  let priceCache = {};     // { code: {price, at, src} }
+  async function saveHoldings(){ lsSet('wd3:holdings', {holdings}); }
+
+  // Try several public quote endpoints; the first that works from the user's browser wins.
+  async function fetchQuote(code){
+    const t = code.replace(/\.T$/i,'');
+    const attempts = [
+      { src:'stooq', url:`https://stooq.com/q/l/?s=${t.toLowerCase()}.jp&f=sd2t2ohlcv&h&e=csv`,
+        parse: async res => {
+          const txt = await res.text();
+          const rows = txt.trim().split('\n');
+          if (rows.length < 2) return null;
+          const cols = rows[1].split(',');
+          const close = parseFloat(cols[6]);
+          return isFinite(close) && close > 0 ? close : null;
+        } },
+      { src:'yahoo', url:`https://query1.finance.yahoo.com/v8/finance/chart/${t}.T?interval=1d&range=1d`,
+        parse: async res => {
+          const j = await res.json();
+          const p = j?.chart?.result?.[0]?.meta?.regularMarketPrice;
+          return isFinite(p) && p > 0 ? p : null;
+        } }
+    ];
+    for (const a of attempts) {
+      try {
+        const res = await fetch(a.url);
+        if (!res.ok) continue;
+        const v = await a.parse(res);
+        if (v) return { price: v, src: a.src };
+      } catch(e) { /* blocked by CORS or offline — try the next source */ }
+    }
+    return null;
   }
+
+  async function refreshAllQuotes(statusEl){
+    let ok = 0, ng = 0;
+    for (const hd of holdings) {
+      if (statusEl) statusEl.textContent = `${hd.code} を取得中…`;
+      const q = await fetchQuote(hd.code);
+      if (q) { priceCache[hd.code] = { price:q.price, at:new Date().toISOString(), src:q.src }; ok++; }
+      else ng++;
+    }
+    lsSet('wd3:pricecache', {priceCache});
+    if (statusEl) {
+      statusEl.textContent = ng === 0
+        ? `取得できました（${ok}件）`
+        : (ok === 0 ? 'この端末からは株価を自動取得できませんでした。手入力欄をお使いください。'
+                    : `${ok}件取得、${ng}件は取得できませんでした`);
+    }
+    render();
+  }
+
+  function holdingValue(hd){
+    const c = priceCache[hd.code];
+    const now = (c && c.price) || hd.manualPrice || null;
+    if (!now) return null;
+    const cost = hd.shares * hd.buyPrice;
+    const val  = hd.shares * now;
+    return { now, cost, val, pl: val - cost, plPct: cost ? ((val - cost) / cost) * 100 : 0 };
+  }
+
+  function openGoldModal(){
+    const GOAL = 100000000;
+    let total = 0, totalPl = 0, known = true;
+    holdings.forEach(hd => {
+      const v = holdingValue(hd);
+      if (v) { total += v.val; totalPl += v.pl; } else { known = false; }
+    });
+    const pct = Math.min(100, (total / GOAL) * 100);
+
+    let html = `
+      <div class="gv-goal">
+        <div class="gv-total">¥${Math.round(total).toLocaleString()}</div>
+        <div class="gv-sub">/ 目標 1億円　${pct.toFixed(3)}%</div>
+        <div class="gv-bar"><div class="gv-fill" style="width:${Math.max(pct,0.3)}%"></div></div>
+        <div class="gv-pl ${totalPl>=0?'plus':'minus'}">評価損益 ${totalPl>=0?'+':''}¥${Math.round(totalPl).toLocaleString()}</div>
+        ${known ? '' : '<div class="gv-warn">※株価が未取得の銘柄があります</div>'}
+      </div>
+      <div id="rpgQuoteStatus" class="gv-status"></div>
+    `;
+
+    holdings.forEach((hd, i) => {
+      const v = holdingValue(hd);
+      const c = priceCache[hd.code];
+      html += `<div class="gv-row">
+        <div class="gv-name">${hd.name || hd.code}<span class="gv-code">${hd.code}</span></div>
+        <div class="gv-detail">${hd.shares}株 / 買値 ¥${hd.buyPrice.toLocaleString()}</div>
+        ${v ? `<div class="gv-detail">現在 ¥${Math.round(v.now).toLocaleString()}
+                 <span class="${v.pl>=0?'plus':'minus'}">（${v.pl>=0?'+':''}${v.plPct.toFixed(1)}%／${v.pl>=0?'+':''}¥${Math.round(v.pl).toLocaleString()}）</span></div>
+               <div class="gv-src">${c ? '自動取得: '+c.src : '手入力'}</div>`
+             : `<div class="gv-detail muted">株価が未取得です</div>`}
+        <div class="gv-actions">
+          <input class="gv-mini" id="gvManual${i}" type="number" placeholder="現在値を手入力" value="${hd.manualPrice||''}">
+          <button class="rpg-toggle gv-btn" data-mset="${i}">反映</button>
+          <button class="rpg-toggle gv-btn" data-del="${i}">削除</button>
+        </div>
+      </div>`;
+    });
+
+    html += `
+      <div class="tl-head">銘柄を追加</div>
+      <div class="gv-add">
+        <input class="gv-mini" id="gvCode"   placeholder="コード 例:285A">
+        <input class="gv-mini" id="gvName"   placeholder="銘柄名（任意）">
+        <input class="gv-mini" id="gvShares" type="number" placeholder="株数">
+        <input class="gv-mini" id="gvBuy"    type="number" placeholder="買値">
+      </div>
+      <button class="rpg-btn wide" id="gvAdd" style="margin-bottom:8px;">追加する</button>
+      <button class="rpg-btn secondary wide" id="gvRefresh">📈 株価を取得する</button>
+      <div class="tw-desc small" style="margin-top:10px;">
+        株価の自動取得は、お使いのブラウザやネットワークの事情でうまくいかない場合があります。
+        その時は各銘柄の「現在値を手入力」に数字を入れて「反映」を押してください。
+      </div>`;
+
+    openToolModal('💰 金貨のふくろ', html);
+
+    const addBtn = document.getElementById('gvAdd');
+    if (addBtn) addBtn.addEventListener('click', () => {
+      const code = (document.getElementById('gvCode').value||'').trim().toUpperCase();
+      const name = (document.getElementById('gvName').value||'').trim();
+      const shares = parseFloat(document.getElementById('gvShares').value);
+      const buy = parseFloat(document.getElementById('gvBuy').value);
+      if (!code || !isFinite(shares) || !isFinite(buy)) return;
+      holdings.push({ code, name, shares, buyPrice: buy });
+      saveHoldings(); playSelect(); openGoldModal();
+    });
+    const refBtn = document.getElementById('gvRefresh');
+    if (refBtn) refBtn.addEventListener('click', async () => {
+      const st = document.getElementById('rpgQuoteStatus');
+      refBtn.disabled = true;
+      await refreshAllQuotes(st);
+      refBtn.disabled = false;
+      openGoldModal();
+    });
+    document.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
+      holdings.splice(parseInt(b.dataset.del),1); saveHoldings(); openGoldModal();
+    }));
+    document.querySelectorAll('[data-mset]').forEach(b => b.addEventListener('click', () => {
+      const i = parseInt(b.dataset.mset);
+      const v = parseFloat(document.getElementById('gvManual'+i).value);
+      if (isFinite(v) && v > 0) { holdings[i].manualPrice = v; saveHoldings(); openGoldModal(); }
+    }));
+  }
+
 
   function openLetterModal(){
     const backdrop = document.getElementById('rpgModalBackdrop'); const content = document.getElementById('rpgModalContent');
