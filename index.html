@@ -801,6 +801,35 @@
     if (g === '鍋・スープ') return 'スープ';
     return 'その他';
   }
+  // Rank blueprints by how well they suit the ingredient the user actually typed.
+  const INGREDIENT_AFFINITY = [
+    { match:/豚|ばら|しゃぶ|バラ/, likes:/生姜焼き|回鍋肉|豚|しゃぶ|味噌|キムチ|もつ|ミルフィーユ|寄せ鍋|醤油鍋|甘酢|酢豚|春雨/ },
+    { match:/鶏|とり|むね|もも|手羽|ささみ/, likes:/照り焼き|唐揚げ|油淋鶏|蒸し鶏|水炊き|ちゃんこ|鶏|棒棒鶏|親子|白だし|茶碗蒸し|ヤンニョム/ },
+    { match:/牛|ステーキ|こま/, likes:/プルコギ|チャプチェ|ビーフ|デミ|青椒肉絲|すき|ステーキ|肉じゃが/ },
+    { match:/ひき肉|挽肉|そぼろ/, likes:/麻婆|ミートソース|ハンバーグ|担々|そぼろ|ガパオ|トッポギ/ },
+    { match:/鮭|さけ|さば|さんま|いわし|ぶり|たら|鱈|魚|えび|海老|いか|たこ|貝|あさり/, likes:/魚|いわし|南蛮|酒蒸し|蒸し魚|寄せ鍋|水炊き|白だし|ポン酢|マリネ|アクアパッツァ|漬け焼き/ },
+    { match:/豆腐|厚揚げ|油揚げ|納豆/, likes:/麻婆|湯豆腐|すまし|味噌汁|厚揚げ|豆乳|白だし|和え|冷奴/ },
+    { match:/卵|たまご/, likes:/茶碗蒸し|だし巻き|天津|発酵卵|かきたま|親子/ },
+    { match:/キャベツ|白菜|もやし|ねぎ|にら/, likes:/回鍋肉|お好み|寄せ鍋|もつ|キムチ|ナムル|炒め|味噌/ },
+    { match:/きのこ|しめじ|えのき|椎茸|まいたけ/, likes:/鍋|スープ|ソテー|バター|和風|炊き込み/ },
+    { match:/なす|ナス|ピーマン|ズッキーニ/, likes:/麻婆|青椒|甘辛|味噌|揚げ浸し|南蛮/ },
+    { match:/大根|にんじん|ごぼう|里芋|じゃがいも|かぼちゃ/, likes:/煮物|筑前煮|肉じゃが|大根|ごぼう|かぼちゃ|味噌汁|豚汁/ },
+    { match:/トマト/, likes:/トマト|ミネストローネ|ナポリタン|マリネ|洋風/ },
+    { match:/きゅうり|レタス|サラダ/, likes:/ドレッシング|和え|ナムル|酢の物|マリネ|棒棒鶏/ }
+  ];
+  function rankByIngredient(pool, mainIng){
+    if (!mainIng) return pool.slice().sort(() => Math.random() - 0.5);
+    const rule = INGREDIENT_AFFINITY.find(r => r.match.test(mainIng));
+    const scored = pool.map(r => {
+      const hay = r.dish + ' ' + r.ratio;
+      let s = Math.random(); // keep some variety between re-rolls
+      if (rule && rule.likes.test(hay)) s += 10;
+      return { r, s };
+    });
+    scored.sort((a,b) => b.s - a.s);
+    return scored.map(x => x.r);
+  }
+
   const COOK_TYPES = ['鍋','スープ','炒め物','サラダ・和え物','煮物','蒸し物','焼き・たれ'];
 
   // Each rule: does this ratio/ingredient combination trigger a gene-based tweak for this user?
@@ -849,21 +878,27 @@
     if (/だし|昆布|かつお/.test(R) && saltyHits <= 2)
       adj.push({t:'だしを主役にできる比率。塩を足す前にだしを濃くする方向で調整', g:'AGT — 減塩してもうま味で満足度を保てる'});
 
-    // --- always-on: temperature & detox support, phrased per blueprint ---
+    // --- ingredient-driven (from what she typed), labelled so it's clear why ---
+    const ing = (mainIng || '').trim();
+    const tag = ing ? `【${ing}】` : '';
+    if (/魚|鮭|さば|いわし|さんま|ぶり|まぐろ|たら|えび|貝|いか|たこ/.test(F))
+      adj.push({t:tag+'オメガ3源として優秀。火を通しすぎない', g:'EPA基準未満・EPA/AA比低値（2026/8血液検査）'});
+    if (/豚|牛|鶏|ひき肉|レバー|ばら|もも/.test(F))
+      adj.push({t:tag+'赤身寄りの部位を選ぶと鉄の補給にもなる', g:'TMPRSS6/TF — 鉄が不足しやすい体質'});
+    if (/ほうれん草|ビーツ|たけのこ/.test(F))
+      adj.push({t:tag+'シュウ酸が多いので、豆腐やしらすなどカルシウム源と一緒に', g:'DGKH CC型 — シュウ酸性の腎結石リスク'});
+    if (/にんじん|かぼちゃ|パプリカ/.test(F))
+      adj.push({t:tag+'卵黄など「完成形ビタミンA」も一緒に摂ると効率がいい', g:'BCMO1 GG型 — βカロテン変換が約51%低い'});
+    if (/豆腐|厚揚げ|油揚げ|納豆|大豆/.test(F))
+      adj.push({t:tag+'植物性たんぱく質として優秀。乳製品の代わりに使える', g:'MCM6 CC型（乳糖不耐）'});
+    if (/きのこ|しめじ|えのき|椎茸|まいたけ/.test(F))
+      adj.push({t:tag+'食物繊維が腸内環境を助ける。鉄サプリとは時間を空ける', g:'APOA5 — ビフィズス菌が少なくなりやすい体質'});
+
+    // --- always-on basics, kept last so the blueprint-specific advice reads first ---
     adj.push({t: /鍋|スープ|煮/.test(R+F) ? '生姜をひとかけ、煮汁に最初から入れる' : '仕上げにすりおろし生姜を少し',
               g:'DIO1/DIO2 — T4→T3変換がゆっくり。体を温めて代謝の立ち上がりを助ける'});
     adj.push({t: /サラダ|和え|ドレッシング/.test(R) ? 'ブロッコリーやキャベツを生のまま一品そえる' : 'ブロッコリーやキャベツを一緒に煮る／炒める',
               g:'GSTM1欠失 — 別ルート(NRF2)の解毒を後押しできる'});
-
-    // --- ingredient-driven (from what she typed) ---
-    if (/魚|鮭|さば|いわし|さんま|ぶり|まぐろ|たら|えび|貝/.test(F))
-      adj.push({t:'この魚介はオメガ3源として優秀。火を通しすぎない', g:'EPA基準未満・EPA/AA比低値（2026/8血液検査）'});
-    if (/豚|牛|鶏|ひき肉|レバー|ばら|もも/.test(F))
-      adj.push({t:'赤身寄りの部位を選ぶと鉄の補給にもなる', g:'TMPRSS6/TF — 鉄が不足しやすい体質'});
-    if (/ほうれん草|ビーツ|たけのこ/.test(F))
-      adj.push({t:'シュウ酸の多い野菜は、豆腐やしらすなどカルシウム源と一緒に', g:'DGKH CC型 — シュウ酸性の腎結石リスク'});
-    if (/にんじん|かぼちゃ|パプリカ/.test(F))
-      adj.push({t:'卵黄など「完成形ビタミンA」も一緒に摂ると効率がいい', g:'BCMO1 GG型 — βカロテン変換が約51%低い'});
 
     return adj;
   }
@@ -1059,7 +1094,7 @@
   // ================= STATE =================
   let today = new Date();
   let todayKey = today.toISOString().slice(0,10);
-  let dayData = { weather:null, weatherAuto:null, sleepHours:null, bathGood:null, bathSlot:null, mainIngredient:'', keyword:'', quickMode:false, cookType:null, pickedRatio:null, ratioOffer:null, ratioOfferType:null };
+  let dayData = { weather:null, weatherAuto:null, sleepHours:null, bathGood:null, bathSlot:null, mainIngredient:'', keyword:'', quickMode:false, cookType:null, pickedRatio:null, ratioOffer:null, ratioOfferType:null, ratioOfferIng:null };
   let ovulationDate = null;
   let quests = [];
   let menuLog = [];
@@ -1716,19 +1751,10 @@ ${keywordLine}${bpBlock}${conditionBlock}
       ingInput.type = 'text'; ingInput.placeholder = '例: 豚しゃぶ肉';
       ingInput.className = 'rpg-date-input'; ingInput.style.width = '100%';
       ingInput.value = dayData.mainIngredient || '';
-      ingInput.addEventListener('change', e => { dayData.mainIngredient = e.target.value.trim(); saveDay(); });
+      ingInput.addEventListener('change', e => { dayData.mainIngredient = e.target.value.trim(); dayData.ratioOffer = null; dayData.pickedRatio = null; saveDay(); render(); });
       ingRow.appendChild(ingLabel); ingRow.appendChild(ingInput);
       gWrap.appendChild(ingRow);
 
-      const kwRow = document.createElement('div'); kwRow.style.marginBottom = '8px';
-      const kwLabel = document.createElement('div'); kwLabel.className = 'rpg-label'; kwLabel.textContent = 'キーワード・もう一つの食材(任意)';
-      const kwInput = document.createElement('input');
-      kwInput.type = 'text'; kwInput.placeholder = '例: 鍋、きゅうり、さっぱり系';
-      kwInput.className = 'rpg-date-input'; kwInput.style.width = '100%';
-      kwInput.value = dayData.keyword || '';
-      kwInput.addEventListener('change', e => { dayData.keyword = e.target.value.trim(); saveDay(); });
-      kwRow.appendChild(kwLabel); kwRow.appendChild(kwInput);
-      gWrap.appendChild(kwRow);
 
       // --- cooking type selector ---
       const typeLabel = document.createElement('div'); typeLabel.className='rpg-label'; typeLabel.textContent='どんな料理にする？';
@@ -1757,10 +1783,12 @@ ${keywordLine}${bpBlock}${conditionBlock}
           none.textContent = 'このタイプの黄金比はまだありません。';
           bpWrap.appendChild(none);
         } else {
-          if (!dayData.ratioOffer || dayData.ratioOfferType !== dayData.cookType) {
-            const shuffled = pool.slice().sort(() => Math.random() - 0.5);
-            dayData.ratioOffer = shuffled.slice(0,3).map(r => r.dish);
+          const ingNow = ingInput.value.trim() || dayData.mainIngredient || '';
+          if (!dayData.ratioOffer || dayData.ratioOfferType !== dayData.cookType || dayData.ratioOfferIng !== ingNow) {
+            const ranked = rankByIngredient(pool, ingInput.value.trim() || dayData.mainIngredient || '');
+            dayData.ratioOffer = ranked.slice(0,3).map(r => r.dish);
             dayData.ratioOfferType = dayData.cookType;
+            dayData.ratioOfferIng = ingNow;
             saveDay();
           }
           const offers = dayData.ratioOffer.map(d => pool.find(r => r.dish === d)).filter(Boolean);
@@ -1795,7 +1823,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
         if (dayData.pickedRatio) {
           const pr = pool.find(r => r.dish === dayData.pickedRatio);
           if (pr) {
-            const adjs = geneAdjustments(pr, ingInput.value.trim() || dayData.mainIngredient || '', kwInput.value.trim() || dayData.keyword || '');
+            const adjs = geneAdjustments(pr, ingInput.value.trim() || dayData.mainIngredient || '', '');
             const aWrap = document.createElement('div'); aWrap.className='rpg-gene-adj';
             aWrap.innerHTML = `<div class="ga-title">🧬 キング用の調整</div>`;
             adjs.forEach(a => {
@@ -1817,9 +1845,9 @@ ${keywordLine}${bpBlock}${conditionBlock}
           const pool2 = TASTE_RATIOS.concat(customRatios).filter(r => ratioType(r) === dayData.cookType);
           const pr2 = pool2.find(r => r.dish === dayData.pickedRatio);
           if (pr2) bp = { type: dayData.cookType, dish: pr2.dish, ratio: pr2.ratio,
-                          adjs: geneAdjustments(pr2, ingInput.value.trim(), kwInput.value.trim()) };
+                          adjs: geneAdjustments(pr2, ingInput.value.trim(), '') };
         }
-        brewGacha(gWrap, brewBtn, ingInput.value.trim(), kwInput.value.trim(), bp);
+        brewGacha(gWrap, brewBtn, ingInput.value.trim(), '', bp);
       });
       gWrap.appendChild(potWrap);
       gWrap.appendChild(brewBtn);
