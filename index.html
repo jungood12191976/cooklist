@@ -2683,6 +2683,28 @@ ${keywordLine}${bpBlock}${conditionBlock}
     `);
   }
 
+  // Voice lists load asynchronously on some browsers, so warm it up early.
+  let _voices = [];
+  function refreshVoices(){ try { _voices = speechSynthesis.getVoices() || []; } catch(e){ _voices = []; } }
+  try {
+    refreshVoices();
+    if (typeof speechSynthesis !== 'undefined') speechSynthesis.onvoiceschanged = refreshVoices;
+  } catch(e){}
+
+  function pickMaleEnglishVoice(){
+    if (!_voices.length) refreshVoices();
+    const en = _voices.filter(v => /^en/i.test(v.lang));
+    if (!en.length) return null;
+    // names that are explicitly male, then common male voice names, then anything English
+    const MALE = /\bmale\b|\bman\b|David|Mark|George|James|Daniel|Alex|Fred|Guy|Ryan|Aaron|Brian|Eric|Arthur|Thomas|Christopher|Liam|Oliver|Tom|Rishi|#male/i;
+    const FEMALE = /\bfemale\b|\bwoman\b|Zira|Hazel|Susan|Samantha|Victoria|Karen|Moira|Tessa|Fiona|Serena|Aria|Jenny|Michelle|Sonia|Emma|Ava|Allison|#female/i;
+    return en.find(v => MALE.test(v.name))
+        || en.find(v => !FEMALE.test(v.name))
+        || en[0];
+  }
+
+  let savedVoiceName = null;
+  try { const rv = lsGet('wd3:voice'); if (rv) savedVoiceName = rv.savedVoiceName || null; } catch(e){}
   let lastMuskIdx = -1;
   function openMuskModal(){
     let i = Math.floor(Math.random()*MUSK_QUOTES.length);
@@ -2692,7 +2714,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
     openToolModal('🪆 こわれた人形', `
       <div class="tw-en">${q.en}</div>
       <div class="tw-ja">${q.ja}</div>
-      <button class="rpg-btn secondary wide" id="rpgSpeakBtn" style="margin-bottom:8px;">🔊 読み上げる</button>
+      <button class="rpg-btn secondary wide" id="rpgSpeakBtn" style="margin-bottom:6px;">🔊 読み上げる</button>
+      <select class="gv-mini" id="rpgVoiceSel" style="margin-bottom:8px;"></select>
       <div class="tw-no">No.${i+1} / ${MUSK_QUOTES.length}</div>
     `);
     const sb = document.getElementById('rpgSpeakBtn');
@@ -2700,12 +2723,47 @@ ${keywordLine}${bpBlock}${conditionBlock}
       try {
         speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(q.en);
-        u.lang = 'en-US'; u.rate = 0.9;
+        u.lang = 'en-US';
+        const v = (savedVoiceName && _voices.find(x => x.name === savedVoiceName)) || pickMaleEnglishVoice();
+        if (v) { u.voice = v; u.lang = v.lang; }
+        // slightly lower pitch reads as more masculine even when only one voice exists
+        u.pitch = 0.7;
+        u.rate = 0.88;
         speechSynthesis.speak(u);
       } catch(e) {
         sb.textContent = 'この端末では読み上げできません';
       }
     });
+
+    // let her override the auto-picked voice if the device has others
+    const sel = document.getElementById('rpgVoiceSel');
+    if (sel) {
+      if (!_voices.length) refreshVoices();
+      const en = _voices.filter(v => /^en/i.test(v.lang));
+      if (en.length <= 1) {
+        sel.style.display = 'none';
+      } else {
+        const auto = pickMaleEnglishVoice();
+        en.forEach(v => {
+          const o = document.createElement('option');
+          o.value = v.name; o.textContent = v.name;
+          if (savedVoiceName ? v.name === savedVoiceName : (auto && v.name === auto.name)) o.selected = true;
+          sel.appendChild(o);
+        });
+        sel.addEventListener('change', e => {
+          savedVoiceName = e.target.value;
+          lsSet('wd3:voice', {savedVoiceName});
+          const v = _voices.find(x => x.name === savedVoiceName);
+          try {
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance('Voice set.');
+            if (v) { u.voice = v; u.lang = v.lang; }
+            u.pitch = 0.7; u.rate = 0.9;
+            speechSynthesis.speak(u);
+          } catch(err){}
+        });
+      }
+    }
   }
 
   function openRecipeListModal(){
