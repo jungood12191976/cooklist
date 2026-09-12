@@ -274,6 +274,22 @@
   @keyframes castpulse{ 0%,100%{ filter: brightness(1); } 50%{ filter: brightness(1.3); } }
   .rpg-screenshake{ animation: bodyshake 0.4s ease-in-out; }
   @keyframes bodyshake{ 0%,100%{ transform: translate(0,0); } 20%{ transform: translate(-8px,4px); } 40%{ transform: translate(7px,-3px); } 60%{ transform: translate(-5px,3px); } 80%{ transform: translate(4px,-2px); } }
+  .rpg-type-grid{ display:grid; grid-template-columns: repeat(4,1fr); gap:6px; margin-bottom:10px; }
+  .rpg-type-grid .rpg-toggle{ font-size:11.5px; padding:8px 2px; }
+  .rpg-ratio-card{
+    display:block; width:100%; text-align:left; margin-bottom:6px; cursor:pointer;
+    background: rgba(255,255,255,0.04); border:2px solid #6ea8ff; border-radius:6px; padding:9px 11px;
+  }
+  .rpg-ratio-card.picked{ background:#f5d78e; border-color:#a9741f; }
+  .rpg-ratio-card .rc-dish{ font-size:13.5px; font-weight:bold; color:#ffd76b; }
+  .rpg-ratio-card.picked .rc-dish{ color:#2c1f0a; }
+  .rpg-ratio-card .rc-ratio{ font-size:12px; color:#c8d3f5; margin-top:3px; line-height:1.5; }
+  .rpg-ratio-card.picked .rc-ratio{ color:#3a2a10; }
+  .rpg-gene-adj{ background:#f5d78e; border-left:5px solid #a9741f; border-radius:0 8px 8px 0; padding:10px 12px; margin-bottom:10px; }
+  .rpg-gene-adj .ga-title{ font-size:12px; font-weight:bold; color:#a9741f; margin-bottom:6px; letter-spacing:1px; }
+  .rpg-gene-adj .ga-row{ margin-bottom:7px; }
+  .rpg-gene-adj .ga-do{ font-size:13.5px; color:#2c1f0a; line-height:1.6; }
+  .rpg-gene-adj .ga-why{ font-size:11px; color:#6b5426; line-height:1.5; margin-left:12px; }
   .rpg-modal-backdrop{ position: fixed; inset: 0; background: rgba(10,10,30,0.75); display:none; align-items: flex-end; justify-content:center; z-index: 50; }
   .rpg-modal-backdrop.open{ display:flex; }
   .rpg-modal{ width:100%; max-width: 480px; background: linear-gradient(180deg,#1c2a5e,#111a3d); border-top: 3px solid #ffd76b; box-shadow: inset 0 0 0 3px #1c2a5e, inset 0 0 0 6px #6ea8ff; padding: 20px 16px 26px; max-height: 85vh; overflow-y: auto; }
@@ -282,7 +298,7 @@
   .rpg-state-btn{ display:block; width:100%; text-align:left; background:#0c1230; border: 2px solid #6ea8ff; color:#fff; padding: 13px 15px; font-size: 14px; margin-bottom: 8px; cursor:pointer; }
   .rpg-state-btn:active{ background:#6ea8ff; color:#0c1230; }
   .rpg-advice-box{ background: rgba(110,168,255,0.1); border: 2px solid #6ea8ff; padding: 14px; margin-top: 8px; }
-  .rpg-advice-line{ font-size: 13.5px; line-height: 1.75; margin-bottom: 9px; color: #eaf0ff; }
+  .rpg-advice-line{ font-size: 22px; line-height: 1.8; margin-bottom: 12px; color: #eaf0ff; }
   .rpg-advice-line b{ color:#ffd76b; }
   .rpg-log-row{ font-size: 12px; color:#cdd8ff; border-bottom: 1px dashed #2e3a6e; padding: 7px 0; }
   .rpg-log-date{ color:#9db4ff; margin-right: 8px; }
@@ -507,9 +523,100 @@
     gold:     { scale:[880,1047,1175,1319,1568], melType:'sine', melMs:230, melVol:0.024, bassNote:440, bassMs:920, bassType:'sine', bassVol:0.015 },
     castanet: { scale:[392,440,494,523,587], melType:'square', melMs:170, melVol:0.022, bassNote:196, bassMs:340, bassType:'triangle', bassVol:0.02 }
   };
+  // A real flute = soft breathy attack + gentle vibrato + a touch of breath noise.
+  function playFluteNote(freq, dur, vol){
+    if (!soundOn || !actx) return;
+    const t0 = actx.currentTime;
+    const osc = actx.createOscillator(); osc.type = 'sine'; osc.frequency.setValueAtTime(freq, t0);
+    const osc2 = actx.createOscillator(); osc2.type = 'sine'; osc2.frequency.setValueAtTime(freq*2, t0);
+    const g2 = actx.createGain(); g2.gain.value = vol*0.18;
+    // vibrato
+    const lfo = actx.createOscillator(); lfo.frequency.value = 5.2;
+    const lfoGain = actx.createGain(); lfoGain.gain.value = freq * 0.006;
+    lfo.connect(lfoGain).connect(osc.frequency);
+    const g = actx.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.linearRampToValueAtTime(vol, t0 + dur*0.25);      // slow breathy swell
+    g.gain.linearRampToValueAtTime(vol*0.85, t0 + dur*0.7);
+    g.gain.linearRampToValueAtTime(0.0001, t0 + dur);
+    // breath noise
+    const n = actx.createBufferSource();
+    const len = Math.floor(actx.sampleRate * dur);
+    const buf = actx.createBuffer(1, len, actx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i=0;i<len;i++) d[i] = (Math.random()*2-1);
+    n.buffer = buf;
+    const nf = actx.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value = freq*2.2; nf.Q.value = 1.2;
+    const ng = actx.createGain();
+    ng.gain.setValueAtTime(vol*0.25, t0);
+    ng.gain.linearRampToValueAtTime(0.0001, t0 + dur*0.5);
+    osc.connect(g).connect(actx.destination);
+    osc2.connect(g2).connect(g);
+    n.connect(nf).connect(ng).connect(actx.destination);
+    osc.start(t0); osc2.start(t0); lfo.start(t0); n.start(t0);
+    osc.stop(t0+dur+0.05); osc2.stop(t0+dur+0.05); lfo.stop(t0+dur+0.05);
+  }
+
+  // Castanets = very short wooden click: filtered noise burst + a high woody ping.
+  function playCastanetClick(pitch, vol){
+    if (!soundOn || !actx) return;
+    const t0 = actx.currentTime;
+    const dur = 0.055;
+    const len = Math.floor(actx.sampleRate * dur);
+    const buf = actx.createBuffer(1, len, actx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i=0;i<len;i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 5);
+    const n = actx.createBufferSource(); n.buffer = buf;
+    const bp = actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value = pitch; bp.Q.value = 5;
+    const g = actx.createGain(); g.gain.value = vol;
+    n.connect(bp).connect(g).connect(actx.destination);
+    n.start(t0);
+    // woody body ping
+    const o = actx.createOscillator(); o.type='triangle'; o.frequency.setValueAtTime(pitch*0.9, t0);
+    o.frequency.exponentialRampToValueAtTime(pitch*0.5, t0+dur);
+    const og = actx.createGain();
+    og.gain.setValueAtTime(vol*0.5, t0);
+    og.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+    o.connect(og).connect(actx.destination);
+    o.start(t0); o.stop(t0+dur+0.02);
+  }
+
   function startInstrumentBGM(instKey){
     stopBGM();
     const th = INSTRUMENT_THEMES[instKey] || INSTRUMENT_THEMES.flute;
+
+    if (instKey === 'flute') {
+      bgmMelTimer = setInterval(() => {
+        if (!soundOn) return;
+        const note = th.scale[Math.floor(Math.random()*th.scale.length)];
+        playFluteNote(note, 0.75, 0.05);
+      }, 780);
+      bgmBassTimer = setInterval(() => {
+        if (!soundOn) return;
+        playFluteNote(th.scale[0]/2, 1.6, 0.018);
+      }, 2400);
+      return;
+    }
+    if (instKey === 'castanet') {
+      // a lilting triple pattern, the way castanets are actually played
+      const pattern = [1,0,1,1,0,1,0,0];
+      let step = 0;
+      bgmMelTimer = setInterval(() => {
+        if (!soundOn) return;
+        if (pattern[step % pattern.length]) {
+          const pitch = 1800 + Math.random()*900;
+          playCastanetClick(pitch, 0.05);
+          if (Math.random() < 0.35) setTimeout(() => playCastanetClick(pitch*1.15, 0.03), 55);
+        }
+        step++;
+      }, 165);
+      bgmBassTimer = setInterval(() => {
+        if (!soundOn) return;
+        playCastanetClick(900, 0.035);
+      }, 660);
+      return;
+    }
+
     bgmMelTimer = setInterval(() => {
       if (!soundOn) return;
       const note = th.scale[Math.floor(Math.random()*th.scale.length)];
@@ -654,6 +761,51 @@
     {genre:'エスニック', dish:'アジアごはんだれ(ガパオ等)', ratio:'オイスターソース:ナンプラー = 1:1'}
   ];
 
+
+  // ---- cooking type inference + gene-based adjustment rules ----
+  function ratioType(r){
+    const d = r.dish, g = r.genre;
+    if (/鍋|しゃぶ/.test(d)) return '鍋';
+    if (/スープ|味噌汁|すまし|ポタージュ|ミネストローネ/.test(d)) return 'スープ';
+    if (/ドレッシング|サラダ|ナムル|和え|酢の物|マリネ|冷やし|棒棒鶏/.test(d)) return 'サラダ・和え物';
+    if (/煮物|煮|肉じゃが|筑前煮|高野豆腐|おでん/.test(d)) return '煮物';
+    if (/蒸し/.test(d)) return '蒸し物';
+    if (/炒め|回鍋肉|青椒肉絲|チャプチェ|炒飯|ソテー|プルコギ/.test(d)) return '炒め物';
+    if (/たれ|ソース|漬け|焼き|唐揚げ|油淋鶏|ヤンニョム|照り/.test(d)) return '焼き・たれ';
+    if (g === 'ドレッシング') return 'サラダ・和え物';
+    if (g === '漬け込みだれ') return '焼き・たれ';
+    if (g === '鍋・スープ') return 'スープ';
+    return 'その他';
+  }
+  const COOK_TYPES = ['鍋','スープ','炒め物','サラダ・和え物','煮物','蒸し物','焼き・たれ'];
+
+  // Each rule: does this ratio/ingredient combination trigger a gene-based tweak for this user?
+  function geneAdjustments(ratio, mainIng, keyword){
+    const txt = (ratio.dish + ' ' + ratio.ratio + ' ' + mainIng + ' ' + (keyword||''));
+    const adj = [];
+    if (/醤油|塩|味噌|ナンプラー|オイスター|鶏がら|だしの素/.test(txt))
+      adj.push({t:'塩分を基本比率より約2割ひかえめに', g:'AGT rs699 CC型 — 塩分が血圧に反映されやすい体質'});
+    adj.push({t:'生姜をひとかけ必ず加える', g:'DIO1/DIO2 — T4→T3変換がゆっくり。体を温めて代謝の立ち上がりを助ける'});
+    adj.push({t:'ブロッコリー・キャベツなどアブラナ科を1品そえる', g:'GSTM1欠失 — 別ルート(NRF2)の解毒を後押しできる'});
+    if (/牛乳|生クリーム|チーズ|バター|ヨーグルト/.test(txt))
+      adj.push({t:'牛乳・生クリームは豆乳に置き換え、チーズはモッツァレラなど熟成の浅いものに', g:'MCM6 CC型(乳糖不耐) + HDC/HNMT(ヒスタミン過敏)'});
+    if (/熟成|ハム|ベーコン|ソーセージ|加工肉|トマト|ほうれん草|なす/.test(txt))
+      adj.push({t:'加工肉や熟成食品は控えめに。トマトは加熱してから使う', g:'HDC TT型＋HNMT AA型 — ヒスタミンを作りやすく分解しにくい'});
+    if (/ほうれん草|ビーツ|たけのこ/.test(txt))
+      adj.push({t:'シュウ酸の多い野菜は、豆腐やしらすなどカルシウム源と一緒に', g:'DGKH CC型 — シュウ酸性の腎結石リスク'});
+    if (/にんじん|かぼちゃ|パプリカ|ほうれん草/.test(txt))
+      adj.push({t:'卵黄やレバーなど「完成形ビタミンA」も一緒に摂ると効率がいい', g:'BCMO1 GG型 — βカロテン→ビタミンA変換が約51%低い'});
+    if (/魚|鮭|さば|いわし|さんま|ぶり|まぐろ/.test(txt))
+      adj.push({t:'この食材はオメガ3源として優秀。加熱しすぎない', g:'IL-6 GG型＋IL-10低産生 — 炎症のアクセルが踏まれやすくブレーキが弱い'});
+    if (/豚|牛|鶏|ひき肉|レバー/.test(txt))
+      adj.push({t:'赤身を選ぶと鉄の補給にもなる', g:'TMPRSS6/TF — 鉄が不足しやすい体質'});
+    if (/唐辛子|コチュジャン|豆板醤|ラー油|カレー/.test(txt))
+      adj.push({t:'辛味は控えめから。腸の反応を見ながら', g:'TNFSF15 GG型 — 便秘型IBSの傾向'});
+    if (/コーヒー|紅茶|お茶/.test(txt))
+      adj.push({t:'カフェインは午前中まで', g:'CYP1A2 AC型 — カフェイン代謝が遅い'});
+    return adj;
+  }
+
   const GUARDIAN_LETTERS = [
     "早朝に目が覚めやすいこと、ありませんか？セロトニンはトリプトファンという材料から、TPH2という酵素を使って作られます。あなたはこのTPH2の遺伝子(rs4290270)がTT型で、変換効率が生まれつき低いタイプです。研究では早朝覚醒や気分の波との関連が報告されています。意志の弱さではなく、材料をセロトニンに変える「工場のライン」がもともとゆっくりな設計だという話です。バナナやナッツなどトリプトファンを含む食品を、特に午後〜夕方に摂ると変換の材料補給になります。",
     "新しいことに強く惹かれる性格、自覚はありますか？ドーパミンを運ぶ役目のSLC6A3(DAT)遺伝子がTT型、受け取る側のDRD2/ANKK1もCT型、さらにCHRNA4もGG型と、報酬系に関わる遺伝子が軒並み「新規性・達成に強く反応する」タイプで揃っています。同じことの繰り返しでは脳の報酬が得にくく、新しい発見や達成のたびにやる気が湧きやすい設計です。このアプリが「回復の鍋」で毎回違うメニューを出したり、ダンジョンでフロアを進めたりする仕組みにしているのは、実はこの体質に理由があります。",
@@ -718,7 +870,12 @@
         pick([
           `<b>今すぐ1つだけ:</b> マグネシウム入りの温かい飲み物(カカオ85%を溶かした豆乳ココア)を一口。`,
           `<b>今すぐ1つだけ:</b> にがり水を数滴たらした白湯を一口飲んでください。`,
-          `<b>今すぐ1つだけ:</b> ナッツを一握り、ゆっくり噛んで食べてください。`
+          `<b>今すぐ1つだけ:</b> ナッツを一握り、ゆっくり噛んで食べてください。`,
+          `<b>今すぐ1つだけ:</b> 窓を開けて、外の空気を10秒吸ってください。それだけでいいです。`,
+          `<b>今すぐ1つだけ:</b> 肩を思いきり上げて、ストンと落とす。3回だけ。`,
+          `<b>今すぐ1つだけ:</b> 目を閉じて、手のひらで目のまわりを20秒だけ温めてください。`,
+          `<b>今すぐ1つだけ:</b> 水を1杯。カフェインではなく水です(CYP1A2が遅い体質なので今は水が正解)。`,
+          `<b>今すぐ1つだけ:</b> 椅子から立ち上がって、その場で10歩だけ歩いてください。`
         ]),
         phase === 'ovulation' ? pick([
           `<b>体の中で起きていること:</b> 排卵期でエストロゲンが急降下中。自律神経が一時的にざわつくのは正常な反応です。`,
@@ -735,6 +892,12 @@
           `<b>反撃:</b> イーロン・マスクは、勝算が薄く見えても重要なことなら動き続ける姿勢を貫いてきたと言われています。今のこれは、その"重要なこと"の途中の1コマに過ぎません。`,
           `<b>反撃:</b> ジェフ・ベゾスは、将来後悔しないための選択を軸に据える考え方(リグレット・ミニマイゼーション)を大切にしてきたそうです。今ここで止まる後悔と、進む後悔、どちらが軽いですか。`,
           `<b>反撃:</b> 探検家シャクルトンは、絶望的な状況でも「次の一歩」だけを見て乗組員を導いたと言われています。今のあなたに必要なのも、次の一歩だけです。`,
+          `<b>反撃:</b> 「If something's important enough you should try. Even if the probable outcome is failure.」— 十分に重要なことなら、たとえ失敗しそうでも挑戦すべきだ(イーロン・マスク)。`,
+          `<b>反撃:</b> 「Persistence is very important. You should not give up unless you are forced to give up.」— 諦めることを強制されない限り、諦めるべきではない(イーロン・マスク)。`,
+          `<b>反撃:</b> 「Doubt is healthy, but fear of failure should never stop you.」— 疑うことは健全。でも失敗への恐怖で止まってはいけない(イーロン・マスク)。`,
+          `<b>反撃:</b> 「Every problem is just an engineering challenge in disguise.」— あらゆる問題は、姿を変えた技術的課題にすぎない(イーロン・マスク)。今の不調も、解ける課題です。`,
+          `<b>反撃:</b> 「Action beats intention every single time.」— 行動はいつだって「やろうと思っていたこと」に勝つ(イーロン・マスク)。`,
+          `<b>反撃:</b> 「Life is too short for long-term grudges.」— 長い恨みを抱えるには人生は短すぎる(イーロン・マスク)。自分への苛立ちも同じです。`,
           `<b>反撃:</b> ここで足を止めたら、ダンジョンの1フロアが今日は進みません。それだけの話です。動きましょう。`
         ])
       ]},
@@ -743,32 +906,52 @@
         pick([
           `<b>今すぐ1つだけ:</b> 白湯にすりおろし生姜を少し加えて一口。体温を上げることがDIO2の変換サポートに。`,
           `<b>今すぐ1つだけ:</b> 温かいお茶を一杯、まず飲んでください。`,
-          `<b>今すぐ1つだけ:</b> 首の後ろにカイロか温かいタオルを当ててみてください。`
+          `<b>今すぐ1つだけ:</b> 首の後ろにカイロか温かいタオルを当ててみてください。`,
+          `<b>今すぐ1つだけ:</b> 味噌汁を一杯。塩分と温度が同時に入ります。`,
+          `<b>今すぐ1つだけ:</b> 手首を回す、足首を回す。座ったままで20秒。`,
+          `<b>今すぐ1つだけ:</b> 卵かチーズをひとつ。チロシンがドーパミンの材料になります。`,
+          `<b>今すぐ1つだけ:</b> カーテンを開けて、光を顔に当ててください。体内時計が動き出します。`
         ]),
         pick([
           `<b>体の中で起きていること:</b> FT3が低め体質。体が冷えていると代謝の切り替えが遅れます。「やる気が出ない」は燃料供給の問題です。`,
-          `<b>体の中で起きていること:</b> 甲状腺ホルモンの変換が落ちやすい体質。やる気の問題ではなく、エネルギー変換の遅れです。`
+          `<b>体の中で起きていること:</b> 甲状腺ホルモンの変換が落ちやすい体質。やる気の問題ではなく、エネルギー変換の遅れです。`,
+          `<b>体の中で起きていること:</b> TPH2がTT型でセロトニン変換がゆっくり。やる気の立ち上がりが遅いのは設計上の特性です。`,
+          `<b>体の中で起きていること:</b> MCT-1がTT型で乳酸の処理がゆっくり。前日の疲れが残りやすいタイプです。`,
+          `<b>体の中で起きていること:</b> ドーパミン報酬系(DRD2/CHRNA4)が新規性に強く反応する体質。同じことの繰り返しだと脳が報酬を受け取りにくいだけです。`
         ]),
         pick([
           `<b>切り替え:</b> 5分だけ、ステップ台でもいいので体を動かしてみてください。小さな一歩が今の停滞を破ります。`,
           `<b>切り替え:</b> 本田宗一郎は、失敗を恐れて動かないことこそが一番の失敗だという考え方で知られています。5分だけ、なんでもいいので手を動かしてみましょう。`,
           `<b>切り替え:</b> 孫正義は、迷ったら小さくてもまず一歩踏み出すスタイルを貫いてきたと言われています。今日のあなたの一歩は、ステップ台の5分でいいんです。`,
-          `<b>切り替え:</b> 冒険家は「今日の天気」ではなく「今日の一歩」で前に進みます。5分だけ体を動かしてみてください。`
+          `<b>切り替え:</b> 冒険家は「今日の天気」ではなく「今日の一歩」で前に進みます。5分だけ体を動かしてみてください。`,
+          `<b>切り替え:</b> 「Speed of execution is the ultimate competitive advantage.」— 実行のスピードこそ究極の強み(イーロン・マスク)。完璧な準備より、今日の5分です。`,
+          `<b>切り替え:</b> 「The best way to predict the future is to create it.」— 未来を予測する最良の方法は、自分で創ること(イーロン・マスク)。`,
+          `<b>切り替え:</b> 「Work should feel like play, or you are doing the wrong work.」— 仕事は遊びのように感じられるべき(イーロン・マスク)。今日はまず、楽しい方から手をつけてみては。`,
+          `<b>切り替え:</b> 新しいことに強く反応する体質なんだから、いつもと違うやり方を1つだけ混ぜてみてください。それだけで脳が動き出します。`
         ])
       ]},
     worst: { label:'🙀🌀 元気になる呪文',
       lines: () => [
         pick([
           `<b>今すぐ1つだけ:</b> 水を1杯、ゆっくり飲んでください。`,
-          `<b>今すぐ1つだけ:</b> 一度、目を閉じて深呼吸を1回だけしてください。`
+          `<b>今すぐ1つだけ:</b> 一度、目を閉じて深呼吸を1回だけしてください。`,
+          `<b>今すぐ1つだけ:</b> 横になれるなら、横になってください。それが今日の正解です。`,
+          `<b>今すぐ1つだけ:</b> 温かいものを一口だけ。味はなんでも構いません。`,
+          `<b>今すぐ1つだけ:</b> 今やろうとしていたことを、1つだけ手放してください。`
         ]),
         pick([
           `<b>淡々と、理由:</b> 体調不良の理由は、あなたの意志の弱さではなく、遺伝子と今の環境の組み合わせです。淡々と対処すれば、また前に進めます。`,
-          `<b>淡々と、理由:</b> 今の状態は、複数の要因(睡眠・周期・気圧)が重なった結果です。あなたのせいではありません。`
+          `<b>淡々と、理由:</b> 今の状態は、複数の要因(睡眠・周期・気圧)が重なった結果です。あなたのせいではありません。`,
+          `<b>淡々と、理由:</b> セロトニンもGABAも、合成がゆっくりな体質です。落ち込みやすさには生化学的な裏付けがあります。`,
+          `<b>淡々と、理由:</b> ストレスホルモンの反応が出やすい体質(MR遺伝子)。同じ出来事でも、あなたの体は強く反応する設計です。`,
+          `<b>淡々と、理由:</b> 炎症のアクセルが踏まれやすくブレーキが弱い体質(IL-6/IL-10)。だるさは気のせいではありません。`
         ]),
         pick([
           `<b>今日できる最小の一手:</b> 深呼吸を4秒吸って7秒止めて8秒吐く、を3セット。それ以上は求めません。`,
-          `<b>今日できる最小の一手:</b> 今日は「休む」も立派な戦略です。5分だけ目を閉じて、それから次を考えましょう。`
+          `<b>今日できる最小の一手:</b> 今日は「休む」も立派な戦略です。5分だけ目を閉じて、それから次を考えましょう。`,
+          `<b>今日できる最小の一手:</b> 今日は何もしなくていいです。明日のあなたに引き継いでください。`,
+          `<b>今日できる最小の一手:</b> 水を飲んで、電気を暗くする。今日はそれで合格です。`,
+          `<b>今日できる最小の一手:</b> 「今日はダメだった」と一度口に出して、そこで終わりにしましょう。引きずらないことが一番の対処です。`
         ])
       ]},
     complete: { label:'🏆 コンプリートの呪文',
@@ -780,11 +963,15 @@
         ]),
         pick([
           `<b>体からの報告:</b> 遺伝子的な弱点を知った上で、今日もそれに配慮した選択ができました。これは知らなければできないことです。`,
-          `<b>体からの報告:</b> 今日摂った栄養、今日動かした体、今日交わした呼吸。すべてが明日のあなたの土台になっています。`
+          `<b>体からの報告:</b> 今日摂った栄養、今日動かした体、今日交わした呼吸。すべてが明日のあなたの土台になっています。`,
+          `<b>体からの報告:</b> 解毒も、ホルモンの変換も、今日ずっと止まらず動き続けていました。あなたはそれを支えた側です。`,
+          `<b>体からの報告:</b> 「Extreme ownership is essential for progress.」— 徹底した当事者意識が進歩をつくる(イーロン・マスク)。自分の体を自分で把握している、それ自体が前進です。`
         ]),
         pick([
           `<b>おやすみ前に:</b> 今日のあなたを、今日のうちに認めてあげてください。続きはまた明日で大丈夫です。`,
-          `<b>おやすみ前に:</b> 今日という日は、もう二度と来ません。それをちゃんと生きた自分を、ひとこと褒めてから眠りましょう。`
+          `<b>おやすみ前に:</b> 今日という日は、もう二度と来ません。それをちゃんと生きた自分を、ひとこと褒めてから眠りましょう。`,
+          `<b>おやすみ前に:</b> 「If you get up in the morning and think the future is going to be better, it is a bright day.」— 朝起きて未来が良くなると思えるなら、それは明るい日(イーロン・マスク)。明日をそう思えるように、今日はここまで。`,
+          `<b>おやすみ前に:</b> ダンジョンが1フロア進みました。865フロアの、確実な1つです。`
         ])
       ]},
     dream: { label:'🌙 よい夢がみられる呪文',
@@ -800,7 +987,9 @@
         ]),
         pick([
           `<b>おやすみなさい:</b> 部屋を暗くして、今日はここまで。良い夢を。`,
-          `<b>おやすみなさい:</b> 明日のクエストは、今夜の眠りの質から始まっています。良い夢を。`
+          `<b>おやすみなさい:</b> 明日のクエストは、今夜の眠りの質から始まっています。良い夢を。`,
+          `<b>おやすみなさい:</b> スマホを置いて、目を休ませてください。今日の冒険はここで終了です。`,
+          `<b>おやすみなさい:</b> マグネシウムとグリシンが、今夜あなたの眠りを支えます。おやすみなさい。`
         ])
       ]}
   };
@@ -808,7 +997,7 @@
   // ================= STATE =================
   let today = new Date();
   let todayKey = today.toISOString().slice(0,10);
-  let dayData = { weather:null, weatherAuto:null, sleepHours:null, bathGood:null, bathSlot:null, mainIngredient:'', keyword:'', quickMode:false };
+  let dayData = { weather:null, weatherAuto:null, sleepHours:null, bathGood:null, bathSlot:null, mainIngredient:'', keyword:'', quickMode:false, cookType:null, pickedRatio:null, ratioOffer:null, ratioOfferType:null };
   let ovulationDate = null;
   let quests = [];
   let menuLog = [];
@@ -1006,7 +1195,7 @@
   }
 
   // ================= GEMINI RECIPE GENERATION =================
-  async function generateGeminiRecipe(mainIngredient, keyword, quickMode){
+  async function generateGeminiRecipe(mainIngredient, keyword, quickMode, blueprint){
     const ci = cycleInfo();
     const phase = ci ? ci.phaseLabel : '不明';
     const lowP = weatherIsLowPressure() ? 'はい(体を温める食材を優先)' : 'いいえ';
@@ -1044,6 +1233,12 @@
       keywordLine = keyword ? `【必ず反映する追加食材・要望】\n${keyword}\n主役食材と組み合わせて使ってください。\n` : '';
     }
 
+    let bpBlock = '';
+    if (blueprint && blueprint.ratio) {
+      const adjLines = (blueprint.adjs||[]).map(a => `・${a.t}（理由: ${a.g}）`).join('\n');
+      bpBlock = `【今回の味の骨格（必ずこの比率を土台にすること）】\n料理タイプ: ${blueprint.type}\nベースにする黄金比: ${blueprint.dish} — ${blueprint.ratio}\nこの比率を守りつつ、下の調整だけを必ず適用してください。\n\n【この人の体質に合わせた必須の調整】\n${adjLines}\n\n`;
+    }
+
     const searchInstruction = quickMode
       ? 'あなたの知識をもとに、実用的で美味しく作れる家庭料理レシピを1つだけ考えてください。'
       : `まずGoogle検索を使って「${mainIngredient} ${keyword} レシピ 人気 簡単」のような検索で、実際に人気のある本物のレシピを1つ探してください。そのレシピを土台にして、`;
@@ -1059,7 +1254,7 @@ ${GENE_PROFILE}
 【今日使いたい主な食材】
 ${mainIngredient}
 
-${keywordLine}${conditionBlock}
+${keywordLine}${bpBlock}${conditionBlock}
 
 以下のJSON形式のみを出力してください。他のテキストや説明、コードブロック記法は一切含めないでください。
 {"name":"料理名(主な食材を含む)","meaning":"${quickMode ? 'この人の遺伝的特徴に合わせてどう工夫したか。100字程度、日本語。' : '検索で見つけた元レシピがどんなものか一言と、この人の遺伝的特徴に合わせてどう工夫したか。120字程度、日本語。'}","recipe":"作り方。分量も具体的に。150〜200字程度、日本語。"}`;
@@ -1238,52 +1433,6 @@ ${keywordLine}${conditionBlock}
     wrap.appendChild(row4);
     root.appendChild(wrap);
 
-    // taste ratio library
-    const ratioWrap = document.createElement('div'); ratioWrap.className='pw';
-    const ratioTitle = document.createElement('div'); ratioTitle.className='pw-title'; ratioTitle.textContent='味の黄金比ノート'; ratioWrap.appendChild(ratioTitle);
-    const ratioSub = document.createElement('div'); ratioSub.style.cssText='font-size:12px;color:#9db4ff;margin-bottom:8px;';
-    ratioSub.textContent = `今日わかっている黄金比: ${TASTE_RATIOS.length + customRatios.length}個`;
-    ratioWrap.appendChild(ratioSub);
-    const ratioBox = document.createElement('div'); ratioBox.id='rpgRatioBox'; ratioBox.style.cssText='min-height:60px; background:rgba(0,0,0,0.2); border-radius:6px; padding:10px; font-size:13.5px; color:#dbe4ff; line-height:1.7; margin-bottom:8px;';
-    ratioBox.textContent = 'ボタンを押すと、ランダムに1つ表示されます。';
-    ratioWrap.appendChild(ratioBox);
-    const ratioBtn = document.createElement('button'); ratioBtn.className='rpg-btn secondary wide'; ratioBtn.textContent='🎲 1つ見てみる';
-    ratioBtn.addEventListener('click', () => {
-      playSelect();
-      const pool = TASTE_RATIOS.concat(customRatios);
-      const pick = pool[Math.floor(Math.random()*pool.length)];
-      document.getElementById('rpgRatioBox').innerHTML = `<b style="color:#ffd76b;">【${pick.genre}】${pick.dish}</b><br>${pick.ratio}`;
-    });
-    ratioWrap.appendChild(ratioBtn);
-
-    const addRatioLabel = document.createElement('div'); addRatioLabel.style.cssText='font-size:12px;color:#9db4ff;margin-top:12px;margin-bottom:4px;';
-    addRatioLabel.textContent = '自分の黄金比・気になるレシピを追加:';
-    ratioWrap.appendChild(addRatioLabel);
-    const addRatioInput = document.createElement('input');
-    addRatioInput.type='text'; addRatioInput.placeholder='例: あんかけ豆腐 しょうゆ:酢:砂糖=2:1:1';
-    addRatioInput.className='rpg-date-input'; addRatioInput.style.width='100%'; addRatioInput.style.marginBottom='6px';
-    ratioWrap.appendChild(addRatioInput);
-    const addRatioBtn = document.createElement('button'); addRatioBtn.className='rpg-btn wide'; addRatioBtn.textContent='追加する';
-    addRatioBtn.addEventListener('click', () => {
-      const v = addRatioInput.value.trim(); if (!v) return;
-      customRatios.push({genre:'マイレシピ', dish:v, ratio:''});
-      saveCustomRatios(); playSelect(); render();
-    });
-    ratioWrap.appendChild(addRatioBtn);
-    if (customRatios.length > 0) {
-      const listWrap = document.createElement('div'); listWrap.style.cssText='margin-top:10px;';
-      customRatios.forEach((r, idx) => {
-        const row = document.createElement('div'); row.style.cssText='display:flex; align-items:center; gap:8px; font-size:12px; color:#dbe4ff; margin-bottom:5px;';
-        row.innerHTML = `<span style="flex:1;">${r.dish}</span>`;
-        const rmBtn = document.createElement('button'); rmBtn.className='rpg-toggle'; rmBtn.style.padding='2px 8px'; rmBtn.textContent='削除';
-        rmBtn.addEventListener('click', () => { customRatios.splice(idx,1); saveCustomRatios(); render(); });
-        row.appendChild(rmBtn);
-        listWrap.appendChild(row);
-      });
-      ratioWrap.appendChild(listWrap);
-    }
-    root.appendChild(ratioWrap);
-
     const chestBtn = document.createElement('button'); chestBtn.className='rpg-chest-btn';
     chestBtn.innerHTML = `<div class="rpg-chest"><div class="c-lid"></div><div class="c-body"></div><div class="c-band"></div><div class="c-gem"></div></div><div class="rpg-chest-label">たっせいログ</div>`;
     chestBtn.addEventListener('click', () => { playSelect(); openChestModal(); });
@@ -1298,7 +1447,7 @@ ${keywordLine}${conditionBlock}
   function renderHub(root){
     const bar = document.createElement('div'); bar.className='rpg-topbar';
     bar.innerHTML = `<div class="rpg-date">${fmtDateShort(today)}</div>`;
-    const backBtn = document.createElement('button'); backBtn.className='rpg-settings-link'; backBtn.textContent='せってい';
+    const backBtn = document.createElement('button'); backBtn.className='rpg-settings-link'; backBtn.textContent='ほこらに帰る';
     backBtn.addEventListener('click', () => { screen='setup'; render(); });
     bar.appendChild(backBtn);
     root.appendChild(bar);
@@ -1394,11 +1543,11 @@ ${keywordLine}${conditionBlock}
       // frames are pre-aligned to a shared canvas with the feet on a common baseline,
       // so no per-frame Y offsets are needed — the sprite art alone carries the motion.
       let frames, frameMs;
-      if (heroEv < 40)       { frames = HERO_CROUCH; frameMs = 260; }
-      else if (heroEv < 55)  { frames = HERO_WALK;   frameMs = 190; }
-      else if (heroEv < 75)  { frames = HERO_WALK;   frameMs = 140; }
-      else if (heroEv < 90)  { frames = HERO_DANCE;  frameMs = 180; }
-      else                   { frames = HERO_JUMP;   frameMs = 200; }
+      if (heroEv < 40)       { frames = HERO_CROUCH; frameMs = 420; }
+      else if (heroEv < 55)  { frames = HERO_WALK;   frameMs = 300; }
+      else if (heroEv < 75)  { frames = HERO_WALK;   frameMs = 230; }
+      else if (heroEv < 90)  { frames = HERO_DANCE;  frameMs = 300; }
+      else                   { frames = HERO_JUMP;   frameMs = 330; }
       let fi = 0;
       heroWalkTimer = setInterval(() => {
         const hero = document.getElementById('rpgHero');
@@ -1519,10 +1668,89 @@ ${keywordLine}${conditionBlock}
       kwRow.appendChild(kwLabel); kwRow.appendChild(kwInput);
       gWrap.appendChild(kwRow);
 
+      // --- cooking type selector ---
+      const typeLabel = document.createElement('div'); typeLabel.className='rpg-label'; typeLabel.textContent='どんな料理にする？';
+      gWrap.appendChild(typeLabel);
+      const typeGrid = document.createElement('div'); typeGrid.className='rpg-type-grid';
+      COOK_TYPES.forEach(t => {
+        const b = document.createElement('button');
+        b.className = 'rpg-toggle' + (dayData.cookType === t ? ' active' : '');
+        b.textContent = t;
+        b.addEventListener('click', () => {
+          playSelect();
+          dayData.cookType = (dayData.cookType === t) ? null : t;
+          dayData.pickedRatio = null;
+          saveDay(); render();
+        });
+        typeGrid.appendChild(b);
+      });
+      gWrap.appendChild(typeGrid);
+
+      // --- matching golden ratios for that type ---
+      if (dayData.cookType) {
+        const pool = TASTE_RATIOS.concat(customRatios).filter(r => ratioType(r) === dayData.cookType);
+        const bpWrap = document.createElement('div'); bpWrap.style.cssText='margin:10px 0;';
+        if (pool.length === 0) {
+          const none = document.createElement('div'); none.style.cssText='font-size:12.5px;color:#9db4ff;';
+          none.textContent = 'このタイプの黄金比はまだありません。';
+          bpWrap.appendChild(none);
+        } else {
+          if (!dayData.ratioOffer || dayData.ratioOfferType !== dayData.cookType) {
+            const shuffled = pool.slice().sort(() => Math.random() - 0.5);
+            dayData.ratioOffer = shuffled.slice(0,3).map(r => r.dish);
+            dayData.ratioOfferType = dayData.cookType;
+            saveDay();
+          }
+          const offers = dayData.ratioOffer.map(d => pool.find(r => r.dish === d)).filter(Boolean);
+          offers.forEach(r => {
+            const card = document.createElement('button');
+            card.className = 'rpg-ratio-card' + (dayData.pickedRatio === r.dish ? ' picked' : '');
+            card.innerHTML = `<div class="rc-dish">${r.dish}</div>${r.ratio ? `<div class="rc-ratio">${r.ratio}</div>` : ''}`;
+            card.addEventListener('click', () => {
+              playSelect();
+              dayData.pickedRatio = (dayData.pickedRatio === r.dish) ? null : r.dish;
+              saveDay(); render();
+            });
+            bpWrap.appendChild(card);
+          });
+          const reroll = document.createElement('button');
+          reroll.className='rpg-settings-link'; reroll.style.cssText='display:block;margin-top:4px;';
+          reroll.textContent = '🎲 別の候補を見る';
+          reroll.addEventListener('click', () => { playSelect(); dayData.ratioOffer=null; dayData.pickedRatio=null; saveDay(); render(); });
+          bpWrap.appendChild(reroll);
+        }
+        gWrap.appendChild(bpWrap);
+
+        // --- gene adjustments for the picked ratio ---
+        if (dayData.pickedRatio) {
+          const pr = pool.find(r => r.dish === dayData.pickedRatio);
+          if (pr) {
+            const adjs = geneAdjustments(pr, ingInput.value.trim() || dayData.mainIngredient || '', kwInput.value.trim() || dayData.keyword || '');
+            const aWrap = document.createElement('div'); aWrap.className='rpg-gene-adj';
+            aWrap.innerHTML = `<div class="ga-title">🧬 キング用の調整</div>`;
+            adjs.forEach(a => {
+              const row = document.createElement('div'); row.className='ga-row';
+              row.innerHTML = `<div class="ga-do">・${a.t}</div><div class="ga-why">${a.g}</div>`;
+              aWrap.appendChild(row);
+            });
+            gWrap.appendChild(aWrap);
+          }
+        }
+      }
+
       const potWrap = document.createElement('div'); potWrap.className='rpg-pot-wrap'; potWrap.id='rpgPotWrap';
       potWrap.innerHTML = `<div class="rpg-pot-emoji">🍲</div><div class="rpg-pot-status" id="rpgPotStatus"></div>`;
       const brewBtn = document.createElement('button'); brewBtn.className='rpg-btn wide'; brewBtn.textContent='🧙‍♀️ 鍋を仕込む';
-      brewBtn.addEventListener('click', () => brewGacha(gWrap, brewBtn, ingInput.value.trim(), kwInput.value.trim()));
+      brewBtn.addEventListener('click', () => {
+        let bp = null;
+        if (dayData.cookType && dayData.pickedRatio) {
+          const pool2 = TASTE_RATIOS.concat(customRatios).filter(r => ratioType(r) === dayData.cookType);
+          const pr2 = pool2.find(r => r.dish === dayData.pickedRatio);
+          if (pr2) bp = { type: dayData.cookType, dish: pr2.dish, ratio: pr2.ratio,
+                          adjs: geneAdjustments(pr2, ingInput.value.trim(), kwInput.value.trim()) };
+        }
+        brewGacha(gWrap, brewBtn, ingInput.value.trim(), kwInput.value.trim(), bp);
+      });
       gWrap.appendChild(potWrap);
       gWrap.appendChild(brewBtn);
       const smallSettings = document.createElement('button');
@@ -1558,6 +1786,53 @@ ${keywordLine}${conditionBlock}
     }
     root.appendChild(gWrap);
 
+    // taste ratio library
+    const ratioWrap = document.createElement('div'); ratioWrap.className='pw';
+    const ratioTitle = document.createElement('div'); ratioTitle.className='pw-title'; ratioTitle.textContent='味の黄金比ノート'; ratioWrap.appendChild(ratioTitle);
+    const ratioSub = document.createElement('div'); ratioSub.style.cssText='font-size:12px;color:#9db4ff;margin-bottom:8px;';
+    ratioSub.textContent = `今日わかっている黄金比: ${TASTE_RATIOS.length + customRatios.length}個`;
+    ratioWrap.appendChild(ratioSub);
+    const ratioBox = document.createElement('div'); ratioBox.id='rpgRatioBox'; ratioBox.style.cssText='min-height:60px; background:rgba(0,0,0,0.2); border-radius:6px; padding:10px; font-size:13.5px; color:#dbe4ff; line-height:1.7; margin-bottom:8px;';
+    ratioBox.textContent = 'ボタンを押すと、ランダムに1つ表示されます。';
+    ratioWrap.appendChild(ratioBox);
+    const ratioBtn = document.createElement('button'); ratioBtn.className='rpg-btn secondary wide'; ratioBtn.textContent='🎲 1つ見てみる';
+    ratioBtn.addEventListener('click', () => {
+      playSelect();
+      const pool = TASTE_RATIOS.concat(customRatios);
+      const pick = pool[Math.floor(Math.random()*pool.length)];
+      document.getElementById('rpgRatioBox').innerHTML = `<b style="color:#ffd76b;">【${pick.genre}】${pick.dish}</b><br>${pick.ratio}`;
+    });
+    ratioWrap.appendChild(ratioBtn);
+
+    const addRatioLabel = document.createElement('div'); addRatioLabel.style.cssText='font-size:12px;color:#9db4ff;margin-top:12px;margin-bottom:4px;';
+    addRatioLabel.textContent = '自分の黄金比・気になるレシピを追加:';
+    ratioWrap.appendChild(addRatioLabel);
+    const addRatioInput = document.createElement('input');
+    addRatioInput.type='text'; addRatioInput.placeholder='例: あんかけ豆腐 しょうゆ:酢:砂糖=2:1:1';
+    addRatioInput.className='rpg-date-input'; addRatioInput.style.width='100%'; addRatioInput.style.marginBottom='6px';
+    ratioWrap.appendChild(addRatioInput);
+    const addRatioBtn = document.createElement('button'); addRatioBtn.className='rpg-btn wide'; addRatioBtn.textContent='追加する';
+    addRatioBtn.addEventListener('click', () => {
+      const v = addRatioInput.value.trim(); if (!v) return;
+      customRatios.push({genre:'マイレシピ', dish:v, ratio:''});
+      saveCustomRatios(); playSelect(); render();
+    });
+    ratioWrap.appendChild(addRatioBtn);
+    if (customRatios.length > 0) {
+      const listWrap = document.createElement('div'); listWrap.style.cssText='margin-top:10px;';
+      customRatios.forEach((r, idx) => {
+        const row = document.createElement('div'); row.style.cssText='display:flex; align-items:center; gap:8px; font-size:12px; color:#dbe4ff; margin-bottom:5px;';
+        row.innerHTML = `<span style="flex:1;">${r.dish}</span>`;
+        const rmBtn = document.createElement('button'); rmBtn.className='rpg-toggle'; rmBtn.style.padding='2px 8px'; rmBtn.textContent='削除';
+        rmBtn.addEventListener('click', () => { customRatios.splice(idx,1); saveCustomRatios(); render(); });
+        row.appendChild(rmBtn);
+        listWrap.appendChild(row);
+      });
+      ratioWrap.appendChild(listWrap);
+    }
+    root.appendChild(ratioWrap);
+
+
     // dungeon (single, fixed)
     const dWrap = document.createElement('div'); dWrap.className='pw';
     const dTitle = document.createElement('div'); dTitle.className='pw-title'; dTitle.textContent='ダンジョン：年収1億円'; dWrap.appendChild(dTitle);
@@ -1590,7 +1865,7 @@ ${keywordLine}${conditionBlock}
     wrap.appendChild(card);
   }
 
-  async function brewGacha(wrap, btn, mainIngredient, keyword){
+  async function brewGacha(wrap, btn, mainIngredient, keyword, blueprint){
     if (!mainIngredient) { gachaError = '今日の主役食材を入力してください。'; render(); return; }
     gachaError = null;
     playPotBubble();
@@ -1600,7 +1875,7 @@ ${keywordLine}${conditionBlock}
     btn.disabled = true;
     const bubbleInterval = setInterval(() => { playPotBubble(); }, 220);
     try {
-      const result = await generateGeminiRecipe(mainIngredient, keyword, false);
+      const result = await generateGeminiRecipe(mainIngredient, keyword, false, blueprint);
       clearInterval(bubbleInterval);
       potWrap.classList.remove('rpg-pot-brewing');
       currentGacha = result;
