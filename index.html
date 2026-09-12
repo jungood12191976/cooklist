@@ -1702,6 +1702,14 @@ ${keywordLine}${bpBlock}${conditionBlock}
             saveDay();
           }
           const offers = dayData.ratioOffer.map(d => pool.find(r => r.dish === d)).filter(Boolean);
+          // default to the first candidate so the gene panel is visible without an extra tap
+          if (!dayData.pickedRatio || !offers.some(r => r.dish === dayData.pickedRatio)) {
+            if (offers.length) { dayData.pickedRatio = offers[0].dish; saveDay(); }
+          }
+          const hint = document.createElement('div');
+          hint.style.cssText='font-size:11.5px;color:#9db4ff;margin-bottom:6px;';
+          hint.textContent = 'タップで切り替えると、下の調整も変わります';
+          bpWrap.appendChild(hint);
           offers.forEach(r => {
             const card = document.createElement('button');
             card.className = 'rpg-ratio-card' + (dayData.pickedRatio === r.dish ? ' picked' : '');
@@ -1786,53 +1794,6 @@ ${keywordLine}${bpBlock}${conditionBlock}
     }
     root.appendChild(gWrap);
 
-    // taste ratio library
-    const ratioWrap = document.createElement('div'); ratioWrap.className='pw';
-    const ratioTitle = document.createElement('div'); ratioTitle.className='pw-title'; ratioTitle.textContent='味の黄金比ノート'; ratioWrap.appendChild(ratioTitle);
-    const ratioSub = document.createElement('div'); ratioSub.style.cssText='font-size:12px;color:#9db4ff;margin-bottom:8px;';
-    ratioSub.textContent = `今日わかっている黄金比: ${TASTE_RATIOS.length + customRatios.length}個`;
-    ratioWrap.appendChild(ratioSub);
-    const ratioBox = document.createElement('div'); ratioBox.id='rpgRatioBox'; ratioBox.style.cssText='min-height:60px; background:rgba(0,0,0,0.2); border-radius:6px; padding:10px; font-size:13.5px; color:#dbe4ff; line-height:1.7; margin-bottom:8px;';
-    ratioBox.textContent = 'ボタンを押すと、ランダムに1つ表示されます。';
-    ratioWrap.appendChild(ratioBox);
-    const ratioBtn = document.createElement('button'); ratioBtn.className='rpg-btn secondary wide'; ratioBtn.textContent='🎲 1つ見てみる';
-    ratioBtn.addEventListener('click', () => {
-      playSelect();
-      const pool = TASTE_RATIOS.concat(customRatios);
-      const pick = pool[Math.floor(Math.random()*pool.length)];
-      document.getElementById('rpgRatioBox').innerHTML = `<b style="color:#ffd76b;">【${pick.genre}】${pick.dish}</b><br>${pick.ratio}`;
-    });
-    ratioWrap.appendChild(ratioBtn);
-
-    const addRatioLabel = document.createElement('div'); addRatioLabel.style.cssText='font-size:12px;color:#9db4ff;margin-top:12px;margin-bottom:4px;';
-    addRatioLabel.textContent = '自分の黄金比・気になるレシピを追加:';
-    ratioWrap.appendChild(addRatioLabel);
-    const addRatioInput = document.createElement('input');
-    addRatioInput.type='text'; addRatioInput.placeholder='例: あんかけ豆腐 しょうゆ:酢:砂糖=2:1:1';
-    addRatioInput.className='rpg-date-input'; addRatioInput.style.width='100%'; addRatioInput.style.marginBottom='6px';
-    ratioWrap.appendChild(addRatioInput);
-    const addRatioBtn = document.createElement('button'); addRatioBtn.className='rpg-btn wide'; addRatioBtn.textContent='追加する';
-    addRatioBtn.addEventListener('click', () => {
-      const v = addRatioInput.value.trim(); if (!v) return;
-      customRatios.push({genre:'マイレシピ', dish:v, ratio:''});
-      saveCustomRatios(); playSelect(); render();
-    });
-    ratioWrap.appendChild(addRatioBtn);
-    if (customRatios.length > 0) {
-      const listWrap = document.createElement('div'); listWrap.style.cssText='margin-top:10px;';
-      customRatios.forEach((r, idx) => {
-        const row = document.createElement('div'); row.style.cssText='display:flex; align-items:center; gap:8px; font-size:12px; color:#dbe4ff; margin-bottom:5px;';
-        row.innerHTML = `<span style="flex:1;">${r.dish}</span>`;
-        const rmBtn = document.createElement('button'); rmBtn.className='rpg-toggle'; rmBtn.style.padding='2px 8px'; rmBtn.textContent='削除';
-        rmBtn.addEventListener('click', () => { customRatios.splice(idx,1); saveCustomRatios(); render(); });
-        row.appendChild(rmBtn);
-        listWrap.appendChild(row);
-      });
-      ratioWrap.appendChild(listWrap);
-    }
-    root.appendChild(ratioWrap);
-
-
     // dungeon (single, fixed)
     const dWrap = document.createElement('div'); dWrap.className='pw';
     const dTitle = document.createElement('div'); dTitle.className='pw-title'; dTitle.textContent='ダンジョン：年収1億円'; dWrap.appendChild(dTitle);
@@ -1887,13 +1848,9 @@ ${keywordLine}${bpBlock}${conditionBlock}
       const msg = (e.message || String(e));
       if (msg.startsWith('NETWORK_BLOCKED')) {
         gachaError = 'この環境ではAPI通信がブロックされている可能性があります(Claudeのアプリ内プレビューなど)。GitHub Pagesなど公開したサイトから開いてお試しください。';
-      } else if (msg.startsWith('QUOTA')) {
-        const keyCountMatch = msg.match(/(\(登録済み\d+個中\d+個のキーを試して全滅\))$/);
-        const keyCountNote = keyCountMatch ? ' ' + keyCountMatch[1] : '';
-        const mainDetail = msg.replace('QUOTA: ','').replace(/\s*\(登録済み\d+個中\d+個のキーを試して全滅\)$/,'');
-        gachaError = '検索連携(Grounding)の割り当てに達しています。少し時間をおいてから、もう一度「鍋を仕込む」を押してください。' + keyCountNote + '<br>詳細: ' + mainDetail.slice(0,150);
-      } else if (msg.startsWith('BUSY')) {
-        gachaError = 'Geminiのサーバーが今かなり混み合っています。少し時間をおいてから、もう一度「鍋を仕込む」を押してみてください。';
+      } else if (msg.startsWith('QUOTA') || msg.startsWith('BUSY')) {
+        // free tier is routinely exhausted — don't dump Google's raw error at the user
+        gachaError = '今は無料枠の上限で仕込めません。上の比率と調整で作れます。';
       } else {
         gachaError = 'リサーチに失敗しました。エラー: ' + msg;
       }
