@@ -1716,7 +1716,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
             card.innerHTML = `<div class="rc-dish">${r.dish}</div>${r.ratio ? `<div class="rc-ratio">${r.ratio}</div>` : ''}`;
             card.addEventListener('click', () => {
               playSelect();
-              dayData.pickedRatio = (dayData.pickedRatio === r.dish) ? null : r.dish;
+              dayData.pickedRatio = r.dish;
               saveDay(); render();
             });
             bpWrap.appendChild(card);
