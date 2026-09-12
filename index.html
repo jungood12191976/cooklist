@@ -2704,6 +2704,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
   }
 
   let savedVoiceName = null;
+  let voicePitch = 0.7;
+  try { const rp = lsGet('wd3:pitch'); if (rp && typeof rp.voicePitch === 'number') voicePitch = rp.voicePitch; } catch(e){}
   try { const rv = lsGet('wd3:voice'); if (rv) savedVoiceName = rv.savedVoiceName || null; } catch(e){}
   let lastMuskIdx = -1;
   function openMuskModal(){
@@ -2715,7 +2717,10 @@ ${keywordLine}${bpBlock}${conditionBlock}
       <div class="tw-en">${q.en}</div>
       <div class="tw-ja">${q.ja}</div>
       <button class="rpg-btn secondary wide" id="rpgSpeakBtn" style="margin-bottom:6px;">🔊 読み上げる</button>
-      <select class="gv-mini" id="rpgVoiceSel" style="margin-bottom:8px;"></select>
+      <select class="gv-mini" id="rpgVoiceSel" style="margin-bottom:6px;"></select>
+      <div class="tw-desc small" style="margin-bottom:4px;">声の低さ <span id="rpgPitchVal"></span></div>
+      <input type="range" id="rpgPitchSel" min="0" max="1.4" step="0.1" style="width:100%;margin-bottom:6px;">
+      <div class="tw-desc small" id="rpgVoiceDiag" style="margin-bottom:8px;"></div>
       <div class="tw-no">No.${i+1} / ${MUSK_QUOTES.length}</div>
     `);
     const sb = document.getElementById('rpgSpeakBtn');
@@ -2727,13 +2732,43 @@ ${keywordLine}${bpBlock}${conditionBlock}
         const v = (savedVoiceName && _voices.find(x => x.name === savedVoiceName)) || pickMaleEnglishVoice();
         if (v) { u.voice = v; u.lang = v.lang; }
         // slightly lower pitch reads as more masculine even when only one voice exists
-        u.pitch = 0.7;
+        u.pitch = voicePitch;
         u.rate = 0.88;
         speechSynthesis.speak(u);
       } catch(e) {
         sb.textContent = 'この端末では読み上げできません';
       }
     });
+
+    const pitchSel = document.getElementById('rpgPitchSel');
+    const pitchVal = document.getElementById('rpgPitchVal');
+    if (pitchSel) {
+      pitchSel.value = voicePitch;
+      if (pitchVal) pitchVal.textContent = voicePitch.toFixed(1);
+      pitchSel.addEventListener('input', e => {
+        voicePitch = parseFloat(e.target.value);
+        if (pitchVal) pitchVal.textContent = voicePitch.toFixed(1);
+        lsSet('wd3:pitch', {voicePitch});
+      });
+      pitchSel.addEventListener('change', () => {
+        try {
+          speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance('Testing the voice.');
+          const v = (savedVoiceName && _voices.find(x => x.name === savedVoiceName)) || pickMaleEnglishVoice();
+          if (v) { u.voice = v; u.lang = v.lang; }
+          u.pitch = voicePitch; u.rate = 0.88;
+          speechSynthesis.speak(u);
+        } catch(err){}
+      });
+    }
+    const diag = document.getElementById('rpgVoiceDiag');
+    if (diag) {
+      if (!_voices.length) refreshVoices();
+      const en = _voices.filter(v => /^en/i.test(v.lang));
+      const uniqVoiceURI = new Set(_voices.map(v => v.voiceURI)).size;
+      diag.innerHTML = `端末の音声 ${_voices.length}件（うち英語 ${en.length}件・実体 ${uniqVoiceURI}種）<br>`
+        + `名前が違っても同じ実体だと、声は変わりません。その場合は上の「声の低さ」で調整してください。`;
+    }
 
     // let her override the auto-picked voice if the device has others
     const sel = document.getElementById('rpgVoiceSel');
@@ -2746,7 +2781,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
         const auto = pickMaleEnglishVoice();
         en.forEach(v => {
           const o = document.createElement('option');
-          o.value = v.name; o.textContent = v.name;
+          o.value = v.name;
+          o.textContent = `${v.name} [${v.lang}]${v.localService ? '' : ' ☁'}${v.default ? ' ★' : ''}`;
           if (savedVoiceName ? v.name === savedVoiceName : (auto && v.name === auto.name)) o.selected = true;
           sel.appendChild(o);
         });
@@ -2758,7 +2794,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
             speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance('Voice set.');
             if (v) { u.voice = v; u.lang = v.lang; }
-            u.pitch = 0.7; u.rate = 0.9;
+            u.pitch = voicePitch; u.rate = 0.9;
             speechSynthesis.speak(u);
           } catch(err){}
         });
