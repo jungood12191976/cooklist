@@ -335,6 +335,17 @@
   .gv-add{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px; }
   .gv-mini{ background:#0e1430; border:2px solid #6ea8ff; color:#fff; padding:7px 8px; font-size:13px; border-radius:4px; width:100%; }
   .gv-btn{ padding:6px 10px; font-size:12px; white-space:nowrap; }
+  .dg-money{ text-align:center; margin-bottom:4px; }
+  .dg-amount{ font-size:27px; font-weight:bold; color:#ffd76b; }
+  .dg-goalline{ font-size:12px; color:#9db4ff; margin-bottom:7px; }
+  .dg-pl{ font-size:14px; font-weight:bold; margin-top:6px; }
+  .dg-hint{ font-size:11.5px; color:#9db4ff; margin-top:6px; line-height:1.6; }
+  .dg-divider{ height:1px; background:rgba(255,255,255,0.12); margin:11px 0 9px; }
+  .rpg-dungeon-floor-fill.alt{ background:linear-gradient(90deg,#6ea8ff,#6ee7b7); }
+  .dg-row{ display:flex; align-items:center; gap:8px; font-size:13px; color:#dbe4ff; margin-bottom:5px; }
+  .dg-name{ flex:1; }
+  .dg-val{ color:#fff; font-weight:bold; }
+  .dg-val.muted{ color:#9db4ff; font-weight:normal; }
   .rpg-modal-backdrop{ position: fixed; inset: 0; background: rgba(10,10,30,0.75); display:none; align-items: flex-end; justify-content:center; z-index: 50; }
   .rpg-modal-backdrop.open{ display:flex; }
   .rpg-modal{ width:100%; max-width: 480px; background: linear-gradient(180deg,#1c2a5e,#111a3d); border-top: 3px solid #ffd76b; box-shadow: inset 0 0 0 3px #1c2a5e, inset 0 0 0 6px #6ea8ff; padding: 20px 16px 26px; max-height: 85vh; overflow-y: auto; }
@@ -2129,11 +2140,55 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const dTitle = document.createElement('div'); dTitle.className='pw-title'; dTitle.textContent='ダンジョン：金貨の袋（1億円）'; dWrap.appendChild(dTitle);
     const dc = document.createElement('div'); dc.className='rpg-dungeon';
     const pct = Math.min(100, Math.round((dungeon.currentFloor/dungeon.totalFloors)*100));
+
+    // asset side of the bag
+    const GOAL = 100000000;
+    let total = 0, totalPl = 0, priced = 0;
+    holdings.forEach(hd => {
+      const v = holdingValue(hd);
+      if (v) { total += v.val; totalPl += v.pl; priced++; }
+    });
+    const goalPct = (total / GOAL) * 100;
+    const hasAssets = holdings.length > 0 && priced > 0;
+
     dc.innerHTML = `
-      <div class="rpg-dungeon-floor-bar"><div class="rpg-dungeon-floor-fill" style="width:${pct}%"></div></div>
-      <div class="rpg-dungeon-meta">${dungeon.currentFloor} / ${dungeon.totalFloors} フロア</div>
+      <div class="dg-money">
+        <div class="dg-amount">¥${Math.round(total).toLocaleString()}</div>
+        <div class="dg-goalline">/ 1億円　${hasAssets ? goalPct.toFixed(3) + '%' : '—'}</div>
+        <div class="rpg-dungeon-floor-bar"><div class="rpg-dungeon-floor-fill" style="width:${Math.max(goalPct,0.3)}%"></div></div>
+        ${hasAssets ? `<div class="dg-pl ${totalPl>=0?'plus':'minus'}">評価損益 ${totalPl>=0?'+':''}¥${Math.round(totalPl).toLocaleString()}</div>` : ''}
+        ${holdings.length === 0
+          ? `<div class="dg-hint">「どうぐ」の 💰金貨のふくろ から銘柄を登録できます。</div>`
+          : (priced < holdings.length ? `<div class="dg-hint">※株価が未取得の銘柄が ${holdings.length - priced} 件あります。</div>` : '')}
+      </div>
+      <div class="dg-divider"></div>
+      <div class="dg-floor">
+        <div class="rpg-dungeon-floor-bar"><div class="rpg-dungeon-floor-fill alt" style="width:${pct}%"></div></div>
+        <div class="rpg-dungeon-meta">冒険の歩み　${dungeon.currentFloor} / ${dungeon.totalFloors} フロア</div>
+      </div>
     `;
     dWrap.appendChild(dc);
+
+    if (holdings.length > 0) {
+      const list = document.createElement('div'); list.style.cssText='margin-top:8px;';
+      holdings.forEach(hd => {
+        const v = holdingValue(hd);
+        const row = document.createElement('div'); row.className='dg-row';
+        row.innerHTML = `<span class="dg-name">${hd.name || hd.code}</span>`
+          + (v ? `<span class="${v.pl>=0?'plus':'minus'}">${v.pl>=0?'+':''}${v.plPct.toFixed(1)}%</span>
+                 <span class="dg-val">¥${Math.round(v.val).toLocaleString()}</span>`
+               : `<span class="dg-val muted">未取得</span>`);
+        list.appendChild(row);
+      });
+      dWrap.appendChild(list);
+    }
+
+    const openBag = document.createElement('button');
+    openBag.className='rpg-btn secondary wide'; openBag.style.marginTop='8px';
+    openBag.textContent='💰 袋の中をあらためる';
+    openBag.addEventListener('click', () => { playSelect(); openGoldModal(); });
+    dWrap.appendChild(openBag);
+
     root.appendChild(dWrap);
   }
 
