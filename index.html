@@ -722,7 +722,7 @@
     {genre:'洋食', dish:'グラタン', ratio:'ホワイトソース:チーズ = 2:1'},
     {genre:'洋食', dish:'フレンチドレッシング', ratio:'オイル:酢 = 3:1'},
     {genre:'洋食', dish:'バーニャカウダ', ratio:'オイル:牛乳:アンチョビ = 2:2:1'},
-    {genre:'鍋・スープ', dish:'塩鍋', ratio:'水1000ml:鶏ガラ小さじ2〜2.5(or白だし大さじ2):塩小さじ1弱:酒大さじ2:みりん大さじ1'},
+    {genre:'鍋・スープ', dish:'塩鍋', ratio:'水:酒:みりん:塩 = 200:2:1:0.6（鶏ガラを水200mlにつき小さじ0.5）'},
     {genre:'鍋・スープ', dish:'醤油鍋', ratio:'醤油:みりん:酒 = 2:2:1'},
     {genre:'鍋・スープ', dish:'鴨鍋', ratio:'醤油:みりん:酒:だし = 2:2:2:15'},
     {genre:'鍋・スープ', dish:'塩こうじ味噌汁', ratio:'だし:味噌:塩こうじ = 6:1:1'},
@@ -781,28 +781,66 @@
 
   // Each rule: does this ratio/ingredient combination trigger a gene-based tweak for this user?
   function geneAdjustments(ratio, mainIng, keyword){
-    const txt = (ratio.dish + ' ' + ratio.ratio + ' ' + mainIng + ' ' + (keyword||''));
+    // Judge from the ratio's own seasonings first, so each blueprint gives different advice.
+    const R = (ratio.dish || '') + ' ' + (ratio.ratio || '');
+    const F = (mainIng || '') + ' ' + (keyword || '');
     const adj = [];
-    if (/醤油|塩|味噌|ナンプラー|オイスター|鶏がら|だしの素/.test(txt))
-      adj.push({t:'塩分を基本比率より約2割ひかえめに', g:'AGT rs699 CC型 — 塩分が血圧に反映されやすい体質'});
-    adj.push({t:'生姜をひとかけ必ず加える', g:'DIO1/DIO2 — T4→T3変換がゆっくり。体を温めて代謝の立ち上がりを助ける'});
-    adj.push({t:'ブロッコリー・キャベツなどアブラナ科を1品そえる', g:'GSTM1欠失 — 別ルート(NRF2)の解毒を後押しできる'});
-    if (/牛乳|生クリーム|チーズ|バター|ヨーグルト/.test(txt))
-      adj.push({t:'牛乳・生クリームは豆乳に置き換え、チーズはモッツァレラなど熟成の浅いものに', g:'MCM6 CC型(乳糖不耐) + HDC/HNMT(ヒスタミン過敏)'});
-    if (/熟成|ハム|ベーコン|ソーセージ|加工肉|トマト|ほうれん草|なす/.test(txt))
-      adj.push({t:'加工肉や熟成食品は控えめに。トマトは加熱してから使う', g:'HDC TT型＋HNMT AA型 — ヒスタミンを作りやすく分解しにくい'});
-    if (/ほうれん草|ビーツ|たけのこ/.test(txt))
+
+    // --- salt load: scale the warning to how salty the blueprint actually is ---
+    const saltyHits = (R.match(/醤油|塩|味噌|ナンプラー|オイスター|鶏ガラ|白だし|コンソメ|だしの素|めんつゆ|ポン酢/g) || []).length;
+    if (saltyHits >= 3)
+      adj.push({t:'塩けの元が'+saltyHits+'種類も重なる比率。醤油・塩は基本より3割減らしてから味をみる', g:'AGT rs699 CC型 — 塩分が血圧に反映されやすい体質'});
+    else if (saltyHits >= 1)
+      adj.push({t:'塩分は基本比率より約2割ひかえめに', g:'AGT rs699 CC型 — 塩分が血圧に反映されやすい体質'});
+
+    // --- sugar / mirin load ---
+    if (/砂糖|みりん|はちみつ|甘酒|ケチャップ/.test(R))
+      adj.push({t:'甘みは基本の半分から。足りなければ後から足す', g:'PPARG/IRS1 — 血糖スパイクが起きやすい素因。1,5-AGも低値'});
+
+    // --- fermented / histamine-heavy bases ---
+    if (/キムチ|甜麺醤|豆板醤|コチュジャン|味噌|醤油麹|塩こうじ|甘酒|ナンプラー/.test(R))
+      adj.push({t:'発酵調味料が主役の比率。小さじ単位で控えめに始め、体の反応をみる', g:'HDC TT型＋HNMT AA型 — ヒスタミンを作りやすく分解しにくい'});
+
+    // --- chili ---
+    if (/唐辛子|コチュジャン|豆板醤|ラー油|キムチ|カレー/.test(R))
+      adj.push({t:'辛味は最小量から。腸が落ち着いていない日は抜いてもいい', g:'TNFSF15 GG型 — 便秘型IBSの傾向'});
+
+    // --- dairy in the blueprint ---
+    if (/牛乳|生クリーム|チーズ|バター|ヨーグルト/.test(R))
+      adj.push({t:'牛乳・生クリームは豆乳に、チーズはモッツァレラなど熟成の浅いものに置換', g:'MCM6 CC型（乳糖不耐）＋ヒスタミン過敏'});
+
+    // --- vinegar / citrus: actually helpful for her ---
+    if (/酢|レモン|ポン酢/.test(R))
+      adj.push({t:'この酸味は活かしてよい。鉄の吸収を助けてくれる', g:'TMPRSS6/TF — 鉄が不足しやすい体質'});
+
+    // --- oil type ---
+    if (/ごま油|オリーブオイル|オイル|バター/.test(R))
+      adj.push({t:'油はオリーブオイルかごま油を優先。加熱しすぎない', g:'IL-6 GG型＋IL-10低産生 — 炎症のアクセルが踏まれやすい'});
+
+    // --- alcohol-based (sake) blueprints ---
+    if (/酒|ワイン/.test(R))
+      adj.push({t:'酒は必ずしっかり煮切ってから使う', g:'CYP1A1/1A2 — アルコールの分解が遅いタイプ'});
+
+    // --- dashi-forward, gentle blueprints ---
+    if (/だし|昆布|かつお/.test(R) && saltyHits <= 2)
+      adj.push({t:'だしを主役にできる比率。塩を足す前にだしを濃くする方向で調整', g:'AGT — 減塩してもうま味で満足度を保てる'});
+
+    // --- always-on: temperature & detox support, phrased per blueprint ---
+    adj.push({t: /鍋|スープ|煮/.test(R+F) ? '生姜をひとかけ、煮汁に最初から入れる' : '仕上げにすりおろし生姜を少し',
+              g:'DIO1/DIO2 — T4→T3変換がゆっくり。体を温めて代謝の立ち上がりを助ける'});
+    adj.push({t: /サラダ|和え|ドレッシング/.test(R) ? 'ブロッコリーやキャベツを生のまま一品そえる' : 'ブロッコリーやキャベツを一緒に煮る／炒める',
+              g:'GSTM1欠失 — 別ルート(NRF2)の解毒を後押しできる'});
+
+    // --- ingredient-driven (from what she typed) ---
+    if (/魚|鮭|さば|いわし|さんま|ぶり|まぐろ|たら|えび|貝/.test(F))
+      adj.push({t:'この魚介はオメガ3源として優秀。火を通しすぎない', g:'EPA基準未満・EPA/AA比低値（2026/8血液検査）'});
+    if (/豚|牛|鶏|ひき肉|レバー|ばら|もも/.test(F))
+      adj.push({t:'赤身寄りの部位を選ぶと鉄の補給にもなる', g:'TMPRSS6/TF — 鉄が不足しやすい体質'});
+    if (/ほうれん草|ビーツ|たけのこ/.test(F))
       adj.push({t:'シュウ酸の多い野菜は、豆腐やしらすなどカルシウム源と一緒に', g:'DGKH CC型 — シュウ酸性の腎結石リスク'});
-    if (/にんじん|かぼちゃ|パプリカ|ほうれん草/.test(txt))
-      adj.push({t:'卵黄やレバーなど「完成形ビタミンA」も一緒に摂ると効率がいい', g:'BCMO1 GG型 — βカロテン→ビタミンA変換が約51%低い'});
-    if (/魚|鮭|さば|いわし|さんま|ぶり|まぐろ/.test(txt))
-      adj.push({t:'この食材はオメガ3源として優秀。加熱しすぎない', g:'IL-6 GG型＋IL-10低産生 — 炎症のアクセルが踏まれやすくブレーキが弱い'});
-    if (/豚|牛|鶏|ひき肉|レバー/.test(txt))
-      adj.push({t:'赤身を選ぶと鉄の補給にもなる', g:'TMPRSS6/TF — 鉄が不足しやすい体質'});
-    if (/唐辛子|コチュジャン|豆板醤|ラー油|カレー/.test(txt))
-      adj.push({t:'辛味は控えめから。腸の反応を見ながら', g:'TNFSF15 GG型 — 便秘型IBSの傾向'});
-    if (/コーヒー|紅茶|お茶/.test(txt))
-      adj.push({t:'カフェインは午前中まで', g:'CYP1A2 AC型 — カフェイン代謝が遅い'});
+    if (/にんじん|かぼちゃ|パプリカ/.test(F))
+      adj.push({t:'卵黄など「完成形ビタミンA」も一緒に摂ると効率がいい', g:'BCMO1 GG型 — βカロテン変換が約51%低い'});
+
     return adj;
   }
 
