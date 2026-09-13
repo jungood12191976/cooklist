@@ -1442,6 +1442,8 @@
   let goldMineError = null;
   let goldMineContextCache = {}; // { code: text }
   let goldMineProgress = { done: 0, total: 0 };
+  let magicWordPoints = 0;
+  let magicWordGoal = 100;
   let screen = 'setup';
   const ENEMIES = [
     { key:'jellyfish', img: ENEMY_JELLYFISH, name:'なぞのクラゲ' },
@@ -1489,6 +1491,7 @@
     try { const rawBV = lsGet('wd3:birdvol'); if (rawBV && typeof rawBV.v === 'number') birdWhistleVolume = rawBV.v; } catch(e){}
     try { const rawPI = lsGet('wd3:pouch'); if (rawPI && rawPI.items) pouchItems = rawPI.items; } catch(e){}
     try { const rawWL = lsGet('wd3:watchlist'); if (rawWL && rawWL.watchlist) watchlist = rawWL.watchlist; } catch(e){}
+    try { const rawMW = lsGet('wd3:magicwords'); if (rawMW) { magicWordPoints = rawMW.points||0; magicWordGoal = rawMW.goal||100; } } catch(e){}
     startAlarmWatcher();
     render();
   }
@@ -2280,7 +2283,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     }
 
     const gmDesc = document.createElement('div'); gmDesc.style.cssText='font-size:12.5px;color:#9db4ff;line-height:1.6;margin-bottom:8px;';
-    gmDesc.innerHTML = '今日のウォッチ銘柄を、出来高急増・52週高値更新・ゴールデンクロスの3条件で機械的にスキャンします。「なんとなく」は無し。条件に当てはまらなければ「該当なし」と正直に出ます。';
+    gmDesc.innerHTML = '急騰・ギャップアップ・出来高急増・高値ブレイク・ゴールデンクロス/デッドクロスの計6条件で機械的に判定。「なんとなく」は無し。';
     gWrap.appendChild(gmDesc);
 
     const gmUniverse = document.createElement('div'); gmUniverse.style.cssText='font-size:12.5px;color:#ffd76b;margin-bottom:10px;';
@@ -2288,7 +2291,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     gWrap.appendChild(gmUniverse);
 
     const scanBtn = document.createElement('button'); scanBtn.className = 'rpg-btn wide'; scanBtn.style.marginBottom='10px';
-    scanBtn.textContent = goldMineScanning ? `スキャン中…(${goldMineProgress.done}/${goldMineProgress.total})` : '⛏️ 本日のスキャン開始';
+    scanBtn.textContent = goldMineScanning ? `リサーチ中…(${goldMineProgress.done}/${goldMineProgress.total})` : '⛏️ 本日の金の場所リサーチ';
     scanBtn.disabled = goldMineScanning;
     scanBtn.addEventListener('click', () => scanGoldMine());
     gWrap.appendChild(scanBtn);
@@ -2310,7 +2313,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     if (goldMineResults !== null) {
       if (goldMineResults.length === 0) {
         const noneBox = document.createElement('div'); noneBox.style.cssText='font-size:13px;color:#ffd76b;background:rgba(255,215,107,0.08);border-radius:8px;padding:10px;margin-bottom:8px;line-height:1.7;';
-        noneBox.textContent = '本日は該当銘柄なし(出来高急増・52週高値更新・ゴールデンクロスのいずれにも当てはまりませんでした)。';
+        noneBox.textContent = '本日は該当銘柄なし(急騰・ギャップアップ・出来高急増・高値ブレイク・ゴールデンクロス/デッドクロスのいずれにも当てはまりませんでした)。';
         gWrap.appendChild(noneBox);
       } else {
         goldMineResults.forEach(hit => {
@@ -2362,11 +2365,21 @@ ${keywordLine}${bpBlock}${conditionBlock}
     }
     root.appendChild(gWrap);
 
+    // 魔法の言葉(英語の勉強枠) — エクササイズの形式は検討中。ポイントは下のダンジョンの2本目のバーに反映される。
+    const mwWrap = document.createElement('div'); mwWrap.className='pw';
+    const mwTitle = document.createElement('div'); mwTitle.className='pw-title'; mwTitle.textContent='魔法の言葉'; mwWrap.appendChild(mwTitle);
+    const mwDesc = document.createElement('div'); mwDesc.style.cssText='font-size:12.5px;color:#9db4ff;line-height:1.6;margin-bottom:6px;';
+    mwDesc.textContent = `英語の瞬発力トレーニング枠。たまったポイントはダンジョンの「魔法の言葉」バーに反映されます(現在 ${magicWordPoints}/${magicWordGoal})。`;
+    mwWrap.appendChild(mwDesc);
+    const mwNote = document.createElement('div'); mwNote.style.cssText='font-size:12px;color:#ffd76b;';
+    mwNote.textContent = 'どんな出題形式にするか、キングさんと相談して決める予定です。';
+    mwWrap.appendChild(mwNote);
+    root.appendChild(mwWrap);
+
     // dungeon (single, fixed)
     const dWrap = document.createElement('div'); dWrap.className='pw';
-    const dTitle = document.createElement('div'); dTitle.className='pw-title'; dTitle.textContent='ダンジョン：金貨の袋（1億円）'; dWrap.appendChild(dTitle);
+    const dTitle = document.createElement('div'); dTitle.className='pw-title'; dTitle.textContent='ダンジョン【金の袋と魔法の言葉】'; dWrap.appendChild(dTitle);
     const dc = document.createElement('div'); dc.className='rpg-dungeon';
-    const pct = Math.min(100, Math.round((dungeon.currentFloor/dungeon.totalFloors)*100));
 
     // Bars only — no figures here, so the panel reveals nothing over your shoulder.
     const GOAL = 100000000;
@@ -2377,13 +2390,14 @@ ${keywordLine}${bpBlock}${conditionBlock}
     });
     const goalPct = Math.min(100, (total / GOAL) * 100);
     const hasAssets = holdings.length > 0 && priced > 0;
+    const magicPct = Math.min(100, Math.round((magicWordPoints/magicWordGoal)*100));
 
     dc.innerHTML = `
       <div class="dg-label">金貨のたまり具合</div>
       <div class="rpg-dungeon-floor-bar tall"><div class="rpg-dungeon-floor-fill" style="width:${hasAssets ? Math.max(goalPct,0.4) : 0}%"></div></div>
       <div class="dg-divider"></div>
-      <div class="dg-label">冒険の歩み</div>
-      <div class="rpg-dungeon-floor-bar tall"><div class="rpg-dungeon-floor-fill alt" style="width:${pct}%"></div></div>
+      <div class="dg-label">魔法の言葉</div>
+      <div class="rpg-dungeon-floor-bar tall"><div class="rpg-dungeon-floor-fill alt" style="width:${Math.max(magicPct,0.4)}%"></div></div>
     `;
     dWrap.appendChild(dc);
 
@@ -3347,6 +3361,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   let priceCache = {};     // { code: {price, at, src} }
   async function saveHoldings(){ lsSet('wd3:holdings', {holdings}); }
   async function saveWatchlist(){ lsSet('wd3:watchlist', {watchlist}); }
+  async function saveMagicWords(){ lsSet('wd3:magicwords', {points: magicWordPoints, goal: magicWordGoal}); }
 
   // Try several public quote endpoints; the first that works from the user's browser wins.
   async function fetchQuote(code){
