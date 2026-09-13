@@ -2365,15 +2365,16 @@ ${keywordLine}${bpBlock}${conditionBlock}
     }
     root.appendChild(gWrap);
 
-    // 魔法の言葉(英語の勉強枠) — エクササイズの形式は検討中。ポイントは下のダンジョンの2本目のバーに反映される。
+    // 魔法の言葉(英語の勉強枠) — 「未知の王国」方式の会話トレーニング
     const mwWrap = document.createElement('div'); mwWrap.className='pw';
-    const mwTitle = document.createElement('div'); mwTitle.className='pw-title'; mwTitle.textContent='魔法の言葉'; mwWrap.appendChild(mwTitle);
+    const mwTitle = document.createElement('div'); mwTitle.className='pw-title'; mwTitle.textContent='魔法の言葉：未知の王国'; mwWrap.appendChild(mwTitle);
     const mwDesc = document.createElement('div'); mwDesc.style.cssText='font-size:12.5px;color:#9db4ff;line-height:1.6;margin-bottom:6px;';
-    mwDesc.textContent = `英語の瞬発力トレーニング枠。たまったポイントはダンジョンの「魔法の言葉」バーに反映されます(現在 ${magicWordPoints}/${magicWordGoal})。`;
+    mwDesc.textContent = `半年後、未知の王国の王様と15分間英語で話すために、毎日少しずつ会話の筋肉を鍛える。(現在 ${magicWordPoints}/${magicWordGoal}pt)`;
     mwWrap.appendChild(mwDesc);
-    const mwNote = document.createElement('div'); mwNote.style.cssText='font-size:12px;color:#ffd76b;';
-    mwNote.textContent = 'どんな出題形式にするか、キングさんと相談して決める予定です。';
-    mwWrap.appendChild(mwNote);
+    const mwStartBtn = document.createElement('button'); mwStartBtn.className = 'rpg-btn wide';
+    mwStartBtn.textContent = '👑 王様と話す';
+    mwStartBtn.addEventListener('click', () => { playSelect(); openMagicWordsModal(); });
+    mwWrap.appendChild(mwStartBtn);
     root.appendChild(mwWrap);
 
     // dungeon (single, fixed)
@@ -3253,6 +3254,218 @@ ${keywordLine}${bpBlock}${conditionBlock}
   function openRadioModal(){ openComingSoonModal('📻 壊れたラジカセ', ICON_RADIO); }
   function openDictModal(){ openComingSoonModal('📖 ゴールドカラーの豪華な辞書', ICON_DICT); }
 
+  // ================= 魔法の言葉：未知の王国 =================
+  let kingdomSession = null; // { history:[{en,ja}], phase, question:{en,ja,example_ja}, correction:{en,ja}, recognized:'' }
+  let kingdomBusy = false;
+  let kingdomRecognizer = null;
+
+  function kingdomStartSession(){
+    kingdomSession = {
+      history: [],
+      phase: 'question', // question -> help(optional overlay) -> confirm -> repeat -> question...
+      question: { en: 'What did you do yesterday?', ja: '昨日何をしたのか聞いています。', example_ja: '例えば「買い物に行きました」のように答えられます。' },
+      helpRevealed: false,
+      userAnswer: '',
+      correction: null,
+      recognized: ''
+    };
+  }
+
+  async function kingdomCallAI(historyForPrompt, userAnswer){
+    const keys = (geminiKeys && geminiKeys.length) ? geminiKeys : (geminiKey ? [geminiKey] : []);
+    if (keys.length === 0) throw new Error('APIキーが登録されていません(金の鉱山の「APIキーを管理」から追加してください)');
+    const prompt = `あなたは『未知の王国』の王様です。旅人(ユーザー)とやさしい日常英会話をします。以下のルールを厳守してください。
+- 王様の質問はやさしい日常英語(中学英語レベル)にする
+- ユーザーの答えが文法的に間違っていても、意図を汲み取って自然な英語に直す(意味を変えない)
+- 会話が自然につながるように、ユーザーの答えの内容を踏まえて次の質問を作る
+- 出力は指定のJSON形式のみ。前置きや説明、コードブロック記法は一切含めない
+
+【これまでの会話】
+${historyForPrompt}
+
+【ユーザーの最新の答え(英語、間違っている可能性あり)】
+"${userAnswer}"
+
+以下のJSON形式のみで出力してください:
+{"corrected_en":"(意図を汲んで自然に直した英文)","confirm_ja":"(直した英文の意味を確認する日本語の一文。例:「〜という意味ですか？」)","next_question_en":"(会話の流れに沿った次のやさしい質問、英語)","next_question_ja":"(次の質問の日本語訳)","example_answer_ja":"(次の質問への答え方のヒントを日本語で一言)"}`;
+    const requestPayload = { contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0.6} };
+    const body = JSON.stringify(requestPayload);
+    let lastErr = null, text = null;
+    for (const apiKey of keys) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body });
+        if (!res.ok) { lastErr = new Error('API error ' + res.status); continue; }
+        const json = await res.json();
+        text = ((json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts) || []).map(p=>p.text||'').join('\n').trim();
+        if (text) { lastErr = null; break; }
+      } catch(e){ lastErr = e; }
+    }
+    if (!text) throw (lastErr || new Error('取得できませんでした'));
+    let clean = text.replace(/```json|```/g, '').trim();
+    const m = clean.match(/\{[\s\S]*\}/);
+    if (m) clean = m[0];
+    return JSON.parse(clean);
+  }
+
+  function kingdomHistoryText(session){
+    return session.history.slice(-6).map(h => `王様: ${h.king_en}\n旅人: ${h.you_en}`).join('\n');
+  }
+
+  async function kingdomSubmitAnswer(answerText){
+    if (!answerText || !answerText.trim() || kingdomBusy) return;
+    kingdomBusy = true;
+    kingdomSession.userAnswer = answerText.trim();
+    renderKingdomModal();
+    try {
+      const histText = kingdomHistoryText(kingdomSession);
+      const result = await kingdomCallAI(histText, kingdomSession.userAnswer);
+      kingdomSession.correction = {
+        en: result.corrected_en,
+        confirm_ja: result.confirm_ja,
+        next_q_en: result.next_question_en,
+        next_q_ja: result.next_question_ja,
+        next_example_ja: result.example_answer_ja
+      };
+      kingdomSession.phase = 'confirm';
+    } catch(e){
+      kingdomSession.error = '王様への通信に失敗しました: ' + (e.message || String(e));
+    }
+    kingdomBusy = false;
+    renderKingdomModal();
+  }
+
+  function kingdomConfirmYes(){
+    kingdomSession.phase = 'repeat';
+    kingdomSession.recognized = '';
+    renderKingdomModal();
+  }
+
+  function kingdomRetryAnswer(){
+    kingdomSession.correction = null;
+    kingdomSession.phase = 'question';
+    kingdomSession.helpRevealed = false;
+    renderKingdomModal();
+  }
+
+  function kingdomAdvanceAfterRepeat(){
+    // ラウンド完了：魔法の言葉ポイントを1増やし、会話履歴に積み、次の質問へ
+    magicWordPoints++;
+    saveMagicWords();
+    kingdomSession.history.push({ king_en: kingdomSession.question.en, you_en: kingdomSession.correction.en });
+    kingdomSession.question = {
+      en: kingdomSession.correction.next_q_en,
+      ja: kingdomSession.correction.next_q_ja,
+      example_ja: kingdomSession.correction.next_example_ja
+    };
+    kingdomSession.correction = null;
+    kingdomSession.userAnswer = '';
+    kingdomSession.helpRevealed = false;
+    kingdomSession.recognized = '';
+    kingdomSession.phase = 'question';
+    playFanfare();
+    renderKingdomModal();
+  }
+
+  function kingdomStartRecognition(targetText){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { kingdomSession.recognized = '(この端末は音声認識に対応していません。「言えた」を押して進んでください)'; renderKingdomModal(); return; }
+    try {
+      const rec = new SR();
+      rec.lang = 'en-US';
+      rec.interimResults = false;
+      rec.maxAlternatives = 1;
+      rec.onresult = (ev) => {
+        kingdomSession.recognized = ev.results[0][0].transcript;
+        renderKingdomModal();
+      };
+      rec.onerror = () => { kingdomSession.recognized = '(聞き取れませんでした。もう一度どうぞ)'; renderKingdomModal(); };
+      rec.start();
+      kingdomRecognizer = rec;
+    } catch(e){ kingdomSession.recognized = '(音声認識を開始できませんでした)'; renderKingdomModal(); }
+  }
+
+  function openMagicWordsModal(){
+    if (!kingdomSession) kingdomStartSession();
+    renderKingdomModal();
+  }
+
+  function renderKingdomModal(){
+    const s = kingdomSession;
+    let body = `<div class="tw-desc small" style="margin-bottom:10px; line-height:1.6;">王様との会話で、少しずつ「会話の筋肉」を鍛えます。ポイントは自動で貯まります。(現在 ${magicWordPoints}/${magicWordGoal}pt)</div>`;
+
+    if (s.error) {
+      body += `<div style="font-size:12px;color:#ff6b6b;margin-bottom:10px;line-height:1.6;">${s.error}</div>`;
+    }
+
+    if (s.phase === 'question') {
+      body += `
+        <div style="background:rgba(255,255,255,0.06); border-radius:10px; padding:12px; margin-bottom:10px;">
+          <div style="font-size:11px; color:#ffd76b; margin-bottom:4px;">👑 王様</div>
+          <div style="font-size:16px; font-weight:bold;">${s.question.en}</div>
+        </div>
+      `;
+      if (!s.helpRevealed) {
+        body += `<button class="rpg-settings-link" id="rpgKgHelp" style="margin-bottom:10px;">❓ HELP(わからない時)</button>`;
+      } else {
+        body += `<div style="font-size:13px; color:#9db4ff; background:rgba(0,0,0,0.2); border-radius:8px; padding:10px; margin-bottom:10px; line-height:1.7;">
+          ${s.question.ja}<br>${s.question.example_ja ? '💡 ' + s.question.example_ja : ''}
+        </div>`;
+      }
+      body += `
+        <textarea id="rpgKgAnswer" placeholder="英語で答えてみてください(間違っていてもOK)" rows="2"
+          style="width:100%; padding:8px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box; margin-bottom:8px;"></textarea>
+        <button class="rpg-btn wide" id="rpgKgSubmit" ${kingdomBusy ? 'disabled' : ''}>${kingdomBusy ? '王様が考え中…' : '⚔️ 王様に伝える'}</button>
+      `;
+    }
+
+    if (s.phase === 'confirm' && s.correction) {
+      body += `
+        <div style="background:rgba(255,255,255,0.06); border-radius:10px; padding:12px; margin-bottom:10px;">
+          <div style="font-size:11px; color:#ffd76b; margin-bottom:4px;">👑 王様</div>
+          <div style="font-size:15px; font-weight:bold; margin-bottom:6px;">You mean, "${s.correction.en}"?</div>
+          <div style="font-size:13px; color:#9db4ff;">${s.correction.confirm_ja}</div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="rpg-btn wide" id="rpgKgYes">✅ YES</button>
+          <button class="rpg-btn secondary wide" id="rpgKgRetry">✏️ 書き直す</button>
+        </div>
+      `;
+    }
+
+    if (s.phase === 'repeat' && s.correction) {
+      body += `
+        <div style="background:rgba(255,255,255,0.06); border-radius:10px; padding:12px; margin-bottom:10px; text-align:center;">
+          <div style="font-size:11px; color:#ffd76b; margin-bottom:4px;">カンペ</div>
+          <div style="font-size:17px; font-weight:bold;">${s.correction.en}</div>
+        </div>
+        <div class="tw-desc small" style="margin-bottom:8px;">王様にもう一度、声に出して伝えてください。</div>
+        <button class="rpg-btn wide" id="rpgKgMic" style="margin-bottom:8px;">🎤 声に出す</button>
+        ${s.recognized ? `<div style="font-size:13px; color:#9db4ff; background:rgba(0,0,0,0.2); border-radius:8px; padding:8px; margin-bottom:8px;">聞き取り結果: ${s.recognized}</div>` : ''}
+        <button class="rpg-btn wide" id="rpgKgDone">👑 言えた！次へ</button>
+      `;
+    }
+
+    openToolModal('👑 未知の王国', body);
+
+    const helpBtn = document.getElementById('rpgKgHelp');
+    if (helpBtn) helpBtn.addEventListener('click', () => { s.helpRevealed = true; renderKingdomModal(); });
+    const submitBtn = document.getElementById('rpgKgSubmit');
+    if (submitBtn) submitBtn.addEventListener('click', () => {
+      const ta = document.getElementById('rpgKgAnswer');
+      kingdomSubmitAnswer(ta ? ta.value : '');
+    });
+    const yesBtn = document.getElementById('rpgKgYes');
+    if (yesBtn) yesBtn.addEventListener('click', () => { playSelect(); kingdomConfirmYes(); });
+    const retryBtn = document.getElementById('rpgKgRetry');
+    if (retryBtn) retryBtn.addEventListener('click', () => { playSelect(); kingdomRetryAnswer(); });
+    const micBtn = document.getElementById('rpgKgMic');
+    if (micBtn) micBtn.addEventListener('click', () => { playSelect(); kingdomStartRecognition(s.correction.en); });
+    const doneBtn = document.getElementById('rpgKgDone');
+    if (doneBtn) doneBtn.addEventListener('click', () => kingdomAdvanceAfterRepeat());
+  }
+
+
   // ================= ムーミンのぬいぐるみ(海を漂うボート) =================
   const BOAT_FRAMES = [BOAT_FRAME1, BOAT_FRAME2, BOAT_FRAME3, BOAT_FRAME4];
   let moominGen = 0;
@@ -3762,6 +3975,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       stopMetronome();
       stopPianoTheme();
       stopBirdWhistle();
+      if (kingdomRecognizer) { try{ kingdomRecognizer.stop(); }catch(e){} kingdomRecognizer = null; }
     }
   document.getElementById('rpgModalBackdrop').addEventListener('click', (e) => { if (e.target.id === 'rpgModalBackdrop') closeModal(); });
 
