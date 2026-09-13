@@ -3374,6 +3374,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   async function fetchQuote(code){
     const t = code.replace(/\.T$/i,'').toUpperCase();
     const PROXIES = [
+      u => 'https://king-stock-proxy.jungood1219.workers.dev/?url=' + encodeURIComponent(u),
       u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
       u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
       u => 'https://r.jina.ai/' + u
@@ -3424,6 +3425,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   async function fetchHistory(code){
     const t = code.replace(/\.T$/i,'').toUpperCase();
     const PROXIES = [
+      u => 'https://king-stock-proxy.jungood1219.workers.dev/?url=' + encodeURIComponent(u),
       u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
       u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
       u => 'https://r.jina.ai/' + u
