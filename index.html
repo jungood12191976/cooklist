@@ -3402,7 +3402,7 @@ ${historyForPrompt}
       body += `
         <div style="background:rgba(255,255,255,0.06); border-radius:10px; padding:12px; margin-bottom:10px;">
           <div style="font-size:11px; color:#ffd76b; margin-bottom:4px;">👑 王様</div>
-          <div style="font-size:16px; font-weight:bold;">${s.question.en}</div>
+          <div style="font-size:24px; font-weight:bold; color:#fff;">${s.question.en}</div>
         </div>
       `;
       if (!s.helpRevealed) {
@@ -3414,7 +3414,7 @@ ${historyForPrompt}
       }
       body += `
         <textarea id="rpgKgAnswer" placeholder="英語で答えてみてください(間違っていてもOK)" rows="2"
-          style="width:100%; padding:8px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box; margin-bottom:8px;"></textarea>
+          style="width:100%; padding:8px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box; margin-bottom:8px; color:#111;"></textarea>
         <button class="rpg-btn wide" id="rpgKgSubmit" ${kingdomBusy ? 'disabled' : ''}>${kingdomBusy ? '王様が考え中…' : '⚔️ 王様に伝える'}</button>
       `;
     }
@@ -3423,7 +3423,7 @@ ${historyForPrompt}
       body += `
         <div style="background:rgba(255,255,255,0.06); border-radius:10px; padding:12px; margin-bottom:10px;">
           <div style="font-size:11px; color:#ffd76b; margin-bottom:4px;">👑 王様</div>
-          <div style="font-size:15px; font-weight:bold; margin-bottom:6px;">You mean, "${s.correction.en}"?</div>
+          <div style="font-size:22.5px; font-weight:bold; margin-bottom:6px; color:#fff;">You mean, "${s.correction.en}"?</div>
           <div style="font-size:13px; color:#9db4ff;">${s.correction.confirm_ja}</div>
         </div>
         <div style="display:flex; gap:8px;">
@@ -3437,7 +3437,7 @@ ${historyForPrompt}
       body += `
         <div style="background:rgba(255,255,255,0.06); border-radius:10px; padding:12px; margin-bottom:10px; text-align:center;">
           <div style="font-size:11px; color:#ffd76b; margin-bottom:4px;">カンペ</div>
-          <div style="font-size:17px; font-weight:bold;">${s.correction.en}</div>
+          <div style="font-size:25.5px; font-weight:bold; color:#fff;">${s.correction.en}</div>
         </div>
         <div class="tw-desc small" style="margin-bottom:8px;">王様にもう一度、声に出して伝えてください。</div>
         <button class="rpg-btn wide" id="rpgKgMic" style="margin-bottom:8px;">🎤 声に出す</button>
