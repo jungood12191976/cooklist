@@ -1496,6 +1496,7 @@
     try { const rawWC = lsGet('wd3:walkcard'); if (rawWC) walkCard = Object.assign({dates:[],completedCount:0}, rawWC); } catch(e){}
     try { const rawBV = lsGet('wd3:birdvol'); if (rawBV && typeof rawBV.v === 'number') birdWhistleVolume = rawBV.v; } catch(e){}
     try { const rawRV = lsGet('wd3:radiovol'); if (rawRV && typeof rawRV.v === 'number') radioVolume = rawRV.v; } catch(e){}
+    loadGoldMineResultsIfToday();
     try { const rawPI = lsGet('wd3:pouch'); if (rawPI && rawPI.items) pouchItems = rawPI.items; } catch(e){}
     try { const rawWL = lsGet('wd3:watchlist'); if (rawWL && rawWL.watchlist) watchlist = rawWL.watchlist; } catch(e){}
     try { const rawMW = lsGet('wd3:magicwords'); if (rawMW) { magicWordPoints = rawMW.points||0; magicWordGoal = rawMW.goal||100; } } catch(e){}
@@ -1587,11 +1588,16 @@
   }
 
   const SLEEP_ENERGY = {'5':40,'5.5':55,'6':70,'6.5':85,'7':100,'7.5':100,'8':100};
+  function cyclePenalty(){
+    const ci = cycleInfo();
+    if (!ci) return 0;
+    if (ci.phase === 'ovulation') return 5;
+    if (ci.phase === 'luteal_late') return Math.max(1, Math.min(5, 5 - ci.daysToPeriod));
+    return 0;
+  }
   function energyValue(){
     let e = dayData.sleepHours ? (SLEEP_ENERGY[String(dayData.sleepHours)] ?? 70) : 70;
-    const ci = cycleInfo();
-    if (ci && ci.phase === 'luteal_late') e -= 30;
-    if (ci && ci.phase === 'ovulation') e -= 15;
+    e -= cyclePenalty();
     e -= pressurePenalty();
     e -= humidityPenalty();
     return Math.max(0, Math.min(100, e));
@@ -2042,7 +2048,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     if (dayData.weatherAuto) {
       const yest = getYesterdayPressure();
       const deltaTxt = yest !== null ? `(前日比 ${dayData.weatherAuto.pressure - yest >= 0 ? '+' : ''}${dayData.weatherAuto.pressure - yest}hPa)` : '';
-      autoStatus.innerHTML = `気温${dayData.weatherAuto.temp}℃ 湿度${dayData.weatherAuto.humidity}% 気圧${dayData.weatherAuto.pressure}hPa ${deltaTxt}<br>エネルギー影響: 気圧-${pressurePenalty()} 湿度-${humidityPenalty()}`;
+      autoStatus.innerHTML = `気温${dayData.weatherAuto.temp}℃ 湿度${dayData.weatherAuto.humidity}% 気圧${dayData.weatherAuto.pressure}hPa ${deltaTxt}<br>エネルギー影響: 気圧-${pressurePenalty()} 湿度-${humidityPenalty()}${cyclePenalty() ? ' 周期-' + cyclePenalty() : ''}`;
     }
     wrap.appendChild(autoStatus);
 
@@ -2243,8 +2249,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
 
     const ci = cycleInfo();
     const effects = document.createElement('div'); effects.className='rpg-status-effects';
-    if (ci && ci.phase === 'ovulation') effects.innerHTML += `<span class="rpg-badge warn">じょうたい：ホルモン変動</span>`;
-    if (ci && ci.phase === 'luteal_late') effects.innerHTML += `<span class="rpg-badge warn">じょうたい：生理前</span>`;
+    if (ci && ci.phase === 'ovulation') effects.innerHTML += `<span class="rpg-badge warn">じょうたい：排卵期 -${cyclePenalty()}</span>`;
+    if (ci && ci.phase === 'luteal_late') effects.innerHTML += `<span class="rpg-badge warn">じょうたい：生理前 -${cyclePenalty()}</span>`;
     const pPen = pressurePenalty(), hPen = humidityPenalty();
     if (pPen > 0) effects.innerHTML += `<span class="rpg-badge info">きあつ -${pPen}</span>`;
     if (hPen > 0) effects.innerHTML += `<span class="rpg-badge info">しつど -${hPen}</span>`;
@@ -3859,7 +3865,7 @@ ${historyForPrompt}
     render();
     const hits = [];
     let anyOk = false;
-    const scanTask = runWithConcurrency(NIKKEI225, 8, async (code) => {
+    const scanTask = runWithConcurrency(NIKKEI225, 12, async (code) => {
       try {
         const hist = await fetchHistory(code);
         goldMineProgress.done++;
@@ -3874,8 +3880,8 @@ ${historyForPrompt}
       }
       if (goldMineProgress.done % 15 === 0) render();
     });
-    // 万一どこかで詰まっても、全体で3分経ったら今の結果で強制的に打ち切る(スキャン中のまま固まるのを防ぐ)
-    const watchdog = new Promise(resolve => setTimeout(resolve, 180000));
+    // 万一どこかで詰まっても、全体で5分経ったら今の結果で強制的に打ち切る(スキャン中のまま固まるのを防ぐ)
+    const watchdog = new Promise(resolve => setTimeout(resolve, 300000));
     await Promise.race([scanTask, watchdog]);
     goldMineScanning = false;
     if (!anyOk) {
@@ -3888,8 +3894,23 @@ ${historyForPrompt}
       if (goldMineProgress.done < goldMineProgress.total) {
         goldMineError = `時間切れのため${goldMineProgress.done}/${goldMineProgress.total}銘柄までの結果です。`;
       }
+      saveGoldMineResults();
     }
     render();
+  }
+
+  function saveGoldMineResults(){
+    lsSet('wd3:goldmine', { date: todayDateKey(), results: goldMineResults, progress: goldMineProgress, error: goldMineError });
+  }
+  function loadGoldMineResultsIfToday(){
+    try {
+      const raw = lsGet('wd3:goldmine');
+      if (raw && raw.date === todayDateKey()) {
+        goldMineResults = raw.results;
+        goldMineProgress = raw.progress || goldMineProgress;
+        goldMineError = raw.error || null;
+      }
+    } catch(e){}
   }
 
   async function fetchGoldMineContext(code, conditionSummary, btnEl){
