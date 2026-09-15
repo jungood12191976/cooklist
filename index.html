@@ -3513,23 +3513,27 @@ ${keywordLine}${bpBlock}${conditionBlock}
     };
   }
 
-  async function kingdomCallAI(historyForPrompt, userAnswer){
+  async function kingdomCallAI(historyForPrompt, currentQuestion, userAnswer){
     const keys = (geminiKeys && geminiKeys.length) ? geminiKeys : (geminiKey ? [geminiKey] : []);
     if (keys.length === 0) throw new Error('APIキーが登録されていません(金の鉱山の「APIキーを管理」から追加してください)');
     const prompt = `あなたは『未知の王国』の王様です。旅人(ユーザー)とやさしい日常英会話をします。以下のルールを厳守してください。
 - 王様の質問はやさしい日常英語(中学英語レベル)にする
+- 「今、王様が聞いている質問」に対する答えとして、ユーザーの答えを直すこと。特に時制(過去・現在・未来)や話題(質問がyesterdayなら過去形、質問がusuallyなら現在形など)は、必ず質問の文脈に合わせること。質問と噛み合わない時制で直さないよう、細心の注意を払うこと
 - ユーザーの答えが文法的に間違っていても、意図を汲み取って自然な英語に直す(意味を変えない)
 - 会話が自然につながるように、ユーザーの答えの内容を踏まえて次の質問を作る
 - 出力は指定のJSON形式のみ。前置きや説明、コードブロック記法は一切含めない
 
 【これまでの会話】
-${historyForPrompt}
+${historyForPrompt || '(これが最初のやりとりです)'}
 
-【ユーザーの最新の答え(英語、間違っている可能性あり)】
+【今、王様が聞いている質問】
+"${currentQuestion}"
+
+【ユーザーの、この質問に対する答え(英語、間違っている可能性あり)】
 "${userAnswer}"
 
 以下のJSON形式のみで出力してください:
-{"corrected_en":"(意図を汲んで自然に直した英文)","confirm_ja":"(直した英文の意味を確認する日本語の一文。例:「〜という意味ですか？」)","next_question_en":"(会話の流れに沿った次のやさしい質問、英語)","next_question_ja":"(次の質問の日本語訳)","example_answer_ja":"(次の質問への答え方のヒントを日本語で一言)"}`;
+{"corrected_en":"(上の質問に対する答えとして、意図を汲んで自然に直した英文。時制・話題を質問に必ず合わせること)","confirm_ja":"(直した英文の意味を確認する日本語の一文。例:「〜という意味ですか？」)","next_question_en":"(会話の流れに沿った次のやさしい質問、英語)","next_question_ja":"(次の質問の日本語訳)","example_answer_ja":"(次の質問への答え方のヒントを日本語で一言)"}`;
     const requestPayload = { contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0.6} };
     const body = JSON.stringify(requestPayload);
     let lastErr = null, text = null;
@@ -3561,7 +3565,7 @@ ${historyForPrompt}
     renderKingdomModal();
     try {
       const histText = kingdomHistoryText(kingdomSession);
-      const result = await kingdomCallAI(histText, kingdomSession.userAnswer);
+      const result = await kingdomCallAI(histText, kingdomSession.question.en, kingdomSession.userAnswer);
       kingdomSession.correction = {
         en: result.corrected_en,
         confirm_ja: result.confirm_ja,
