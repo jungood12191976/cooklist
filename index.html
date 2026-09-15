@@ -1452,6 +1452,7 @@
   let goldMineScanning = false;
   let goldMineError = null;
   let goldMineContextCache = {}; // { code: text }
+  let goldMineContextErrors = {}; // { code: errorText } — 失敗は別枠にして再試行できるようにする
   let goldMineProgress = { done: 0, total: 0 };
   let magicWordPoints = 0;
   let magicWordGoal = 100;
@@ -2408,7 +2409,13 @@ ${keywordLine}${bpBlock}${conditionBlock}
             ctxBox.textContent = goldMineContextCache[hit.code];
             ctxBtnWrap.appendChild(ctxBox);
           } else {
-            const ctxBtn = document.createElement('button'); ctxBtn.className='rpg-settings-link'; ctxBtn.textContent = '🔍 AIで背景をしらべる(検索連携)';
+            if (goldMineContextErrors[hit.code]) {
+              const errBox = document.createElement('div'); errBox.style.cssText='font-size:12px; color:#ff9b6a; background:rgba(0,0,0,0.2); border-radius:6px; padding:8px; margin-top:6px; margin-bottom:6px; line-height:1.6;';
+              errBox.textContent = goldMineContextErrors[hit.code];
+              ctxBtnWrap.appendChild(errBox);
+            }
+            const ctxBtn = document.createElement('button'); ctxBtn.className='rpg-settings-link';
+            ctxBtn.textContent = goldMineContextErrors[hit.code] ? '🔄 もう一度しらべる' : '🔍 AIで背景をしらべる(検索連携)';
             ctxBtn.addEventListener('click', () => fetchGoldMineContext(hit.code, hit.tags.map(t=>t.label).join('・'), ctxBtn));
             ctxBtnWrap.appendChild(ctxBtn);
           }
@@ -4213,6 +4220,7 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
   }
   async function fetchGoldMineContext(code, conditionSummary, btnEl){
     if (btnEl) { btnEl.disabled = true; btnEl.textContent = '検索中…'; }
+    delete goldMineContextErrors[code];
     try {
       const keys = (geminiKeys && geminiKeys.length) ? geminiKeys : (geminiKey ? [geminiKey] : []);
       if (keys.length === 0) throw new Error('APIキーが登録されていません(下の「APIキーを管理」から追加してください)');
@@ -4222,7 +4230,7 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
       const text = await callGeminiKeys(keys, body);
       goldMineContextCache[code] = text;
     } catch(e){
-      goldMineContextCache[code] = '取得に失敗しました: ' + (e.message || String(e));
+      goldMineContextErrors[code] = '取得に失敗しました: ' + (e.message || String(e));
     }
     render();
   }
