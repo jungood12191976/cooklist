@@ -3549,18 +3549,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
 {"term_en":"(選んだ用語、英語)","term_question_en":"Do you know about \\"...\\"? のような、その用語を尋ねるやさしい英語の一文","hint_en":"(その用語をもっと簡単な言葉で言い換えたヒント、やさしい英語1文)","hint_ja":"(そのヒントの日本語訳)","reveal_en":"(そのニュースの内容を2〜3文のやさしい英語で要約したもの)","reveal_ja":"(その要約の日本語訳)","source":"(情報源のサイト名)","reaction_question_en":"(このニュースについて感想や意見を聞く、やさしい英語の質問)","reaction_question_ja":"(その質問の日本語訳)","reaction_example_ja":"(答え方のヒントを日本語で一言)"}`;
     const requestPayload = { contents:[{parts:[{text:prompt}]}], tools:[{google_search:{}}], generationConfig:{temperature:0.5} };
     const body = JSON.stringify(requestPayload);
-    let lastErr = null, text = null;
-    for (const apiKey of keys) {
-      try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-        const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body });
-        if (!res.ok) { lastErr = new Error('API error ' + res.status); continue; }
-        const json = await res.json();
-        text = ((json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts) || []).map(p=>p.text||'').join('\n').trim();
-        if (text) { lastErr = null; break; }
-      } catch(e){ lastErr = e; }
-    }
-    if (!text) throw (lastErr || new Error('取得できませんでした'));
+    const text = await callGeminiKeys(keys, body);
     let clean = text.replace(/```json|```/g, '').trim();
     const m = clean.match(/\{[\s\S]*\}/);
     if (m) clean = m[0];
@@ -3617,18 +3606,7 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
 {"corrected_en":"(上の質問に対する答えとして、意図を汲んで自然に直した英文。時制・話題を質問に必ず合わせること)","confirm_ja":"(直した英文の意味を確認する日本語の一文。例:「〜という意味ですか？」)","next_question_en":"(会話の流れに沿った次のやさしい質問、英語)","next_question_ja":"(次の質問の日本語訳)","example_answer_ja":"(次の質問への答え方のヒントを日本語で一言)"}`;
     const requestPayload = { contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0.6} };
     const body = JSON.stringify(requestPayload);
-    let lastErr = null, text = null;
-    for (const apiKey of keys) {
-      try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-        const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body });
-        if (!res.ok) { lastErr = new Error('API error ' + res.status); continue; }
-        const json = await res.json();
-        text = ((json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts) || []).map(p=>p.text||'').join('\n').trim();
-        if (text) { lastErr = null; break; }
-      } catch(e){ lastErr = e; }
-    }
-    if (!text) throw (lastErr || new Error('取得できませんでした'));
+    const text = await callGeminiKeys(keys, body);
     let clean = text.replace(/```json|```/g, '').trim();
     const m = clean.match(/\{[\s\S]*\}/);
     if (m) clean = m[0];
@@ -4204,6 +4182,35 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
     } catch(e){}
   }
 
+  function describeGeminiError(status){
+    if (status === 429) return 'APIが混み合っているか、今日の無料枠を使い切った可能性があります。少し時間をおくか、APIキーを増やしてみてください。';
+    if (status === 400) return 'リクエストがうまく届きませんでした。';
+    if (status >= 500) return 'Google側で一時的な問題が起きている可能性があります。';
+    return `通信エラー(${status})が起きました。`;
+  }
+  async function callGeminiKeys(keys, body){
+    let lastErr = null, text = null;
+    for (const apiKey of keys) {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body });
+          if (!res.ok) {
+            lastErr = new Error(describeGeminiError(res.status));
+            if (res.status === 429 && attempt === 0) { await new Promise(r => setTimeout(r, 1500)); continue; }
+            break; // 次のキーへ
+          }
+          const json = await res.json();
+          text = ((json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts) || []).map(p=>p.text||'').join('\n').trim();
+          if (text) lastErr = null;
+          break;
+        } catch(e){ lastErr = e; break; }
+      }
+      if (text) break;
+    }
+    if (!text) throw (lastErr || new Error('取得できませんでした'));
+    return text;
+  }
   async function fetchGoldMineContext(code, conditionSummary, btnEl){
     if (btnEl) { btnEl.disabled = true; btnEl.textContent = '検索中…'; }
     try {
@@ -4212,18 +4219,7 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
       const prompt = `あなたは日本株の市場アナリストです。まずGoogle検索で「${code} 株価 ニュース」のように検索し、直近の実際のニュースや材料を確認してください。この銘柄は本日、次のテクニカル条件に該当しました: ${conditionSummary}。検索結果を踏まえて、なぜ今この銘柄が注目されている可能性があるか、日本語で100字程度、情報源のサイト名も一言添えて説明してください。説明文だけを出力し、他のテキストは含めないでください。`;
       const requestPayload = { contents:[{parts:[{text:prompt}]}], tools:[{google_search:{}}], generationConfig:{temperature:0.4} };
       const body = JSON.stringify(requestPayload);
-      let lastErr = null, text = null;
-      for (const apiKey of keys) {
-        try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-          const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body });
-          if (!res.ok) { lastErr = new Error('API error ' + res.status); continue; }
-          const json = await res.json();
-          text = ((json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts) || []).map(p=>p.text||'').join('\n').trim();
-          if (text) { lastErr = null; break; }
-        } catch(e){ lastErr = e; }
-      }
-      if (!text) throw (lastErr || new Error('取得できませんでした'));
+      const text = await callGeminiKeys(keys, body);
       goldMineContextCache[code] = text;
     } catch(e){
       goldMineContextCache[code] = '取得に失敗しました: ' + (e.message || String(e));
