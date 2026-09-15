@@ -3461,6 +3461,19 @@ ${keywordLine}${bpBlock}${conditionBlock}
 
 
   // ================= 魔法の言葉：未知の王国 =================
+  function speakEnglish(text){
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      const v = (savedVoiceName && _voices.find(x => x.name === savedVoiceName)) || pickMaleEnglishVoice();
+      if (v) { u.voice = v; u.lang = v.lang; }
+      u.pitch = voicePitch;
+      u.rate = 0.88;
+      speechSynthesis.speak(u);
+    } catch(e){}
+  }
+  let kingdomLastSpokenQ = null;
   let kingdomSession = null; // { history:[{en,ja}], phase, question:{en,ja,example_ja}, correction:{en,ja}, recognized:'' }
   let kingdomBusy = false;
   let kingdomRecognizer = null;
@@ -3502,6 +3515,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     let idx = Math.floor(Math.random() * KINGDOM_OPENERS.length);
     if (KINGDOM_OPENERS.length > 1 && idx === kingdomLastOpenerIdx) idx = (idx + 1) % KINGDOM_OPENERS.length;
     kingdomLastOpenerIdx = idx;
+    kingdomLastSpokenQ = null;
     kingdomSession = {
       history: [],
       phase: 'question', // question -> help(optional overlay) -> confirm -> repeat -> question...
@@ -3695,6 +3709,11 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
     }
 
     openToolModal('👑 未知の王国', body, 'kingdom');
+
+    if (s.phase === 'question' && kingdomLastSpokenQ !== s.question.en) {
+      kingdomLastSpokenQ = s.question.en;
+      speakEnglish(s.question.en);
+    }
 
     const helpBtn = document.getElementById('rpgKgHelp');
     if (helpBtn) helpBtn.addEventListener('click', () => { s.helpRevealed = true; renderKingdomModal(); });
