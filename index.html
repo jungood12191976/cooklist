@@ -3511,26 +3511,81 @@ ${keywordLine}${bpBlock}${conditionBlock}
     { en: 'What is something you are good at?', ja: '得意なことを聞いています。', example_ja: '例えば「料理が得意です」のように答えられます。' }
   ];
   let kingdomLastOpenerIdx = -1;
-  function kingdomStartSession(){
+  function kingdomSetupChat(){
     let idx = Math.floor(Math.random() * KINGDOM_OPENERS.length);
     if (KINGDOM_OPENERS.length > 1 && idx === kingdomLastOpenerIdx) idx = (idx + 1) % KINGDOM_OPENERS.length;
     kingdomLastOpenerIdx = idx;
     kingdomLastSpokenQ = null;
     kingdomSession = {
+      mode: 'chat',
       history: [],
-      phase: 'question', // question -> help(optional overlay) -> confirm -> repeat -> question...
+      phase: 'question', // question -> confirm -> repeat -> question...
       question: { ...KINGDOM_OPENERS[idx] },
       helpRevealed: false,
       userAnswer: '',
       correction: null,
-      recognized: ''
+      recognized: '',
+      error: null
     };
+  }
+
+  async function fetchKingdomNews(){
+    const keys = (geminiKeys && geminiKeys.length) ? geminiKeys : (geminiKey ? [geminiKey] : []);
+    if (keys.length === 0) throw new Error('APIキーが登録されていません');
+    const prompt = `あなたは『未知の王国』の物知りな執事です。まずGoogle検索で、本日の経済またはAI関連の興味深いニュースを1つ見つけてください。その中から専門用語や固有名詞を1つ選び、以下のJSON形式のみで出力してください(前置き・説明・コードブロック記法は一切含めない)。
+
+{"term_en":"(選んだ用語、英語)","term_question_en":"Do you know about \\"...\\"? のような、その用語を尋ねるやさしい英語の一文","hint_en":"(その用語をもっと簡単な言葉で言い換えたヒント、やさしい英語1文)","hint_ja":"(そのヒントの日本語訳)","reveal_en":"(そのニュースの内容を2〜3文のやさしい英語で要約したもの)","reveal_ja":"(その要約の日本語訳)","source":"(情報源のサイト名)","reaction_question_en":"(このニュースについて感想や意見を聞く、やさしい英語の質問)","reaction_question_ja":"(その質問の日本語訳)","reaction_example_ja":"(答え方のヒントを日本語で一言)"}`;
+    const requestPayload = { contents:[{parts:[{text:prompt}]}], tools:[{google_search:{}}], generationConfig:{temperature:0.5} };
+    const body = JSON.stringify(requestPayload);
+    let lastErr = null, text = null;
+    for (const apiKey of keys) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body });
+        if (!res.ok) { lastErr = new Error('API error ' + res.status); continue; }
+        const json = await res.json();
+        text = ((json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts) || []).map(p=>p.text||'').join('\n').trim();
+        if (text) { lastErr = null; break; }
+      } catch(e){ lastErr = e; }
+    }
+    if (!text) throw (lastErr || new Error('取得できませんでした'));
+    let clean = text.replace(/```json|```/g, '').trim();
+    const m = clean.match(/\{[\s\S]*\}/);
+    if (m) clean = m[0];
+    return JSON.parse(clean);
+  }
+
+  async function kingdomBeginNewRound(){
+    kingdomLastSpokenQ = null;
+    const useNews = Math.random() < 0.5; // 不規則に「いつもの雑談」か「執事のニュース」かが切り替わる
+    if (!useNews) { kingdomSetupChat(); renderKingdomModal(); return; }
+    kingdomSession = { mode:'news', phase:'loading', history:[], error:null };
+    renderKingdomModal();
+    try {
+      const news = await fetchKingdomNews();
+      kingdomSession = {
+        mode: 'news',
+        history: [],
+        phase: 'news_term',
+        newsData: news,
+        helpRevealed: false,
+        userAnswer: '',
+        correction: null,
+        recognized: '',
+        error: null
+      };
+    } catch(e){
+      // ニュース取得に失敗したら、いつもの雑談にフォールバック
+      kingdomSetupChat();
+    }
+    renderKingdomModal();
   }
 
   async function kingdomCallAI(historyForPrompt, currentQuestion, userAnswer){
     const keys = (geminiKeys && geminiKeys.length) ? geminiKeys : (geminiKey ? [geminiKey] : []);
     if (keys.length === 0) throw new Error('APIキーが登録されていません(金の鉱山の「APIキーを管理」から追加してください)');
-    const prompt = `あなたは『未知の王国』の王様です。旅人(ユーザー)とやさしい日常英会話をします。以下のルールを厳守してください。
+    const prompt = `あなたは『未知の王国』の、気さくでフレンドリーな王様です。旅人(ユーザー)と、親しい友達のように温かく親しみやすい日常英会話をします。以下のルールを厳守してください。
+- 口調はフレンドリーで温かく、堅苦しくしない(ただし語彙・文法はやさしい日常英語のまま)
 - 王様の質問はやさしい日常英語(中学英語レベル)にする
 - 「今、王様が聞いている質問」に対する答えとして、ユーザーの答えを直すこと。特に時制(過去・現在・未来)や話題(質問がyesterdayなら過去形、質問がusuallyなら現在形など)は、必ず質問の文脈に合わせること。質問と噛み合わない時制で直さないよう、細心の注意を払うこと
 - ユーザーの答えが文法的に間違っていても、意図を汲み取って自然な英語に直す(意味を変えない)
@@ -3566,6 +3621,22 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
     const m = clean.match(/\{[\s\S]*\}/);
     if (m) clean = m[0];
     return JSON.parse(clean);
+  }
+
+  function kingdomNewsGuessSubmit(guessText){
+    // 単語当てゲームなので、正解不正解の判定はしない。次(ニュースの種明かし)に進むだけ。
+    kingdomSession.phase = 'news_reveal';
+    renderKingdomModal();
+  }
+
+  function kingdomNewsContinueToReaction(){
+    const n = kingdomSession.newsData;
+    kingdomSession.mode = 'chat'; // ここから先は通常の質問応答フローに合流する
+    kingdomSession.phase = 'question';
+    kingdomSession.question = { en: n.reaction_question_en, ja: n.reaction_question_ja, example_ja: n.reaction_example_ja };
+    kingdomSession.helpRevealed = false;
+    kingdomLastSpokenQ = null;
+    renderKingdomModal();
   }
 
   function kingdomHistoryText(session){
@@ -3648,7 +3719,7 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
   }
 
   function openMagicWordsModal(){
-    if (!kingdomSession) kingdomStartSession();
+    if (!kingdomSession) { kingdomBeginNewRound(); return; }
     renderKingdomModal();
   }
 
@@ -3658,6 +3729,45 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
 
     if (s.error) {
       body += `<div style="font-size:12px;color:#ff6b6b;margin-bottom:10px;line-height:1.6;">${s.error}</div>`;
+    }
+
+    if (s.phase === 'loading') {
+      body += `<div style="text-align:center; padding:20px 0; color:#9db4ff;">📜 執事が今日のニュースを調べています…</div>`;
+    }
+
+    if (s.phase === 'news_term') {
+      const n = s.newsData;
+      body += `
+        <div style="background:rgba(255,255,255,0.06); border-radius:10px; padding:12px; margin-bottom:10px;">
+          <div style="font-size:11px; color:#ffd76b; margin-bottom:4px;">🧐 物知りな執事</div>
+          <div style="font-size:22px; font-weight:bold; color:#fff;">${n.term_question_en}</div>
+        </div>
+      `;
+      if (!s.helpRevealed) {
+        body += `<button class="rpg-settings-link" id="rpgKgHelp" style="margin-bottom:10px;">❓ HELP(わからない時)</button>`;
+      } else {
+        body += `<div style="font-size:13px; color:#9db4ff; background:rgba(0,0,0,0.2); border-radius:8px; padding:10px; margin-bottom:10px; line-height:1.7;">
+          💡 ${n.hint_en}<br>${n.hint_ja}
+        </div>`;
+      }
+      body += `
+        <textarea id="rpgKgAnswer" placeholder="なんとなくでOK、思ったことを書いてみてください" rows="2"
+          style="width:100%; padding:8px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box; margin-bottom:8px; color:#111;"></textarea>
+        <button class="rpg-btn wide" id="rpgKgNewsGuess">🔍 執事に伝える</button>
+      `;
+    }
+
+    if (s.phase === 'news_reveal') {
+      const n = s.newsData;
+      body += `
+        <div style="background:rgba(255,255,255,0.06); border-radius:10px; padding:12px; margin-bottom:10px;">
+          <div style="font-size:11px; color:#ffd76b; margin-bottom:4px;">🧐 物知りな執事</div>
+          <div style="font-size:17px; font-weight:bold; color:#fff; margin-bottom:8px;">${n.reveal_en}</div>
+          <div style="font-size:13px; color:#9db4ff; line-height:1.6;">${n.reveal_ja}</div>
+          <div style="font-size:11px; color:#9db4ff; margin-top:6px;">情報源: ${n.source}</div>
+        </div>
+        <button class="rpg-btn wide" id="rpgKgNewsContinue">次へ</button>
+      `;
     }
 
     if (s.phase === 'question') {
@@ -3714,6 +3824,23 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
       kingdomLastSpokenQ = s.question.en;
       speakEnglish(s.question.en);
     }
+    if (s.phase === 'news_term' && kingdomLastSpokenQ !== s.newsData.term_question_en) {
+      kingdomLastSpokenQ = s.newsData.term_question_en;
+      speakEnglish(s.newsData.term_question_en);
+    }
+    if (s.phase === 'news_reveal' && kingdomLastSpokenQ !== s.newsData.reveal_en) {
+      kingdomLastSpokenQ = s.newsData.reveal_en;
+      speakEnglish(s.newsData.reveal_en);
+    }
+
+    const newsGuessBtn = document.getElementById('rpgKgNewsGuess');
+    if (newsGuessBtn) newsGuessBtn.addEventListener('click', () => {
+      const ta = document.getElementById('rpgKgAnswer');
+      playSelect();
+      kingdomNewsGuessSubmit(ta ? ta.value : '');
+    });
+    const newsContinueBtn = document.getElementById('rpgKgNewsContinue');
+    if (newsContinueBtn) newsContinueBtn.addEventListener('click', () => { playSelect(); kingdomNewsContinueToReaction(); });
 
     const helpBtn = document.getElementById('rpgKgHelp');
     if (helpBtn) helpBtn.addEventListener('click', () => { s.helpRevealed = true; renderKingdomModal(); });
