@@ -4203,7 +4203,12 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
           const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
           const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body });
           if (!res.ok) {
-            lastErr = new Error(describeGeminiError(res.status));
+            let detail = '';
+            try {
+              const errJson = await res.json();
+              detail = (errJson && errJson.error && errJson.error.message) ? errJson.error.message : '';
+            } catch(e2){}
+            lastErr = new Error(describeGeminiError(res.status) + (detail ? `(詳細: ${detail})` : ''));
             if (res.status === 429 && attempt === 0) { await new Promise(r => setTimeout(r, 1500)); continue; }
             break; // 次のキーへ
           }
