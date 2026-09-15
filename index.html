@@ -1429,7 +1429,8 @@
   let today = new Date();
   let todayKey = today.toISOString().slice(0,10);
   let dayData = { weather:null, weatherAuto:null, sleepHours:null, bathGood:null, bathSlot:null, mainIngredient:'', keyword:'', quickMode:false, cookType:null, pickedRatio:null, ratioOffer:null, ratioOfferType:null, ratioOfferIng:null };
-  let ovulationDate = null;
+  let ovulationDate = null; // 旧方式(互換用、periodDatesへ移行済みなら未使用)
+  let periodDates = []; // 生理が来た日の記録(ISO文字列の配列、古い順)
   let quests = [];
   let menuLog = [];
   let customRatios = [];
@@ -1450,6 +1451,7 @@
   let magicWordPoints = 0;
   let magicWordGoal = 100;
   let activeModalId = null;
+  let eventLog = []; // [{date, text}] 予期しない出来事の記録
   let screen = 'setup';
   const ENEMIES = [
     { key:'jellyfish', img: ENEMY_JELLYFISH, name:'なぞのクラゲ' },
@@ -1475,7 +1477,19 @@
 
   async function loadAll(){
     try { const raw = lsGet('wd3:' + todayKey); if (raw) dayData = Object.assign(dayData, raw); } catch(e){}
-    try { const raw2 = lsGet('wd3:cycle'); if (raw2) ovulationDate = raw2.ovulationDate || null; } catch(e){}
+    try {
+      const raw2 = lsGet('wd3:cycle');
+      if (raw2) {
+        ovulationDate = raw2.ovulationDate || null;
+        periodDates = Array.isArray(raw2.periodDates) ? raw2.periodDates : [];
+        // 旧方式(排卵日のみ)からの一度きりの移行：まだ生理日の記録が無ければ、排卵日-14日を初期値として1件だけ作る
+        if (periodDates.length === 0 && ovulationDate) {
+          const seedDate = new Date(ovulationDate + 'T00:00:00');
+          seedDate.setDate(seedDate.getDate() - 14);
+          periodDates = [seedDate.toISOString().slice(0,10)];
+        }
+      }
+    } catch(e){}
     try { const raw3 = lsGet('wd3:quests'); if (raw3) quests = raw3.quests || []; } catch(e){}
     try { const rawML = lsGet('wd3:menulog'); if (rawML) menuLog = rawML.menuLog || []; } catch(e){}
     try { const rawCR = lsGet('wd3:customratios'); if (rawCR) customRatios = rawCR.customRatios || []; } catch(e){}
@@ -1497,6 +1511,8 @@
     try { const rawBV = lsGet('wd3:birdvol'); if (rawBV && typeof rawBV.v === 'number') birdWhistleVolume = rawBV.v; } catch(e){}
     try { const rawRV = lsGet('wd3:radiovol'); if (rawRV && typeof rawRV.v === 'number') radioVolume = rawRV.v; } catch(e){}
     loadGoldMineResultsIfToday();
+    try { const rawEL = lsGet('wd3:eventlog'); if (rawEL && Array.isArray(rawEL.entries)) eventLog = rawEL.entries; } catch(e){}
+    try { const rawKR = lsGet('wd3:kingdomlast'); if (rawKR && rawKR.date) lastKingdomRoundDate = rawKR.date; } catch(e){}
     try { const rawPI = lsGet('wd3:pouch'); if (rawPI && rawPI.items) pouchItems = rawPI.items; } catch(e){}
     try { const rawWL = lsGet('wd3:watchlist'); if (rawWL && rawWL.watchlist) watchlist = rawWL.watchlist; } catch(e){}
     try { const rawMW = lsGet('wd3:magicwords'); if (rawMW) { magicWordPoints = rawMW.points||0; magicWordGoal = rawMW.goal||100; } } catch(e){}
@@ -1504,7 +1520,31 @@
     render();
   }
   async function saveDay(){ lsSet('wd3:' + todayKey, dayData); }
-  async function saveCycle(){ lsSet('wd3:cycle', {ovulationDate}); }
+  async function saveCycle(){ lsSet('wd3:cycle', {ovulationDate, periodDates}); }
+  function addPeriodDate(dateStr){
+    if (!dateStr) return;
+    if (!periodDates.includes(dateStr)) periodDates.push(dateStr);
+    periodDates.sort();
+    if (periodDates.length > 12) periodDates = periodDates.slice(-12); // 直近12周期分だけ保持
+    saveCycle();
+  }
+  function removePeriodDate(dateStr){
+    periodDates = periodDates.filter(d => d !== dateStr);
+    saveCycle();
+  }
+  function estimatedCycleLength(){
+    if (periodDates.length < 2) return 29; // データが少ない間は一般的な目安(28〜30日の中間)を仮置き
+    const diffs = [];
+    for (let i = 1; i < periodDates.length; i++) {
+      const d0 = new Date(periodDates[i-1] + 'T00:00:00');
+      const d1 = new Date(periodDates[i] + 'T00:00:00');
+      const diff = Math.round((d1 - d0) / 86400000);
+      if (diff >= 21 && diff <= 40) diffs.push(diff); // 明らかな入力ミスらしき値は除外
+    }
+    if (diffs.length === 0) return 29;
+    const avg = diffs.reduce((a,b)=>a+b,0) / diffs.length;
+    return Math.round(avg);
+  }
   async function saveQuests(){ lsSet('wd3:quests', {quests}); }
   async function saveMenuLog(){ lsSet('wd3:menulog', {menuLog}); }
   async function saveCustomRatios(){ lsSet('wd3:customratios', {customRatios}); }
@@ -1538,10 +1578,12 @@
   async function saveGeminiKeys(){ lsSet('wd3:geminikeys', {keys: geminiKeys}); }
 
   function cycleInfo(){
-    if (!ovulationDate) return null;
-    const ov = new Date(ovulationDate + 'T00:00:00');
+    if (periodDates.length === 0) return null;
+    const lastPeriod = new Date(periodDates[periodDates.length - 1] + 'T00:00:00');
+    const cycleLen = estimatedCycleLength();
+    const periodExpected = new Date(lastPeriod.getTime() + cycleLen*86400000);
+    const ov = new Date(periodExpected.getTime() - 14*86400000); // 排卵日は「次の生理予定日の14日前」で推定(黄体期はブレが少ないため)
     const diffDays = Math.floor((today - ov) / 86400000);
-    const periodExpected = new Date(ov.getTime() + 14*86400000);
     const daysToPeriod = Math.floor((periodExpected - today) / 86400000);
     let phase, phaseLabel;
     if (diffDays < -1) { phase='follicular'; phaseLabel='卵胞期'; }
@@ -1549,7 +1591,7 @@
     else if (daysToPeriod <= 4 && daysToPeriod >= 0) { phase='luteal_late'; phaseLabel='生理前'; }
     else if (daysToPeriod < 0) { phase='menstrual'; phaseLabel='生理中?'; }
     else { phase='luteal_mid'; phaseLabel='黄体期'; }
-    return {diffDays, daysToPeriod, phase, phaseLabel};
+    return {diffDays, daysToPeriod, phase, phaseLabel, cycleLen, periodExpected};
   }
   function getYesterdayPressure(){
     const y = new Date(today); y.setDate(y.getDate() - 1);
@@ -1661,6 +1703,8 @@
       '今日はいいコンディションです。<b>この調子でクエストを進めましょう。</b>',
       '負荷の少ない一日です。<b>攻めの一日にしていきましょう。</b>'
     ]));
+    const todaysEvent = eventLog.find(e => e.date === todayDateKey());
+    if (todaysEvent) parts.push(`ところで今日、「${todaysEvent.text}」とのこと。それも込みで、無理せずいきましょう。`);
     return parts.join(' ');
   }
 
@@ -2032,10 +2076,28 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const row1 = document.createElement('div'); row1.className='rpg-setup-row';
     row1.innerHTML = `<span>周期(お届け日)</span>`;
     const ovInput = document.createElement('input');
-    ovInput.type='date'; ovInput.className='rpg-date-input'; ovInput.value = ovulationDate || '';
-    ovInput.addEventListener('change', e => { ovulationDate = e.target.value; saveCycle(); render(); });
+    ovInput.type='date'; ovInput.className='rpg-date-input';
+    ovInput.value = '';
+    ovInput.addEventListener('change', e => { if (e.target.value) { addPeriodDate(e.target.value); e.target.value=''; render(); } });
     row1.appendChild(ovInput);
     wrap.appendChild(row1);
+    if (periodDates.length) {
+      const cInfo = document.createElement('div'); cInfo.style.cssText='font-size:11.5px; color:#9db4ff; margin:-4px 0 8px; line-height:1.6;';
+      const lenTxt = periodDates.length >= 2 ? `平均${estimatedCycleLength()}日周期` : `周期日数は次回の記録後に自動計算されます(仮に29日で計算中)`;
+      cInfo.innerHTML = `直近の記録：${periodDates.slice(-3).reverse().join('、')}　${lenTxt}`;
+      wrap.appendChild(cInfo);
+      const pdChips = document.createElement('div'); pdChips.style.cssText='display:flex; flex-wrap:wrap; gap:6px; margin:-2px 0 8px;';
+      periodDates.slice(-6).reverse().forEach(d => {
+        const chip = document.createElement('div');
+        chip.style.cssText='display:flex; align-items:center; gap:4px; background:rgba(255,255,255,0.08); border-radius:12px; padding:3px 8px; font-size:11px; color:#fff;';
+        chip.innerHTML = `<span>${d}</span>`;
+        const rm = document.createElement('span'); rm.textContent = '✕'; rm.style.cssText='cursor:pointer; opacity:0.6;';
+        rm.addEventListener('click', () => { removePeriodDate(d); render(); });
+        chip.appendChild(rm);
+        pdChips.appendChild(chip);
+      });
+      wrap.appendChild(pdChips);
+    }
 
     const row2 = document.createElement('div'); row2.className='rpg-setup-row';
     row2.innerHTML = `<span>てんき(自動取得)</span><span class="rpg-setup-val" id="rpgWeatherVal">${dayData.weatherAuto ? '取得済み' : '未取得'}</span>`;
@@ -2110,16 +2172,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     {top:'64%', left:'6%'}, {top:'64%', right:'6%'}
   ];
   function buildRewardIcons(){
-    const todaysDone = quests.filter(q => q.done && q.completedAt && q.completedAt.slice(0,10) === todayKey);
-    if (todaysDone.length === 0) return '';
-    let html = '';
-    todaysDone.slice(0,6).forEach((q, i) => {
-      const iconIdx = hashStr(q.id) % REWARD_ICONS.length;
-      const slot = REWARD_SLOTS[i % REWARD_SLOTS.length];
-      const posStyle = Object.entries(slot).map(([k,v]) => `${k}:${v}`).join('; ');
-      html += `<img class="rpg-reward-icon" src="${REWARD_ICONS[iconIdx]}" style="${posStyle}" alt="ほうび">`;
-    });
-    return html;
+    return ''; // 勇者の隣にアイテムが重なって表示される演出は廃止
   }
   function buildWeatherFx(){
     if (!dayData.weatherAuto) return '';
@@ -2179,10 +2232,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const enemyImg = document.getElementById('rpgEnemy');
     if (enemyImg) {
       enemyImg.addEventListener('click', () => {
-        battleEngaged = !battleEngaged;
-        if (battleEngaged) { playSlash(); startBattleBGM(todaysEnemy.key); }
-        else { playOpen(); startBGM(); }
-        render();
+        playSlash();
+        openEventLogModal();
       });
     }
     const letterIcon = document.getElementById('rpgGroundLetterIcon');
@@ -2329,11 +2380,14 @@ ${keywordLine}${bpBlock}${conditionBlock}
         noneBox.textContent = '本日は該当銘柄なし(急騰・ギャップアップ・出来高急増・高値ブレイク・ゴールデンクロスのいずれにも当てはまりませんでした)。';
         gWrap.appendChild(noneBox);
       } else {
-        goldMineResults.forEach(hit => {
+        goldMineResults.forEach((hit, hitIdx) => {
+          const isTop = hitIdx === 0;
           const card = document.createElement('div');
-          card.style.cssText='background:rgba(255,255,255,0.06); border-radius:10px; padding:10px 12px; margin-bottom:8px;';
+          card.style.cssText = isTop
+            ? 'background:linear-gradient(135deg, rgba(255,215,107,0.18), rgba(255,255,255,0.06)); border:1px solid #ffd76b; border-radius:10px; padding:10px 12px; margin-bottom:10px;'
+            : 'background:rgba(255,255,255,0.06); border-radius:10px; padding:10px 12px; margin-bottom:8px;';
           const tagsHtml = hit.tags.map(tag => `<div style="font-size:12px; margin-bottom:3px;">${tag.bull?'🟢':'🔴'} <b>${tag.label}</b>：${tag.detail}</div>`).join('');
-          card.innerHTML = `<div style="font-weight:bold; margin-bottom:6px;">${hit.code}</div>
+          card.innerHTML = `${isTop ? '<div style="font-size:12px; color:#ffd76b; font-weight:bold; margin-bottom:4px;">👑 本日のイチオシ</div>' : ''}<div style="font-weight:bold; margin-bottom:6px; font-size:${isTop?'17px':'14px'};">${hit.code}</div>
             ${tagsHtml}
             <div style="font-size:11px; color:#9db4ff; margin-top:4px;">データ取得: ${hit.asOf}(${hit.src})</div>`;
           const ctxBtnWrap = document.createElement('div'); ctxBtnWrap.style.marginTop='6px';
@@ -3333,6 +3387,79 @@ ${keywordLine}${bpBlock}${conditionBlock}
 
   function openDictModal(){ openComingSoonModal('📖 ゴールドカラーの豪華な辞書', ICON_DICT); }
 
+  // ================= 予期しない出来事の記録(敵をタップすると開く) =================
+  function saveEventLog(){ lsSet('wd3:eventlog', { entries: eventLog }); }
+  function openEventLogModal(editDate){
+    let html = `<div class="tw-desc small" style="margin-bottom:10px;">予期しない出来事を、日付つきで一言だけ残せます。</div>`;
+    html += `
+      <input type="date" id="rpgEvtDate" value="${todayDateKey()}" class="rpg-date-input" style="width:100%; margin-bottom:8px;">
+      <textarea id="rpgEvtText" placeholder="例：夫がお菓子をたくさん買ってきた" rows="2"
+        style="width:100%; padding:8px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box; margin-bottom:8px; color:#111;"></textarea>
+      <button class="rpg-btn wide" id="rpgEvtSave" style="margin-bottom:14px;">記録する</button>
+    `;
+    if (eventLog.length === 0) {
+      html += `<div class="rpg-quest-empty">まだ記録はありません。</div>`;
+    } else {
+      const sorted = [...eventLog].sort((a,b) => b.date.localeCompare(a.date));
+      sorted.forEach(ev => {
+        html += `<div class="tl-row" style="align-items:center; gap:8px; display:flex;">
+          <div style="flex:1; min-width:0;">
+            <div class="tl-ratio" style="opacity:0.75;">${ev.date}</div>
+            <div class="tl-dish">${escapeHtml(ev.text)}</div>
+          </div>
+          <span data-evt-del="${ev.date}::${escapeHtml(ev.text)}" style="cursor:pointer; opacity:0.5; padding:4px;">✕</span>
+        </div>`;
+      });
+    }
+    openToolModal('⚔️ 予期しない出来事', html);
+    const saveBtn = document.getElementById('rpgEvtSave');
+    if (saveBtn) saveBtn.addEventListener('click', () => {
+      const d = document.getElementById('rpgEvtDate').value || todayDateKey();
+      const t = document.getElementById('rpgEvtText').value.trim();
+      if (!t) return;
+      eventLog.push({ date: d, text: t });
+      saveEventLog();
+      playSelect();
+      openEventLogModal();
+    });
+    document.querySelectorAll('[data-evt-del]').forEach(el => {
+      el.addEventListener('click', () => {
+        const [d, t] = el.getAttribute('data-evt-del').split('::');
+        eventLog = eventLog.filter(ev => !(ev.date === d && ev.text === t));
+        saveEventLog();
+        openEventLogModal();
+      });
+    });
+  }
+
+  // ================= 未知の王国：今日やったかの追跡 + おせっかいな執事のポップアップ =================
+  let lastKingdomRoundDate = null;
+  let englishNudgeShownToday = false;
+  function englishDoneToday(){ return lastKingdomRoundDate === todayDateKey(); }
+  function openEnglishNudgeModal(){
+    playSlash();
+    startBattleBGM('devilbear');
+    openToolModal('⚔️ 王国の使者が現れた！', `
+      <div style="text-align:center; margin:10px 0;"><img src="${ENEMY_DEVILBEAR}" alt="使者" style="width:120px;"></div>
+      <div class="tw-desc small" style="line-height:1.8; margin-bottom:14px;">
+        「執事より申し上げます。このままでは、半年後の王様との謁見(15分間の英会話)に間に合いません…！今日のぶんの会話の筋トレを、いますぐいかがですか？」
+      </div>
+      <button class="rpg-btn wide" id="rpgNudgeGo" style="margin-bottom:8px;">🗡️ 迎え撃つ(王様と話す)</button>
+      <button class="rpg-settings-link" id="rpgNudgeLater">あとにする</button>
+    `);
+    const goBtn = document.getElementById('rpgNudgeGo');
+    if (goBtn) goBtn.addEventListener('click', () => { stopBGM(); openMagicWordsModal(); });
+    const laterBtn = document.getElementById('rpgNudgeLater');
+    if (laterBtn) laterBtn.addEventListener('click', () => { stopBGM(); closeModal(); });
+  }
+  function maybeShowEnglishNudge(){
+    if (englishNudgeShownToday) return;
+    if (englishDoneToday()) return;
+    englishNudgeShownToday = true;
+    openEnglishNudgeModal();
+  }
+
+
   // ================= 魔法の言葉：未知の王国 =================
   let kingdomSession = null; // { history:[{en,ja}], phase, question:{en,ja,example_ja}, correction:{en,ja}, recognized:'' }
   let kingdomBusy = false;
@@ -3467,6 +3594,8 @@ ${historyForPrompt}
     // ラウンド完了：魔法の言葉ポイントを1増やし、会話履歴に積み、次の質問へ
     magicWordPoints++;
     saveMagicWords();
+    lastKingdomRoundDate = todayDateKey();
+    lsSet('wd3:kingdomlast', { date: lastKingdomRoundDate });
     kingdomSession.history.push({ king_en: kingdomSession.question.en, you_en: kingdomSession.correction.en });
     kingdomSession.question = {
       en: kingdomSession.correction.next_q_en,
@@ -4119,6 +4248,7 @@ ${historyForPrompt}
     document.getElementById('rpgRoot').style.display = 'block';
     startBGM();
     loadAll();
+    setTimeout(maybeShowEnglishNudge, 1800); // 起動アニメが落ち着いてから、今日まだなら執事が声をかける
   });
 
 })();
