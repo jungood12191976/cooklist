@@ -103,6 +103,11 @@
     cursor:pointer; z-index:2; animation: letterglow 1.8s ease-in-out infinite;
     filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
   }
+  .rpg-note-icon{
+    position:absolute; right: 6%; top: 8px; width: 28px; height:28px;
+    cursor:pointer; z-index:3; font-size:22px; display:flex; align-items:center; justify-content:center;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
+  }
   @keyframes letterglow{ 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.12); } }
   .rpg-enemy-img{
     position:absolute; right: 4%; bottom: 14px; height: 64px;
@@ -2224,6 +2229,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
         <div class="rpg-scene-level">Lv.${quests.filter(q=>q.done).length}</div>
         <img class="rpg-enemy-img${battleEngaged ? ' engaged' : ''}" id="rpgEnemy" src="${todaysEnemy.img}" alt="${todaysEnemy.name}" title="${todaysEnemy.name}">
         ${battleTag}
+        <div class="rpg-note-icon" id="rpgNoteIcon" title="予期しない出来事">📝</div>
         <img class="rpg-hero-img${bounceClass}" id="rpgHero" src="${startSrc}" alt="勇者" style="position:relative; z-index:1;">
         <div class="rpg-ground-letter" id="rpgGroundLetterIcon" style="font-size:26px; display:flex; align-items:center; justify-content:center;">✉️</div>
       `;
@@ -2232,9 +2238,15 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const enemyImg = document.getElementById('rpgEnemy');
     if (enemyImg) {
       enemyImg.addEventListener('click', () => {
-        playSlash();
-        openEventLogModal();
+        battleEngaged = !battleEngaged;
+        if (battleEngaged) { playSlash(); startBattleBGM(todaysEnemy.key); }
+        else { playOpen(); startBGM(); }
+        render();
       });
+    }
+    const noteIcon = document.getElementById('rpgNoteIcon');
+    if (noteIcon) {
+      noteIcon.addEventListener('click', () => { playSelect(); openEventLogModal(); });
     }
     const letterIcon = document.getElementById('rpgGroundLetterIcon');
     if (letterIcon) {
