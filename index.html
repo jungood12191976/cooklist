@@ -415,6 +415,9 @@
   .kq-display-arrow{ font-size:16px; color:#ffd76b; width:16px; flex-shrink:0; }
   .kq-display-arrow-empty{ visibility:hidden; }
   .kq-display-text{ font-size:19px; font-weight:bold; color:#fff; text-shadow:1px 1px 0 rgba(0,0,0,0.4); line-height:1.4; }
+  .kq-display-row{ cursor:pointer; padding:4px 2px; border-radius:6px; transition:background 0.15s; }
+  .kq-display-row:active{ background:rgba(255,255,255,0.08); }
+  .kq-complete-text{ color:#ffd76b; text-shadow:0 0 10px #ffd76b; }
   .kq-display-empty{ font-size:13.5px; color:#6b7aad; font-weight:normal; font-style:italic; }
   .kq-detail-link{ display:block; text-align:right; margin-top:2px; }
   .qd-edit-row{ margin-bottom:12px; }
@@ -1509,7 +1512,8 @@
   let magicWordPoints = 0;
   let magicWordGoal = 100;
   let magicWordsHistory = []; // [{date, en, ja}] クリアした会話の蓄積ログ
-  let questDaily = { date: null, strongest: '', mid: '', fun: '' }; // キングクエスト固定3項目(毎日リセット)
+  let questDaily = { date: null, strongest: '', mid: '', fun: '', doneStrongest: false, doneMid: false, doneFun: false }; // キングクエスト固定3項目(毎日リセット)
+  let kqSelectedIdx = null; // 今▶が指しているキングクエストの番号(セッション内のみ、保存しない)
   let kingQuestShouldPopup = false;
   let stepperEntries = []; // [{date, steps}]
   let activeModalId = null;
@@ -1582,10 +1586,13 @@
     try { const rawStep = lsGet('wd3:stepper'); if (rawStep && Array.isArray(rawStep.entries)) stepperEntries = rawStep.entries; } catch(e){}
     try { const rawQD = lsGet('wd3:quest_daily'); if (rawQD) questDaily = rawQD; } catch(e){}
     if (questDaily.date !== todayKey) {
-      questDaily = { date: todayKey, strongest: '', mid: '', fun: '' };
+      questDaily = { date: todayKey, strongest: '', mid: '', fun: '', doneStrongest:false, doneMid:false, doneFun:false };
       lsSet('wd3:quest_daily', questDaily);
       kingQuestShouldPopup = true;
     }
+    if (questDaily.doneStrongest === undefined) questDaily.doneStrongest = false;
+    if (questDaily.doneMid === undefined) questDaily.doneMid = false;
+    if (questDaily.doneFun === undefined) questDaily.doneFun = false;
     startAlarmWatcher();
     render();
   }
@@ -2339,21 +2346,41 @@ ${keywordLine}${bpBlock}${conditionBlock}
       }, frameMs);
     }
 
-    // キングクエスト(固定3項目・毎日リセット) — 2ページ目：枠で囲み、左上にラベル表示
+    // キングクエスト(固定3項目・毎日リセット) — 2ページ目：枠で囲み、左上にラベル表示。▶をタップで選択移動/再タップで達成
     const kqWrap = document.createElement('div'); kqWrap.className = 'pw kq-display-wrap';
     const kqTitle = document.createElement('div'); kqTitle.className = 'pw-title'; kqTitle.textContent = '今日のキングクエスト';
     kqWrap.appendChild(kqTitle);
-    const kqItems = [
-      { label:'最強クエスト', val: questDaily.strongest },
-      { label:'中クエスト', val: questDaily.mid },
-      { label:'楽しみクエスト', val: questDaily.fun }
+    const kqAll = [
+      { key:'strongest', label:'最強クエスト', val: questDaily.strongest, done: !!questDaily.doneStrongest },
+      { key:'mid', label:'中クエスト', val: questDaily.mid, done: !!questDaily.doneMid },
+      { key:'fun', label:'楽しみクエスト', val: questDaily.fun, done: !!questDaily.doneFun }
     ];
-    kqItems.forEach((it, idx) => {
-      const row = document.createElement('div'); row.className = 'kq-display-item';
-      const arrow = idx === 0 ? '<span class="kq-display-arrow">▶</span>' : '<span class="kq-display-arrow kq-display-arrow-empty"></span>';
-      row.innerHTML = `${arrow}<span class="kq-display-text">${it.val ? escapeHtml(it.val) : `<span class="kq-display-empty">(${it.label}未設定)</span>`}</span>`;
-      kqWrap.appendChild(row);
-    });
+    const kqVisible = kqAll.filter(it => !it.done);
+    if (kqSelectedIdx === null || !kqVisible.find(it => it.key === kqSelectedIdx)) {
+      kqSelectedIdx = kqVisible.length ? kqVisible[0].key : null;
+    }
+    if (kqVisible.length === 0) {
+      const doneMsg = document.createElement('div'); doneMsg.className = 'kq-display-item';
+      doneMsg.innerHTML = `<span class="kq-display-arrow kq-display-arrow-empty"></span><span class="kq-display-text kq-display-empty">本日のクエストはすべて達成済み！</span>`;
+      kqWrap.appendChild(doneMsg);
+    } else {
+      kqVisible.forEach(it => {
+        const row = document.createElement('div'); row.className = 'kq-display-item kq-display-row';
+        const isSel = it.key === kqSelectedIdx;
+        const arrow = isSel ? '<span class="kq-display-arrow">▶</span>' : '<span class="kq-display-arrow kq-display-arrow-empty"></span>';
+        row.innerHTML = `${arrow}<span class="kq-display-text">${it.val ? escapeHtml(it.val) : `<span class="kq-display-empty">(${it.label}未設定)</span>`}</span>`;
+        row.addEventListener('click', () => {
+          if (kqSelectedIdx !== it.key) {
+            kqSelectedIdx = it.key;
+            playSelect();
+            render();
+          } else {
+            completeKingQuestItem(it.key, row);
+          }
+        });
+        kqWrap.appendChild(row);
+      });
+    }
     const kqDetailLink = document.createElement('button'); kqDetailLink.className = 'rpg-settings-link kq-detail-link'; kqDetailLink.textContent = 'クエスト詳細 →';
     kqDetailLink.addEventListener('click', () => { playSelect(); openQuestDetailModal(); });
     kqWrap.appendChild(kqDetailLink);
@@ -2610,6 +2637,20 @@ ${keywordLine}${bpBlock}${conditionBlock}
     }
     btn.disabled = false;
     render();
+  }
+
+  // キングクエスト固定3項目：▶再タップで達成
+  function completeKingQuestItem(key, rowEl){
+    playComplete(); spawnConfetti();
+    if (navigator.vibrate) { try { navigator.vibrate([50,40,50,40,200]); } catch(e){} }
+    if (rowEl) rowEl.innerHTML = `<span class="kq-display-arrow"></span><span class="kq-display-text kq-complete-text">✨ コンプリート！</span>`;
+    const doneField = key === 'strongest' ? 'doneStrongest' : key === 'mid' ? 'doneMid' : 'doneFun';
+    setTimeout(() => {
+      questDaily[doneField] = true;
+      saveQuestDaily();
+      kqSelectedIdx = null; // 次のrenderで残りの先頭に▶が移動
+      render();
+    }, 650);
   }
 
   async function completeQuest(id, el){
