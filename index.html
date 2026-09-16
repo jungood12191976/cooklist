@@ -1488,7 +1488,8 @@
 
   // ================= STATE =================
   let today = new Date();
-  let todayKey = today.toISOString().slice(0,10);
+  function localDateKey(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${dd}`; }
+  let todayKey = localDateKey(today); // 端末のローカル日付(JST等)で判定。UTC(ISOString)だと朝9時までズレて日付が切り替わらないため
   let dayData = { weather:null, weatherAuto:null, sleepHours:null, bathGood:null, bathSlot:null, mainIngredient:'', keyword:'', quickMode:false, cookType:null, pickedRatio:null, ratioOffer:null, ratioOfferType:null, ratioOfferIng:null };
   let ovulationDate = null; // 旧方式(互換用、periodDatesへ移行済みなら未使用)
   let periodDates = []; // 生理が来た日の記録(ISO文字列の配列、古い順)
@@ -1677,7 +1678,7 @@
   }
   function getYesterdayPressure(){
     const y = new Date(today); y.setDate(y.getDate() - 1);
-    const key = 'wd3:' + y.toISOString().slice(0,10);
+    const key = 'wd3:' + localDateKey(y);
     const raw = lsGet(key);
     return (raw && raw.weatherAuto && typeof raw.weatherAuto.pressure === 'number') ? raw.weatherAuto.pressure : null;
   }
@@ -1982,7 +1983,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const base = new Date();
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date(base.getFullYear(), base.getMonth(), base.getDate() - i);
-      const key = d.toISOString().slice(0,10);
+      const key = localDateKey(d);
       let rec = null;
       try { rec = lsGet('wd3:' + key); } catch(e){}
       out.push({ key, date: d, rec });
@@ -2818,7 +2819,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const base = new Date(todayDateKey() + 'T00:00:00');
     for (let i = n - 1; i >= 0; i--) {
       const d = new Date(base); d.setDate(d.getDate() - i);
-      const key = d.toISOString().slice(0,10);
+      const key = localDateKey(d);
       const found = stepperEntries.find(e => e.date === key);
       days.push({ date: key, steps: found ? found.steps : 0 });
     }
@@ -3591,7 +3592,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
 
   // ================= 散歩する靴(さんぽスタンプカード) =================
   function saveWalkCard(){ lsSet('wd3:walkcard', walkCard); }
-  function todayDateKey(){ return new Date().toISOString().slice(0,10); }
+  function todayDateKey(){ return localDateKey(new Date()); }
   function openWalkShoesModal(){
     const todayStr = todayDateKey();
     const alreadyToday = walkCard.dates.includes(todayStr);
