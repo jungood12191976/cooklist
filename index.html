@@ -311,6 +311,12 @@
   .tl-row{ margin-bottom:9px; }
   .tl-dish{ font-size:15px; color:#fff; font-weight:bold; }
   .tl-ratio{ font-size:13.5px; color:#c8d3f5; line-height:1.55; }
+  .tl-add-form{ background:rgba(255,255,255,0.05); border:1px solid #3a4a86; border-radius:10px; padding:12px; margin:10px 0 4px; }
+  .tl-row-custom{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  .tl-row-main{ flex:1; }
+  .tl-del-btn{ background:none; border:none; color:#ff8f8f; font-size:16px; cursor:pointer; padding:2px 6px; }
+  .tl-photo{ display:block; max-width:100%; border-radius:8px; margin:4px 0 12px; border:1px solid #3a4a86; }
+  .rpg-log-scroll{ max-height:52vh; overflow-y:auto; padding-right:4px; }
   .gn-item{ background:rgba(0,0,0,0.22); border-left:4px solid #6ee7b7; border-radius:0 6px 6px 0; padding:10px 12px; margin-bottom:11px; }
   .gn-year{ font-size:11.5px; color:#6ee7b7; font-weight:bold; letter-spacing:1px; }
   .gn-title{ font-size:16px; color:#ffd76b; font-weight:bold; margin:3px 0 6px; line-height:1.5; }
@@ -404,9 +410,10 @@
   .kq-slot-label{ font-size:13.5px; color:#ffd76b; font-weight:bold; margin-bottom:7px; }
   .kq-slot-input{ width:100%; background:#0c1230; border:2px solid #6ea8ff; color:#fff; padding:12px 10px; font-size:16px; box-sizing:border-box; }
   .kq-confirm-btn{ font-size:15px; padding:14px; margin-top:4px; }
-  .kq-display-wrap{ padding:8px 6px 16px; margin-bottom:14px; position:relative; }
+  .kq-display-wrap{ padding:8px 6px 16px; }
   .kq-display-item{ display:flex; align-items:baseline; gap:10px; margin-bottom:11px; }
-  .kq-display-icon{ font-size:21px; }
+  .kq-display-arrow{ font-size:16px; color:#ffd76b; width:16px; flex-shrink:0; }
+  .kq-display-arrow-empty{ visibility:hidden; }
   .kq-display-text{ font-size:19px; font-weight:bold; color:#fff; text-shadow:1px 1px 0 rgba(0,0,0,0.4); line-height:1.4; }
   .kq-display-empty{ font-size:13.5px; color:#6b7aad; font-weight:normal; font-style:italic; }
   .kq-detail-link{ display:block; text-align:right; margin-top:2px; }
@@ -416,15 +423,16 @@
 
   /* ---- 魔法の言葉：セット/クリア進捗・会話ログ ---- */
   .mw-table{ width:100%; border-collapse:collapse; margin-top:6px; }
-  .mw-table th, .mw-table td{ border:1px solid rgba(255,255,255,0.15); padding:7px 8px; font-size:12.5px; text-align:left; vertical-align:top; }
+  .mw-table th, .mw-table td{ border:1px solid rgba(255,255,255,0.15); padding:7px 8px; font-size:12.5px; text-align:left; vertical-align:top; color:#fff; }
   .mw-table th{ color:#ffd76b; background:rgba(0,0,0,0.25); }
   #mwPrintArea{ display:none; }
   @media print{
+    @page{ margin:12mm; }
     body *{ visibility:hidden; }
     #mwPrintArea, #mwPrintArea *{ visibility:visible; }
-    #mwPrintArea{ display:block !important; position:absolute; top:0; left:0; width:100%; background:#fff; color:#000; padding:20px; }
-    #mwPrintArea table{ width:100%; border-collapse:collapse; }
-    #mwPrintArea th, #mwPrintArea td{ border:1px solid #333; padding:6px 8px; font-size:12px; text-align:left; }
+    #mwPrintArea{ display:block !important; position:absolute; top:0; left:0; width:100%; box-sizing:border-box; background:#fff; color:#000; padding:0; margin:0; }
+    #mwPrintArea table{ width:100%; max-width:100%; border-collapse:collapse; table-layout:fixed; }
+    #mwPrintArea th, #mwPrintArea td{ border:1px solid #333; padding:6px 8px; font-size:12px; text-align:left; word-wrap:break-word; overflow-wrap:break-word; box-sizing:border-box; }
   }
 
   /* ---- ステッパー(歩数) ---- */
@@ -2331,16 +2339,19 @@ ${keywordLine}${bpBlock}${conditionBlock}
       }, frameMs);
     }
 
-    // キングクエスト(固定3項目・毎日リセット) — 2ページ目：枠なし・文字のみの表示
-    const kqWrap = document.createElement('div'); kqWrap.className = 'kq-display-wrap';
+    // キングクエスト(固定3項目・毎日リセット) — 2ページ目：枠で囲み、左上にラベル表示
+    const kqWrap = document.createElement('div'); kqWrap.className = 'pw kq-display-wrap';
+    const kqTitle = document.createElement('div'); kqTitle.className = 'pw-title'; kqTitle.textContent = '今日のキングクエスト';
+    kqWrap.appendChild(kqTitle);
     const kqItems = [
-      { icon:'🔥', label:'最強クエスト', val: questDaily.strongest },
-      { icon:'⚔️', label:'中クエスト', val: questDaily.mid },
-      { icon:'🎉', label:'楽しみクエスト', val: questDaily.fun }
+      { label:'最強クエスト', val: questDaily.strongest },
+      { label:'中クエスト', val: questDaily.mid },
+      { label:'楽しみクエスト', val: questDaily.fun }
     ];
-    kqItems.forEach(it => {
+    kqItems.forEach((it, idx) => {
       const row = document.createElement('div'); row.className = 'kq-display-item';
-      row.innerHTML = `<span class="kq-display-icon">${it.icon}</span><span class="kq-display-text">${it.val ? escapeHtml(it.val) : `<span class="kq-display-empty">(${it.label}未設定)</span>`}</span>`;
+      const arrow = idx === 0 ? '<span class="kq-display-arrow">▶</span>' : '<span class="kq-display-arrow kq-display-arrow-empty"></span>';
+      row.innerHTML = `${arrow}<span class="kq-display-text">${it.val ? escapeHtml(it.val) : `<span class="kq-display-empty">(${it.label}未設定)</span>`}</span>`;
       kqWrap.appendChild(row);
     });
     const kqDetailLink = document.createElement('button'); kqDetailLink.className = 'rpg-settings-link kq-detail-link'; kqDetailLink.textContent = 'クエスト詳細 →';
@@ -3257,11 +3268,46 @@ ${keywordLine}${bpBlock}${conditionBlock}
     }
   }
 
+  let recipeAddFormOpen = false;
   function openRecipeListModal(){
-    const all = TASTE_RATIOS.concat(customRatios);
+    const backdrop = document.getElementById('rpgModalBackdrop'); const content = document.getElementById('rpgModalContent');
+    activeModalId = 'recipeList';
+    backdrop.classList.add('open');
+
+    let html = `<div class="rpg-modal-title" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+      <span>📜 レシピの紙</span>
+      <button class="rpg-settings-link" id="rpgRecipeAddToggle">＋ 追加</button>
+    </div>`;
+
+    if (recipeAddFormOpen) {
+      html += `<div class="tl-add-form">
+        <input type="text" id="rpgRecipeNewDish" class="qd-edit-input" placeholder="料理名（例：塩鍋）" style="margin-bottom:8px;">
+        <input type="text" id="rpgRecipeNewRatio" class="qd-edit-input" placeholder="割合（例：水:酒:塩 = 200:2:0.6）" style="margin-bottom:8px;">
+        <input type="file" id="rpgRecipeNewPhoto" accept="image/*" style="margin-bottom:8px; color:#cbd6ff; font-size:12px;">
+        <div id="rpgRecipeNewPhotoPreview"></div>
+        <button class="rpg-btn wide" id="rpgRecipeNewSave">保存する</button>
+      </div>`;
+    }
+
+    const all = TASTE_RATIOS;
     const byType = {};
     all.forEach(r => { const t = ratioType(r); (byType[t] = byType[t] || []).push(r); });
-    let html = `<div class="tw-desc small">全${all.length}件</div>`;
+
+    html += `<div class="rpg-tool-body">`;
+    if (customRatios.length) {
+      html += `<div class="tl-head">追加したレシピ（${customRatios.length}）</div>`;
+      customRatios.forEach((r, i) => {
+        html += `<div class="tl-row tl-row-custom">
+          <div class="tl-row-main">
+            <div class="tl-dish">${escapeHtml(r.dish)}</div>
+            <div class="tl-ratio">${escapeHtml(r.ratio || '')}</div>
+          </div>
+          <button class="tl-del-btn" data-idx="${i}">🗑</button>
+        </div>`;
+        if (r.image) html += `<img src="${r.image}" class="tl-photo" alt="${escapeHtml(r.dish)}">`;
+      });
+    }
+    html += `<div class="tw-desc small" style="margin-top:10px;">全${all.length}件</div>`;
     COOK_TYPES.concat(['その他']).forEach(t => {
       const list = byType[t];
       if (!list || !list.length) return;
@@ -3270,7 +3316,47 @@ ${keywordLine}${bpBlock}${conditionBlock}
         html += `<div class="tl-row"><div class="tl-dish">${r.dish}</div><div class="tl-ratio">${r.ratio || ''}</div></div>`;
       });
     });
-    openToolModal('📜 レシピの紙', html);
+    html += `</div>`;
+
+    content.innerHTML = html;
+    const closeBtn = document.createElement('button');
+    closeBtn.className='rpg-btn secondary wide'; closeBtn.textContent='とじる';
+    closeBtn.addEventListener('click', closeModal);
+    content.appendChild(closeBtn);
+
+    const addToggle = document.getElementById('rpgRecipeAddToggle');
+    if (addToggle) addToggle.addEventListener('click', () => { recipeAddFormOpen = !recipeAddFormOpen; playSelect(); openRecipeListModal(); });
+
+    let pendingPhoto = null;
+    const photoInput = document.getElementById('rpgRecipeNewPhoto');
+    if (photoInput) photoInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) { pendingPhoto = null; return; }
+      readImageFile(file, (dataUrl) => {
+        pendingPhoto = dataUrl;
+        const prev = document.getElementById('rpgRecipeNewPhotoPreview');
+        if (prev) prev.innerHTML = `<img src="${dataUrl}" class="tl-photo" alt="preview">`;
+      });
+    });
+    const saveBtn = document.getElementById('rpgRecipeNewSave');
+    if (saveBtn) saveBtn.addEventListener('click', () => {
+      const dish = document.getElementById('rpgRecipeNewDish').value.trim();
+      const ratio = document.getElementById('rpgRecipeNewRatio').value.trim();
+      if (!dish && !ratio && !pendingPhoto) return;
+      customRatios.unshift({ dish: dish || '(無題)', ratio, image: pendingPhoto || null, addedAt: new Date().toISOString() });
+      saveCustomRatios();
+      recipeAddFormOpen = false;
+      playSelect();
+      openRecipeListModal();
+    });
+    content.querySelectorAll('.tl-del-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const i = parseInt(btn.dataset.idx, 10);
+        customRatios.splice(i, 1);
+        saveCustomRatios();
+        openRecipeListModal();
+      });
+    });
   }
 
   let newsRead = [];
@@ -4712,27 +4798,17 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
     backdrop.classList.add('open');
     const done = quests.filter(q=>q.done).sort((a,b)=> new Date(b.completedAt)-new Date(a.completedAt));
     content.innerHTML = `<div class="rpg-modal-title">たっせいログ</div><div class="rpg-modal-sub">これまでコンプリートしたクエスト一覧</div>`;
+    const logScroll = document.createElement('div'); logScroll.className = 'rpg-log-scroll';
     if (done.length === 0) {
-      content.innerHTML += `<div class="rpg-quest-empty">まだ記録がありません。</div>`;
+      logScroll.innerHTML = `<div class="rpg-quest-empty">まだ記録がありません。</div>`;
     } else {
       done.forEach(q => {
         const row = document.createElement('div'); row.className='rpg-log-row';
         row.innerHTML = `<span class="rpg-log-date">${fmtDateLog(q.completedAt)}</span>${q.text}`;
-        content.appendChild(row);
+        logScroll.appendChild(row);
       });
     }
-    const menuTitle = document.createElement('div'); menuTitle.className='rpg-modal-title'; menuTitle.style.marginTop='18px'; menuTitle.textContent='料理ログ';
-    content.appendChild(menuTitle);
-    if (menuLog.length === 0) {
-      const empty = document.createElement('div'); empty.className='rpg-quest-empty'; empty.textContent='まだ記録がありません。';
-      content.appendChild(empty);
-    } else {
-      menuLog.forEach(m => {
-        const row = document.createElement('div'); row.className='rpg-log-row';
-        row.innerHTML = `<span class="rpg-log-date">${fmtDateLog(m.date)}</span>${m.name}`;
-        content.appendChild(row);
-      });
-    }
+    content.appendChild(logScroll);
     const closeBtn = document.createElement('button'); closeBtn.className='rpg-btn secondary wide'; closeBtn.textContent='とじる';
     closeBtn.addEventListener('click', closeModal);
     content.appendChild(closeBtn);
