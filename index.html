@@ -392,7 +392,7 @@
     border: 3px solid #ffd76b; box-shadow: 0 4px 16px rgba(0,0,0,0.5);
   }
   .rpg-hero-img{
-    height: 112px; image-rendering: pixelated; image-rendering: crisp-edges;
+    height: 123px; image-rendering: pixelated; image-rendering: crisp-edges;
     filter: drop-shadow(0 4px 3px rgba(0,0,0,0.4));
   }
   /* the sprite sheet already carries all the motion, so no CSS bounce on top of it */
@@ -2124,7 +2124,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
 
     // instrument toolbox
     const toolWrap = document.createElement('div'); toolWrap.className='pw rpg-tool-wrap';
-    const toolTitle = document.createElement('div'); toolTitle.className='pw-title'; toolTitle.textContent='どうぐ'; toolWrap.appendChild(toolTitle);
+    const toolTitle = document.createElement('div'); toolTitle.className='pw-title'; toolTitle.textContent='アイテム'; toolWrap.appendChild(toolTitle);
     const toolGrid = document.createElement('div'); toolGrid.className='rpg-tool-grid';
     INSTRUMENTS.forEach(inst => {
       const b = document.createElement('button'); b.className='rpg-tool-item';
@@ -2139,7 +2139,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       { img: ICON_RECIPE, name:'レシピの紙',   fn: openRecipeListModal },
       { img: ICON_DOLL,   name:'こわれた人形', fn: openMuskModal },
       { img: ICON_POTION, name:'魔法のサプリ', fn: openSupplementModal },
-      { img: ICON_GOLD,   name:'金貨のふくろ', fn: () => openGoldModal(true) },
+      { img: ICON_GOLD,   name:'金の袋', fn: () => openGoldModal(true) },
       { img: ICON_ALARM,      name:'目覚まし時計',   fn: openAlarmModal },
       { img: ICON_PIANO,      name:'ピアノ',         fn: openPianoModal, imgStyle:'width:60px;height:60px;' },
       { img: ICON_MOOMIN_DOLL, name:'ムーミンのヌイ', fn: openMoominDollModal, imgStyle:'width:60px;height:60px;' },
@@ -4500,7 +4500,7 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
     for (const mk of PROXIES) {
       for (const p of plans) {
         try {
-          const res = await fetch(mk(p.url) + (mk(p.url).includes('?') ? '&' : '?') + '_cb2=' + cb(), { cache: 'no-store' });
+          const res = await fetch(mk(p.url), { cache: 'no-store' });
           if (!res.ok) continue;
           const v = p.parse(await res.text());
           if (v) return { price:v, src: p.src + '(経由)' };
@@ -4812,7 +4812,7 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
         その時は各銘柄の「現在値を手入力」に数字を入れて「反映」を押してください。
       </div>`;
 
-    openToolModal('💰 金貨のふくろ', html);
+    openToolModal('💰 金の袋', html);
 
     const addBtn = document.getElementById('gvAdd');
     if (addBtn) addBtn.addEventListener('click', () => {
