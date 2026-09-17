@@ -27,7 +27,7 @@
       linear-gradient(180deg, #101010 0%, #17141f 45%, #1c1826 100%);
     color: #fff; padding: 14px 12px 40px; overflow-x: hidden;
   }
-  .pw{ position: relative; background: linear-gradient(180deg,#1c2a5e,#111a3d); border: 3px solid #ffd76b;
+  .pw{ position: relative; background: linear-gradient(180deg,#181818,#101010); border: 3px solid #ffd76b;
     box-shadow: inset 0 0 0 3px #1c2a5e, inset 0 0 0 6px #6ea8ff, 0 4px 0 rgba(0,0,0,0.35); padding: 14px; margin-bottom: 14px; }
   .pw-title{ display:flex; align-items:center; gap:6px; background:#ffd76b; color:#2c1f5c; font-size: 12px; font-weight: bold; padding: 3px 10px; margin: -22px 0 10px -4px; border: 2px solid #a9741f; letter-spacing: 1px; width:fit-content; }
   .rpg-topbar{ display:flex; align-items:center; gap:10px; margin-bottom: 4px; padding-right: 46px; }
@@ -50,11 +50,11 @@
   .rpg-open-talk.layer-b{ opacity: 0; }
   .rpg-tool-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .rpg-tool-item{
-    background: linear-gradient(180deg,#1c2a5e,#111a3d); border: 2px solid #6ea8ff; border-radius: 8px;
+    background: #f5f0e6; border: 2px solid #6ea8ff; border-radius: 8px;
     padding: 8px 4px; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer;
   }
   .rpg-tool-item img{ width: 48px; height: 48px; object-fit:contain; }
-  .rpg-tool-item span{ font-size: 10.5px; color:#dbe4ff; text-align:center; line-height:1.3; }
+  .rpg-tool-item span{ font-size: 10.5px; color:#2a2a2a; text-align:center; line-height:1.3; }
   .rpg-tool-item:active{ transform: scale(0.95); }
 
   .rpg-label{ font-size: 12.5px; color: #9db4ff; margin-bottom: 6px; }
@@ -184,7 +184,7 @@
   .rpg-dungeon{ background:#0c1230; border: 2px solid #6ea8ff; padding: 12px 13px; margin-bottom: 10px; }
   .rpg-dungeon-name{ font-size: 15px; font-weight:bold; color:#fff; margin-bottom: 6px; }
   .rpg-dungeon-floor-bar{ display:flex; gap:1px; margin-bottom: 6px; height:14px; background:#1c2a5e; border: 1px solid #3a4a8e; overflow:hidden; }
-  .rpg-dungeon-floor-fill{ height:100%; background: linear-gradient(90deg,#ffd76b,#f0a63e); transition: width .5s ease; }
+  .rpg-dungeon-floor-fill{ height:100%; background: linear-gradient(90deg,#ff2d92,#b83dff); transition: width .5s ease; }
   .rpg-dungeon-meta{ font-size: 11.5px; color:#9db4ff; }
   .rpg-dungeon-note{ font-size: 11px; color:#9db4ff; margin-top:6px; line-height:1.6; }
 
@@ -327,10 +327,10 @@
   .sp-amt{ font-size:13px; color:#ffd76b; margin-left:8px; font-weight:normal; }
   .sp-purpose{ font-size:13px; color:#c8d3f5; line-height:1.65; margin-top:2px; }
   .gv-goal{ background:rgba(0,0,0,0.25); border:2px solid #ffd76b; border-radius:8px; padding:12px; margin-bottom:12px; text-align:center; }
-  .gv-total{ font-size:30px; font-weight:bold; background:linear-gradient(90deg,#ff2d92,#ff6ec7,#c724b1); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .gv-total{ font-size:30px; font-weight:bold; background:linear-gradient(90deg,#ff2d92,#b83dff); -webkit-background-clip:text; background-clip:text; color:transparent; }
   .gv-sub{ font-size:12.5px; color:#9db4ff; margin-bottom:8px; }
   .gv-bar{ height:12px; background:rgba(255,255,255,0.1); border-radius:6px; overflow:hidden; margin-bottom:8px; }
-  .gv-fill{ height:100%; background:linear-gradient(90deg,#ff2d92,#ff6ec7,#c724b1); }
+  .gv-fill{ height:100%; background:linear-gradient(90deg,#ff2d92,#b83dff); }
   .gv-pl{ font-size:15px; font-weight:bold; }
   .gv-pl.plus, .plus{ color:#6ee7b7; }
   .gv-pl.minus, .minus{ color:#ff8f8f; }
@@ -418,6 +418,7 @@
   .kq-display-row{ cursor:pointer; padding:4px 2px; border-radius:6px; transition:background 0.15s; }
   .kq-display-row:active{ background:rgba(255,255,255,0.08); }
   .kq-complete-text{ color:#ffd76b; text-shadow:0 0 10px #ffd76b; }
+  .kq-frame-title{ position:absolute; top:-13px; left:50%; transform:translateX(-50%); background:#101010; padding:0 14px; color:#fff; font-weight:bold; font-size:14px; letter-spacing:2px; white-space:nowrap; }
   .kq-display-empty{ font-size:13.5px; color:#6b7aad; font-weight:normal; font-style:italic; }
   .kq-detail-link{ display:block; text-align:right; margin-top:2px; }
   .qd-edit-row{ margin-bottom:12px; }
@@ -2351,7 +2352,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
 
     // キングクエスト(固定3項目・毎日リセット) — 2ページ目：枠で囲み、左上にラベル表示。▶をタップで選択移動/再タップで達成
     const kqWrap = document.createElement('div'); kqWrap.className = 'pw kq-display-wrap';
-    const kqTitle = document.createElement('div'); kqTitle.className = 'pw-title'; kqTitle.textContent = '今日のキングクエスト';
+    const kqTitle = document.createElement('div'); kqTitle.className = 'kq-frame-title'; kqTitle.textContent = '今日のキングクエスト';
     kqWrap.appendChild(kqTitle);
     const kqAll = [
       { key:'strongest', label:'最強クエスト', val: questDaily.strongest, done: !!questDaily.doneStrongest },
