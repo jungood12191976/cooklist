@@ -28,7 +28,7 @@
     color: #fff; padding: 14px 12px 40px; overflow-x: hidden;
   }
   .pw{ position: relative; background: linear-gradient(180deg,#181818,#101010); border: 3px solid #ffd76b;
-    box-shadow: inset 0 0 0 3px #1c2a5e, inset 0 0 0 6px #6ea8ff, 0 4px 0 rgba(0,0,0,0.35); padding: 14px; margin-bottom: 14px; }
+    box-shadow: 0 4px 0 rgba(0,0,0,0.35); padding: 14px; margin-bottom: 14px; }
   .pw-title{ display:flex; align-items:center; gap:6px; background:#ffd76b; color:#2c1f5c; font-size: 12px; font-weight: bold; padding: 3px 10px; margin: -22px 0 10px -4px; border: 2px solid #a9741f; letter-spacing: 1px; width:fit-content; }
   .rpg-topbar{ display:flex; align-items:center; gap:10px; margin-bottom: 4px; padding-right: 46px; }
   .rpg-date{ flex:1; text-align:center; font-size: 12px; color: #ffd76b; letter-spacing: 2px; }
@@ -142,7 +142,7 @@
   .rpg-badge.ok{ color:#4ade80; border-color:#4ade80; }
   .rpg-badge.info{ color:#6ea8ff; border-color:#6ea8ff; }
 
-  .rpg-narrator{ background:#0c1230; border: 2px solid #9db4ff; padding: 12px 14px; font-size: 14px; line-height: 1.8; color: #eaf0ff; min-height: 50px; }
+  .rpg-narrator{ background:#0c1230; border: none; padding: 12px 14px; font-size: 14px; line-height: 1.8; color: #eaf0ff; min-height: 50px; }
   .rpg-narrator b{ color:#ffd76b; }
   .rpg-cursor{ display:inline-block; width: 8px; height: 14px; background:#ffd76b; animation: rpgblink 0.8s steps(1) infinite; vertical-align: text-bottom; margin-left: 2px; }
   @keyframes rpgblink{ 50%{opacity:0;} }
@@ -423,6 +423,7 @@
   .rpg-tool-wrap{ box-shadow:0 4px 0 rgba(0,0,0,0.35) !important; padding:14px 18px !important; }
   .rpg-tool-wrap .rpg-tool-grid{ gap:12px; }
   .rpg-tool-item{ border-color: transparent !important; }
+  .rpg-setup-wrap{ border-color:#6ea8ff !important; }
   .kq-display-empty{ font-size:13.5px; color:#6b7aad; font-weight:normal; font-style:italic; }
   .kq-detail-link{ display:block; text-align:right; margin-top:2px; }
   .qd-edit-row{ margin-bottom:12px; }
@@ -2148,7 +2149,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       { img: ICON_STEPPER, name:'ステッパー', fn: openStepperModal },
       { img: ICON_POUCH, name:'かわいいポシェット', fn: openPouchModal },
       { img: ICON_RADIO, name:'壊れたラジカセ', fn: openRadioModal, imgStyle:'width:64px;height:64px;' },
-      { img: ICON_DICT, name:'豪華な辞書', fn: openDictModal, imgStyle:'width:60px;height:60px;' }
+      { img: ICON_DICT, name:'豪華な辞書', fn: openDictModal, imgStyle:'width:68px;height:68px;' }
     ];
     TOOL_ITEMS.forEach(t => {
       const b = document.createElement('button'); b.className='rpg-tool-item';
@@ -2160,7 +2161,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     toolWrap.appendChild(toolGrid);
     root.appendChild(toolWrap);
 
-    const wrap = document.createElement('div'); wrap.className='pw';
+    const wrap = document.createElement('div'); wrap.className='pw rpg-setup-wrap';
     const t = document.createElement('div'); t.className='pw-title'; t.textContent='しゅっぱつ準備'; wrap.appendChild(t);
 
     const row1 = document.createElement('div'); row1.className='rpg-setup-row';
@@ -2593,7 +2594,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
 
     const openBag = document.createElement('button');
     openBag.className='rpg-btn secondary wide'; openBag.style.marginTop='10px';
-    openBag.textContent='💰 袋の中をあらためる';
+    openBag.textContent='💰 金の袋をみる';
     openBag.addEventListener('click', () => { playSelect(); openGoldModal(); });
     dWrap.appendChild(openBag);
 
