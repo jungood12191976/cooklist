@@ -4856,7 +4856,12 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
       const v = parseFloat(document.getElementById('gvManual'+i).value);
       if (isFinite(v) && v > 0) { holdings[i].manualPrice = v; saveHoldings(); openGoldModal(); }
     }));
-    if (autoFetch && holdings.length) {
+    const STALE_MS = 3 * 60 * 1000; // 3分以内に取得済みなら再取得しない(起動時の自動取得との二重取得を防ぐ)
+    const needsFetch = holdings.some(hd => {
+      const c = priceCache[hd.code];
+      return !c || (Date.now() - new Date(c.at).getTime()) > STALE_MS;
+    });
+    if (autoFetch && holdings.length && needsFetch) {
       // 袋を開いた瞬間、押さなくても自動で株価取得(開けた時のインパクトのため)
       const st = document.getElementById('rpgQuoteStatus');
       if (refBtn) refBtn.disabled = true;
