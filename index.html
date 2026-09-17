@@ -4828,8 +4828,14 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
       const st = document.getElementById('rpgQuoteStatus');
       refBtn.disabled = true;
       await refreshAllQuotes(st);
+      const finalMsg = st ? st.textContent : '';
       refBtn.disabled = false;
       openGoldModal();
+      const st2 = document.getElementById('rpgQuoteStatus');
+      if (st2 && finalMsg) {
+        st2.textContent = finalMsg;
+        setTimeout(() => { if (st2.textContent === finalMsg) st2.textContent = ''; }, 3000);
+      }
     });
     document.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
       holdings.splice(parseInt(b.dataset.del),1); saveHoldings(); openGoldModal();
@@ -4844,8 +4850,14 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
       const st = document.getElementById('rpgQuoteStatus');
       if (refBtn) refBtn.disabled = true;
       refreshAllQuotes(st).then(() => {
+        const finalMsg = st ? st.textContent : '';
         if (refBtn) refBtn.disabled = false;
         openGoldModal();
+        const st2 = document.getElementById('rpgQuoteStatus');
+        if (st2 && finalMsg) {
+          st2.textContent = finalMsg;
+          setTimeout(() => { if (st2.textContent === finalMsg) st2.textContent = ''; }, 3000);
+        }
       });
     }
   }
