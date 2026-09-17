@@ -10,9 +10,9 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="theme-color" content="#1b1f4a">
+<meta name="theme-color" content="#101010">
 <style>
-  html, body{ margin:0; padding:0; background:#1b1f4a; }
+  html, body{ margin:0; padding:0; background:#101010; color:#fff; }
   .rpg-root, .rpg-root *{ box-sizing: border-box; font-family: "MS Gothic","ＭＳ ゴシック","DotGothic16","Osaka-mono",monospace; }
   .rpg-root{
     position: relative; max-width: 480px; margin: 0 auto; min-height: 100%;
@@ -24,7 +24,7 @@
       radial-gradient(1px 1px at 260px 60px, #fff 100%, transparent),
       radial-gradient(1px 1px at 320px 150px, #fff 100%, transparent),
       radial-gradient(1px 1px at 40px 180px, #fff 100%, transparent),
-      linear-gradient(180deg, #1b1f4a 0%, #2c1f5c 40%, #3a2a5e 100%);
+      linear-gradient(180deg, #101010 0%, #17141f 45%, #1c1826 100%);
     color: #fff; padding: 14px 12px 40px; overflow-x: hidden;
   }
   .pw{ position: relative; background: linear-gradient(180deg,#1c2a5e,#111a3d); border: 3px solid #ffd76b;
@@ -327,10 +327,10 @@
   .sp-amt{ font-size:13px; color:#ffd76b; margin-left:8px; font-weight:normal; }
   .sp-purpose{ font-size:13px; color:#c8d3f5; line-height:1.65; margin-top:2px; }
   .gv-goal{ background:rgba(0,0,0,0.25); border:2px solid #ffd76b; border-radius:8px; padding:12px; margin-bottom:12px; text-align:center; }
-  .gv-total{ font-size:30px; font-weight:bold; color:#ffd76b; }
+  .gv-total{ font-size:30px; font-weight:bold; background:linear-gradient(90deg,#ff2d92,#ff6ec7,#c724b1); -webkit-background-clip:text; background-clip:text; color:transparent; }
   .gv-sub{ font-size:12.5px; color:#9db4ff; margin-bottom:8px; }
   .gv-bar{ height:12px; background:rgba(255,255,255,0.1); border-radius:6px; overflow:hidden; margin-bottom:8px; }
-  .gv-fill{ height:100%; background:linear-gradient(90deg,#ffd76b,#6ee7b7); }
+  .gv-fill{ height:100%; background:linear-gradient(90deg,#ff2d92,#ff6ec7,#c724b1); }
   .gv-pl{ font-size:15px; font-weight:bold; }
   .gv-pl.plus, .plus{ color:#6ee7b7; }
   .gv-pl.minus, .minus{ color:#ff8f8f; }
@@ -380,7 +380,7 @@
   .rpg-log-date{ color:#9db4ff; margin-right: 8px; }
 
   .rpg-title-screen{ position: fixed; inset: 0; z-index: 100;
-    background: radial-gradient(1px 1px at 15% 20%, #fff 100%, transparent), radial-gradient(1px 1px at 35% 65%, #fff 100%, transparent), radial-gradient(1px 1px at 55% 15%, #fff 100%, transparent), radial-gradient(1px 1px at 75% 50%, #fff 100%, transparent), radial-gradient(1px 1px at 85% 80%, #fff 100%, transparent), linear-gradient(180deg,#1b1f4a,#2c1f5c 50%,#3a2a5e);
+    background: radial-gradient(1px 1px at 15% 20%, #fff 100%, transparent), radial-gradient(1px 1px at 35% 65%, #fff 100%, transparent), radial-gradient(1px 1px at 55% 15%, #fff 100%, transparent), radial-gradient(1px 1px at 75% 50%, #fff 100%, transparent), radial-gradient(1px 1px at 85% 80%, #fff 100%, transparent), linear-gradient(180deg,#101010,#17141f 50%,#1c1826);
     display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 24px; text-align:center; }
   .rpg-title-logo{ font-size: 24px; font-weight:bold; color:#ffd76b; text-shadow: 3px 3px 0 #a9741f, 0 0 20px rgba(255,215,107,0.6); letter-spacing: 2px; margin-bottom: 8px; line-height: 1.5; }
   .rpg-title-sub2{ font-size: 13px; color:#ff9b6a; margin-bottom: 34px; letter-spacing:1px; }
@@ -2133,7 +2133,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       { img: ICON_RECIPE, name:'レシピの紙',   fn: openRecipeListModal },
       { img: ICON_DOLL,   name:'こわれた人形', fn: openMuskModal },
       { img: ICON_POTION, name:'魔法のサプリ', fn: openSupplementModal },
-      { img: ICON_GOLD,   name:'金貨のふくろ', fn: openGoldModal },
+      { img: ICON_GOLD,   name:'金貨のふくろ', fn: () => openGoldModal(true) },
       { img: ICON_ALARM,      name:'目覚まし時計',   fn: openAlarmModal },
       { img: ICON_PIANO,      name:'ピアノ',         fn: openPianoModal },
       { img: ICON_MOOMIN_DOLL, name:'ムーミンのぬいぐるみ', fn: openMoominDollModal },
@@ -3847,7 +3847,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const goBtn = document.getElementById('rpgNudgeGo');
     if (goBtn) goBtn.addEventListener('click', () => { stopBGM(); openMagicWordsModal(); });
     const laterBtn = document.getElementById('rpgNudgeLater');
-    if (laterBtn) laterBtn.addEventListener('click', () => { stopBGM(); closeModal(); });
+    if (laterBtn) laterBtn.addEventListener('click', () => { startBGM(); closeModal(); });
   }
   function maybeShowEnglishNudge(){
     if (englishNudgeShownToday) return;
@@ -3998,7 +3998,7 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
 "${userAnswer}"
 
 以下のJSON形式のみで出力してください:
-{"corrected_en":"(上の質問に対する答えとして、意図を汲んで自然に直した英文。時制・話題を質問に必ず合わせること)","confirm_ja":"(直した英文の意味を確認する日本語の一文。例:「〜という意味ですか？」)","next_question_en":"(会話の流れに沿った次のやさしい質問、英語)","next_question_ja":"(次の質問の日本語訳)","example_answer_ja":"(次の質問への答え方のヒントを日本語で一言)"}`;
+{"corrected_en":"(上の質問に対する答えとして、意図を汲んで自然に直した英文。時制・話題を質問に必ず合わせること)","corrected_ja":"(corrected_enをそのまま日本語に直訳したもの。確認の言い回しは付けず、素直な訳文のみ)","confirm_ja":"(直した英文の意味を確認する日本語の一文。例:「〜という意味ですか？」)","next_question_en":"(会話の流れに沿った次のやさしい質問、英語)","next_question_ja":"(次の質問の日本語訳)","example_answer_ja":"(次の質問への答え方のヒントを日本語で一言)"}`;
     const requestPayload = { contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0.6} };
     const body = JSON.stringify(requestPayload);
     const text = await callGeminiKeys(keys, body);
@@ -4038,6 +4038,7 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
       const result = await kingdomCallAI(histText, kingdomSession.question.en, kingdomSession.userAnswer);
       kingdomSession.correction = {
         en: result.corrected_en,
+        ja: result.corrected_ja,
         confirm_ja: result.confirm_ja,
         next_q_en: result.next_question_en,
         next_q_ja: result.next_question_ja,
@@ -4074,7 +4075,7 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
 
     // クリア済み会話ログに、王様の質問とユーザーの英文をそれぞれ英文/日本語のペアで記録
     magicWordsHistory.push({ date: todayDateKey(), en: kingdomSession.question.en, ja: kingdomSession.question.ja || '' });
-    magicWordsHistory.push({ date: todayDateKey(), en: kingdomSession.correction.en, ja: kingdomSession.correction.confirm_ja || '' });
+    magicWordsHistory.push({ date: todayDateKey(), en: kingdomSession.correction.en, ja: kingdomSession.correction.ja || kingdomSession.correction.confirm_ja || '' });
     saveMagicWordsHistory();
 
     const nextQuestion = {
@@ -4744,7 +4745,7 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
     return { now, cost, val, pl: val - cost, plPct: cost ? ((val - cost) / cost) * 100 : 0 };
   }
 
-  function openGoldModal(){
+  function openGoldModal(autoFetch){
     const GOAL = 100000000;
     let total = 0, totalPl = 0, known = true;
     holdings.forEach(hd => {
@@ -4825,6 +4826,15 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
       const v = parseFloat(document.getElementById('gvManual'+i).value);
       if (isFinite(v) && v > 0) { holdings[i].manualPrice = v; saveHoldings(); openGoldModal(); }
     }));
+    if (autoFetch && holdings.length) {
+      // 袋を開いた瞬間、押さなくても自動で株価取得(開けた時のインパクトのため)
+      const st = document.getElementById('rpgQuoteStatus');
+      if (refBtn) refBtn.disabled = true;
+      refreshAllQuotes(st).then(() => {
+        if (refBtn) refBtn.disabled = false;
+        openGoldModal();
+      });
+    }
   }
 
 
