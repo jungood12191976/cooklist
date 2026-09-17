@@ -410,7 +410,7 @@
   .kq-slot-label{ font-size:13.5px; color:#ffd76b; font-weight:bold; margin-bottom:7px; }
   .kq-slot-input{ width:100%; background:#0c1230; border:2px solid #6ea8ff; color:#fff; padding:12px 10px; font-size:16px; box-sizing:border-box; }
   .kq-confirm-btn{ font-size:15px; padding:14px; margin-top:4px; }
-  .kq-display-wrap{ padding:8px 6px 16px; }
+  .kq-display-wrap{ padding:22px 6px 16px; border:4px solid #fff !important; box-shadow:0 4px 0 rgba(0,0,0,0.35) !important; }
   .kq-display-item{ display:flex; align-items:baseline; gap:10px; margin-bottom:11px; }
   .kq-display-arrow{ font-size:16px; color:#ffd76b; width:16px; flex-shrink:0; }
   .kq-display-arrow-empty{ visibility:hidden; }
@@ -419,6 +419,9 @@
   .kq-display-row:active{ background:rgba(255,255,255,0.08); }
   .kq-complete-text{ color:#ffd76b; text-shadow:0 0 10px #ffd76b; }
   .kq-frame-title{ position:absolute; top:-13px; left:50%; transform:translateX(-50%); background:#101010; padding:0 14px; color:#fff; font-weight:bold; font-size:14px; letter-spacing:2px; white-space:nowrap; }
+  .rpg-tool-wrap{ box-shadow:0 4px 0 rgba(0,0,0,0.35) !important; padding:14px 18px !important; }
+  .rpg-tool-wrap .rpg-tool-grid{ gap:12px; }
+  .rpg-tool-item{ border-color: transparent !important; }
   .kq-display-empty{ font-size:13.5px; color:#6b7aad; font-weight:normal; font-style:italic; }
   .kq-detail-link{ display:block; text-align:right; margin-top:2px; }
   .qd-edit-row{ margin-bottom:12px; }
@@ -2118,7 +2121,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     }, 3600);
 
     // instrument toolbox
-    const toolWrap = document.createElement('div'); toolWrap.className='pw';
+    const toolWrap = document.createElement('div'); toolWrap.className='pw rpg-tool-wrap';
     const toolTitle = document.createElement('div'); toolTitle.className='pw-title'; toolTitle.textContent='どうぐ'; toolWrap.appendChild(toolTitle);
     const toolGrid = document.createElement('div'); toolGrid.className='rpg-tool-grid';
     INSTRUMENTS.forEach(inst => {
