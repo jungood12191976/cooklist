@@ -315,6 +315,7 @@
   .tl-row-custom{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
   .tl-row-main{ flex:1; }
   .tl-del-btn{ background:none; border:none; color:#ff8f8f; font-size:16px; cursor:pointer; padding:2px 6px; }
+  .tl-photo-toggle{ display:inline-block; margin-top:6px; background:rgba(110,168,255,0.15); border:1px solid #6ea8ff; color:#cbd6ff; font-size:12px; padding:4px 10px; border-radius:6px; cursor:pointer; }
   .tl-photo{ display:block; max-width:100%; border-radius:8px; margin:4px 0 12px; border:1px solid #3a4a86; }
   .rpg-log-scroll{ max-height:52vh; overflow-y:auto; padding-right:4px; }
   .gn-item{ background:rgba(0,0,0,0.22); border-left:4px solid #6ee7b7; border-radius:0 6px 6px 0; padding:10px 12px; margin-bottom:11px; }
@@ -3355,10 +3356,11 @@ ${keywordLine}${bpBlock}${conditionBlock}
           <div class="tl-row-main">
             <div class="tl-dish">${escapeHtml(r.dish)}</div>
             <div class="tl-ratio">${escapeHtml(r.ratio || '')}</div>
+            ${r.image ? `<button class="tl-photo-toggle" data-photo-idx="${i}">🖼️ 写真を見る</button>` : ''}
+            ${r.image ? `<img src="${r.image}" class="tl-photo" id="tlPhoto${i}" alt="${escapeHtml(r.dish)}" style="display:none;">` : ''}
           </div>
           <button class="tl-del-btn" data-idx="${i}">🗑</button>
         </div>`;
-        if (r.image) html += `<img src="${r.image}" class="tl-photo" alt="${escapeHtml(r.dish)}">`;
       });
     }
     html += `<div class="tw-desc small" style="margin-top:10px;">全${all.length}件</div>`;
@@ -3409,6 +3411,17 @@ ${keywordLine}${bpBlock}${conditionBlock}
         customRatios.splice(i, 1);
         saveCustomRatios();
         openRecipeListModal();
+      });
+    });
+    content.querySelectorAll('.tl-photo-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        playSelect();
+        const idx = btn.dataset.photoIdx;
+        const img = document.getElementById('tlPhoto' + idx);
+        if (!img) return;
+        const showing = img.style.display !== 'none';
+        img.style.display = showing ? 'none' : 'block';
+        btn.textContent = showing ? '🖼️ 写真を見る' : '🖼️ 写真をとじる';
       });
     });
   }
@@ -4474,8 +4487,9 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
       } catch(e){ return null; }
     };
 
-    const stooqUrl = `https://stooq.com/q/l/?s=${t.toLowerCase()}.jp&f=sd2t2ohlcv&h&e=csv`;
-    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${t}.T?interval=1d&range=5d`;
+    const cb = () => (Date.now() + '_' + Math.random().toString(36).slice(2));
+    const stooqUrl = `https://stooq.com/q/l/?s=${t.toLowerCase()}.jp&f=sd2t2ohlcv&h&e=csv&_cb=${cb()}`;
+    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${t}.T?interval=1d&range=5d&_cb=${cb()}`;
 
     const plans = [
       { src:'stooq',       url: stooqUrl, parse: parseStooq },
@@ -4484,14 +4498,14 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
     // direct first, then through each public CORS proxy
     for (const p of plans) {
       try {
-        const res = await fetch(p.url);
+        const res = await fetch(p.url, { cache: 'no-store' });
         if (res.ok) { const v = p.parse(await res.text()); if (v) return { price:v, src:p.src }; }
       } catch(e){}
     }
     for (const mk of PROXIES) {
       for (const p of plans) {
         try {
-          const res = await fetch(mk(p.url));
+          const res = await fetch(mk(p.url) + (mk(p.url).includes('?') ? '&' : '?') + '_cb2=' + cb(), { cache: 'no-store' });
           if (!res.ok) continue;
           const v = p.parse(await res.text());
           if (v) return { price:v, src: p.src + '(経由)' };
@@ -4512,7 +4526,7 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
       u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
       u => 'https://r.jina.ai/' + u
     ];
-    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${t}.T?interval=1d&range=3mo`;
+    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${t}.T?interval=1d&range=3mo&_cb=${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const parse = txt => {
       try {
         const j = typeof txt === 'string' ? JSON.parse(txt) : txt;
@@ -4534,7 +4548,7 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
         const timer = setTimeout(() => controller.abort(), 7000); // 1リクエストあたり7秒でタイムアウト(ハングして永久に止まるのを防ぐ)
         let res;
         try {
-          res = await fetch(mk(yahooUrl), { signal: controller.signal });
+          res = await fetch(mk(yahooUrl), { signal: controller.signal, cache: 'no-store' });
         } finally {
           clearTimeout(timer);
         }
