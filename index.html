@@ -4495,13 +4495,7 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
       { src:'stooq',       url: stooqUrl, parse: parseStooq },
       { src:'yahoo',       url: yahooUrl, parse: parseYahoo }
     ];
-    // direct first, then through each public CORS proxy
-    for (const p of plans) {
-      try {
-        const res = await fetch(p.url, { cache: 'no-store' });
-        if (res.ok) { const v = p.parse(await res.text()); if (v) return { price:v, src:p.src }; }
-      } catch(e){}
-    }
+    // ブラウザからの直接アクセスは必ずCORSでブロックされるため試さず、最初からWorker経由に飛ぶ
     for (const mk of PROXIES) {
       for (const p of plans) {
         try {
