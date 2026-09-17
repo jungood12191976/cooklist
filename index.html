@@ -2595,7 +2595,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const openBag = document.createElement('button');
     openBag.className='rpg-btn secondary wide'; openBag.style.marginTop='10px';
     openBag.textContent='💰 金の袋をみる';
-    openBag.addEventListener('click', () => { playSelect(); openGoldModal(); });
+    openBag.addEventListener('click', () => { playSelect(); openGoldModal(true); });
     dWrap.appendChild(openBag);
 
     root.appendChild(dWrap);
