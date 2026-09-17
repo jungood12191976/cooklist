@@ -4734,11 +4734,21 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
 
   async function refreshAllQuotes(statusEl){
     let ok = 0, ng = 0;
+    const failed = [];
     for (const hd of holdings) {
       if (statusEl) statusEl.textContent = `${hd.code} を取得中…`;
       const q = await fetchQuote(hd.code);
       if (q) { priceCache[hd.code] = { price:q.price, at:new Date().toISOString(), src:q.src }; ok++; }
-      else ng++;
+      else { ng++; failed.push(hd); }
+    }
+    // 失敗した銘柄だけ、間を置いて自動で1回だけ再試行(プロキシの瞬間的な取りこぼし対策)
+    if (failed.length) {
+      await new Promise(r => setTimeout(r, 800));
+      for (const hd of failed) {
+        if (statusEl) statusEl.textContent = `${hd.code} を再取得中…`;
+        const q = await fetchQuote(hd.code);
+        if (q) { priceCache[hd.code] = { price:q.price, at:new Date().toISOString(), src:q.src }; ok++; ng--; }
+      }
     }
     lsSet('wd3:pricecache', {priceCache});
     if (statusEl) {
@@ -4787,7 +4797,7 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
         <div class="gv-detail">${hd.shares}株 / 買値 ¥${hd.buyPrice.toLocaleString()}</div>
         ${v ? `<div class="gv-detail">現在 ¥${Math.round(v.now).toLocaleString()}
                  <span class="${v.pl>=0?'plus':'minus'}">（${v.pl>=0?'+':''}${v.plPct.toFixed(1)}%／${v.pl>=0?'+':''}¥${Math.round(v.pl).toLocaleString()}）</span></div>
-               <div class="gv-src">${c ? '自動取得: '+c.src : '手入力'}</div>`
+               <div class="gv-src">${c ? '自動取得: '+c.src+'（'+new Date(c.at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})+'）' : '手入力'}</div>`
              : `<div class="gv-detail muted">株価が未取得です</div>`}
         <div class="gv-actions">
           <input class="gv-mini" id="gvManual${i}" type="number" placeholder="現在値を手入力" value="${hd.manualPrice||''}">
@@ -4929,6 +4939,7 @@ ${historyForPrompt || '(これが最初のやりとりです)'}
     setTimeout(() => window.scrollTo(0, 0), 300);
     setTimeout(maybeShowKingQuestPopup, 600); // その日最初の起動なら、まずキングクエストの誓いポップアップ
     setTimeout(maybeShowEnglishNudge, 2400); // 起動アニメが落ち着いてから、今日まだなら執事が声をかける
+    if (holdings.length) refreshAllQuotes(null); // 起動した瞬間に裏側で株価を自動取得しておく(袋を開いた時にはもう最新)
   });
 
 })();
