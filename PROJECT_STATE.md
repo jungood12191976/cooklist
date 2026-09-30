@@ -134,3 +134,15 @@ corsproxyは廃止。stooqは除外。
 - 表示: 場中(営業日9:00-15:30)で+3%以上=ドラゴンに乗る2人 / 場中それ以外=勇者 / 場外・東証休み=村人2人が歩く / 夜(22-5時)=寝る勇者(3コマ)+Z。左上Lv下に「🏯OSE +1.77% ⏱15分遅れ」等の小表示。
 - スプライト: `KAZE_DRAGON` `KAZE_PAIR` `KAZE_BED`(各3コマ、透過・左向き)。
 - 既知の注意: OSE/SGXは休場日は最終取引値のまま。OSE取得はYahoo!JPのページ構造に依存(壊れやすい)。
+
+## 今日の情報（スケジュールタスク → Googleスプレッドシート → 天空の城）
+- 流れ：ルーティン「8:30 朝ブリーフ」がシート「シート1」に1行追加 → アプリがCSVで読む（読み取り専用）。
+- シートID：`111v1cjQs9hHrri4MuAo6BiLpp7_OuNrKMm7JyOE6Qfk`（リンクを知っている全員が閲覧可。gid=0）
+- 列(A〜L)：date, brief_time, facts, ai_hypothesis, break_conditions, uncertainties, written_at, world_change, stance, holdings_events, key_events, story
+  - brief_timeは文字列（8:30="0830"、予定：11:35="1135"、12:35="1235"、20:00="afterclose"）
+  - JSON列：world_change/stance=オブジェクト、holdings_events/key_events=配列、story=JSON文字列
+- 表示：天空の城の最上部「📜 今日の情報」。第1層＝世界の最重要変化＋スタンス提案(AIの仮説と明記)、第2層＝保有銘柄・決算/規制/要人発言・ストーリー(折りたたみ)。
+- 同じ日×枠が複数行ある場合は written_at が最新の行を採用。`connection_test` 等、world_change/story が空の行は無視。
+- 枠の開閉：今日のデータ かつ 営業日 → 開始時刻を過ぎた枠のうち最も遅い枠だけ開く。今日のデータが無い日は全部閉じる。
+- 未対応：8:30以外の枠(11:35/12:35/20:00)は列の形が未確定で `ready:false`。東証の祝日・休業日は未反映（土日のみ判定。JPX公式の休業日一覧を確認して追加する）。
+- 天空の城の整理：旧②⑤⑥→「今日の海況」、旧③⑦→「今日の仮説」、④は折りたたみ、⑧は「書庫」に格納。
