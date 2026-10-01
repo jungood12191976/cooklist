@@ -188,3 +188,10 @@ corsproxyは廃止。stooqは除外。
 - 寝ている勇者：3コマ切替を5秒→10秒。就寝BGMをセレスタ風の音色＋ゆっくり(8分=750ms)のオリジナル曲に変更（実曲の写しではない）。
 - 3タブ折りたたみ：コード上は初期=閉。新規起動のheadless確認では閉じていた（実機で開いて見える場合は古いキャッシュの可能性。画面下のAPP_BUILDで確認）。
 - 2026-10-02c：金の鉱山の「🔮ここ1週間くらいで動き出しそう」「🔥今日、一番火がつきそう」の2枠を折りたたみ(初期=閉。タイトルを押すと開閉、`gmPanelOpen`)。
+
+## 2026-10-02e 手紙の参考記事・時のへや材料当てクイズ
+- シート列追加：N=articles `[{title,url,publisher,date,grade}]`（確認できたURLのみ）、O=quiz `[{q,choices[3],answer0-2,explain,source{name,date,url}}]`。20:00ルーティン(trig_01YEo6Sdna7BqP1fZn6ujkMP)がA〜Oを書く。初回の自動書き込みは2026-10-02 20:06。
+- `SKY_BRIEF_COLS`に'articles','quiz'追加。`skyBriefAfterCloseHTML`の最終行に「📰 参考記事」（URLがあればリンク、無ければ文字のみ）。
+- 時のへや：`buildQuizPanel`/`quizPool`/`quizPick`。全行のquizをプール化→未出題→間違えた問題(1問まぜて復習)→既出の順で3問、選択肢もシャッフル。localStorage `ktq:quiz` = {seen,wrong,total,correct}。出典は url があればリンク、なければ「名前・日付（リンクなし）」。
+- 過去2日分(9/30:4問, 10/1:7問)は手動バックフィル済み(URLなし)。
+- 取得不可を確認：Reuters/CNBC(RSS含む)/Nikkei Asia/日経/Bloomberg EN/Seeking Alpha/モープラ公式。取得可：Yahoo!ファイナンス記事、Yardeni、Confluence、みんかぶFX。
