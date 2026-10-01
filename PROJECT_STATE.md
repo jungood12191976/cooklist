@@ -145,7 +145,7 @@ corsproxyは廃止。stooqは除外。
 - 同じ日×枠が複数行ある場合は written_at が最新の行を採用。`connection_test` 等、world_change/story が空の行は無視。
 - 枠の開閉：今日のデータ かつ 営業日 → 開始時刻を過ぎた枠のうち最も遅い枠だけ開く。今日のデータが無い日は全部閉じる。
 - M列 `slot_body`（13列目・時間帯ごとの本文JSON）を追加。20:00(`afterclose`)は実データ確認済みで `ready:true`：conclusion/holdings/indices/sectors/movers/reasons/institutional_view/hypotheses/night_watch を表示（参考記事・出典は出さない）。壊れたJSON・空は「形式エラー」表示。APP_BUILD 2026-09-30d。
-- 未対応：11:35(12:00の枠)と12:35(12:20の枠)は実データ待ちで `ready:false`（10/1の12:45に行を確認してから実装）。
+- 12:00(`1135`・ラベル「前場 12:00」)と12:20(`1235`・ラベル「昼休み 12:20」)も実データ確認済みで `ready:true`。12:00は slot_body の conclusion/holdings/indices/sectors/movers/reasons/scenarios+leading/watch_points を表示。12:20は changed:false→「問題なし」1行、true→changes(最大3件)+watch_points。壊れたJSONは「形式エラー」表示。APP_BUILD 2026-10-01a。
 - 天空の城の整理：旧②⑤⑥→「今日の海況」、旧③⑦→「今日の仮説」、④は折りたたみ、⑧は「書庫」に格納。
 
 ### 決定事項（2026-09-30 キング確認済み）
