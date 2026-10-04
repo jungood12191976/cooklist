@@ -309,3 +309,7 @@ corsproxyは廃止。stooqは除外。
 - 変更: `kazeGetLeadFuture`を、①基準(日経平均)②SGX③失敗ならCME の順に。結果に`want`(要求した枠)・`session`(実際に使った枠)・`sgxError`を持たせた。小表示: 「🌎CME +x% ⏱約10分遅れ (SGXは取れず: 理由)」/ 両方失敗「🌅SGX 取得できず(SGX: … / CME: …)」。`kazeRefreshIfStale`は`want`で比較(切替後に毎回再取得しない)。
 - 方針の更新: 9/30の「失敗しても他の先物で代用しない」を、SGX時間帯に限りキングが解除(今回)。しばらく使い、SGXがずっと取れなければSGXを外してCME一本にする。
 - 検証: 模擬応答でヘッドレス確認(SGX失敗→CME表示+理由 / SGX成功→SGX表示 / 両方失敗→両方の理由)。実機・実通信は未確認。
+
+## 2026-10-05g 追記
+- 未知の王国：話題の選び方を「最新日のみ」→「直近5つの日付ぶんの行」に拡大（`kingdomPickWhyCandidates` / `kingdomPickCandidates`）。使用済み回避(`wd3:kingdomused`)は従来どおり。キング承認済み。模擬データでの検証は未実施（構文チェックのみ）。
+- 週末収集タスク `trig_01T4my3BFn6JqvmkZSXNe2MK`（`CRON_TZ=Asia/Tokyo 3 20 * * 6,0`）：土日20:03 JSTに「原因」タブ最大5行・「世界の入口」タブ最大6行(kind=週末ニュース)を追記。次回 2026-10-10 20:03 JST。
