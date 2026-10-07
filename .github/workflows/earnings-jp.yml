@@ -1,0 +1,40 @@
+name: earnings-jp
+
+# JPX公式の「決算発表予定日」Excelを毎営業日に取得して data/earnings_jp.json を更新する。
+# JPXは毎営業日17時頃に更新するので、18:00(JST)に実行する。中身が変わったときだけコミットされる。
+on:
+  schedule:
+    - cron: '0 9 * * 1-5'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/fetch_earnings_jp.py'
+      - '.github/workflows/earnings-jp.yml'
+
+permissions:
+  contents: write
+
+concurrency: earnings-jp
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install openpyxl requests
+      - run: python scripts/fetch_earnings_jp.py
+      - name: commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/earnings_jp.json
+          if git diff --cached --quiet; then
+            echo "変更なし"
+            exit 0
+          fi
+          git commit -m "決算日程(日本)を更新"
+          git pull --rebase origin main
+          git push origin HEAD:main
