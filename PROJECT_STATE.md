@@ -382,3 +382,11 @@ corsproxyは廃止。stooqは除外。
 - 世界の入口3 → 「⚓ ウワサの港」に改名(画面キー world3 / renderWorldNews3 は据え置き)。背景絵 HARBOR_BG(キング提供)＋勇者とガーディアンを、おわりの町と同じ高さ(1671/941・絵は上下を切り詰め)・同じ配置(下端9%)で表示。CSSは .world-scene.endtown-scene / .harbor-scene を共通化。
 - おわりの町のBGM: 「にらみあいの行進」(イ短調・♩=132)。startStageBGM('owari') / stopStageBGM() / STAGE_SONGS / stageBuild。AudioContext(actx)を共用し、25msごとに0.3秒先まで予約して鳴らす。stopBGM()から stopStageBGM() が呼ばれる(他のBGMが始まれば止まる)。render()で world2 以外なら止める。音を切るボタン(rpgSoundToggle)にも連動。状態変数は stopBGM から早期に呼ばれてもよいよう var 宣言。
 - ウワサの港のBGMは未設定(試聴ページで検討中)。
+
+## 2026-10-07g 世界の入口：取得を「米国の引けの後に1日1回」へ
+- 理由: 信号表は日足(確定足)だけを使うので、引けるまで中身が変わらない。従来はアプリを開くたび(10分超)に62か所を取り直していた(worldStateがメモリのみで、再読込で消えていた)。
+- 保存: localStorage `wd3:worldsig` = {items, fetchedAt}。起動時に worldLoadSaved() で復元。
+- 判定: worldLatestCloseCutoff(now)=「最後に引けた米国平日の16:00(America/New_York)＋1時間」。fetchedAt がこれ以上なら新鮮(worldIsFresh)で取り直さない。夏時間=JST朝6時/冬時間=朝7時、土日は金曜の引けが基準。祝日は判定しない(祝日の後に1回余計に取るだけ)。+1時間はクロ提案・キング承認(「朝6時ごろ、余裕を見て」)。
+- 全滅時: 前回保存を残し、triedAtで10分は自動再取得しない(描き直しループ防止)。
+- UI: ボタン「🔄 いま更新」(強制取得)、取得日時＋「◯分/時間/日前」を表示、自動取得は引けの後1回だけという注記。
+- 起動時の裏取得(setTimeout 5秒)は残してあるが、新鮮なら何もしない。
