@@ -350,4 +350,13 @@ corsproxyは廃止。stooqは除外。
 - 日本(JPX公式): `kessan09_1002.xlsx`(9月に四半期末/期末を迎えた会社・2026-10-01時点、ページ更新10/6)。毎営業日17時頃更新、全社網羅の保証なし。xlsxはWebFetchで読めず、列・225銘柄の有無は未確認。
 - 米国: NVIDIA IRは決算の28日前に告知(Q2 FY27: 7/29告知→8/26決算)。TSMC IR: 2026-10-15 14:00(台湾時間)にQ3説明会。
 - 韓国: サムスン速報(guidance)日=2025-10-14 / 2026-04-07 / 2026-07-07(事前告知は確認できず)。SKハイニックス確定決算=2026-01-29 / 04-23 / 07-29(MarketScreener、10/1時点でQ3は未掲載)。DART OpenAPI(list.json)はAPIキー必須で、返すのは公示の受付日(事後情報)。
-- 未検証: GitHub ActionsからJPX/Nasdaqに届くか、ActionsがこのリポジトリでON か、JPX Excelの中身。
+- 解消(同日): ActionsはON、JPXのExcelはActionsから取得でき中身も確認(下の節)。Nasdaqは未検証。
+
+## 2026-10-07 日本の決算日程の自動取得（GitHub Actions・実装済み／アプリ側は未配線）
+- 仕組み: `.github/workflows/earnings-jp.yml` が平日18:00(JST。cron `0 9 * * 1-5`)に `scripts/fetch_earnings_jp.py` を実行 → JPX公式Excelを取得 → `data/earnings_jp.json` を更新。内容が変わったときだけbotがmainへコミット。スクリプト/ワークフローの変更pushと手動実行でも動く。JPXは毎営業日17時頃更新。
+- 確認済み(Actions上の実物): JPXのExcel(`kessan08_*.xlsx`・`kessan09_*.xlsx`)はActionsから取得できる。列: A決算発表予定日/Bコード/C会社名/D Issue Name/E決算期末/F業種名/G Industry/H種別/I Fiscal Year-Quarter/J市場区分/K Market Segment。見出しは行4(0始まり)、データは行5以降。発表日が未定の会社は日付欄が「未定_Undecided」。末尾に注記が4行。
+- JSON: `{source, source_url, grade:'A', page_updated, files[{url,as_of,rows}], count, items[{code,name,name_en,date,kind,fy_end,industry,market,undecided?}]}`。date='YYYY-MM-DD'。未定は date='' ＋ undecided:true。codeは文字列('285A'など)。
+- 2026-10-07時点(JPXページ更新10/6・Excel基準日10/1): 3,249件(日付あり3,169・未定80)。Excelのデータ行3,257−注記8=3,249で一致。アドバンテスト6857=10/28、キオクシア285A=10/30、東京エレクトロン8035=10/30、ローム6963=11/5、フジクラ5803=11/10。
+- 診断: `data/earnings_jp_check.txt`(ファイルごとの行数・読み飛ばし・重複)。
+- 配信: botのコミットは GitHub Pages(`/cooklist/data/...`)と raw.githubusercontent.com の両方で読めることを、確認用ファイルで確認済み。アプリ側の読み込みは未実装。
+- 未確認: 平日18:00のスケジュール実行そのもの(10/7夜が初回。push起動の実行のみ確認済み)。JPXが新しい期末のファイル(10月期など)を載せたときの自動追従(リンクに`kessan`を含むxlsxを全部読む作り)。
