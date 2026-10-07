@@ -95,14 +95,15 @@ def parse_workbook(content):
         i = cols.get(key)
         return norm(row[i]) if i is not None and i < len(row) else ''
 
-    items, skipped = [], 0
+    items, skipped, n_rows = [], [], 0
     for row in rows[header_idx + 1:]:
         if not any(norm(c) for c in row):
             continue
+        n_rows += 1
         d = to_date(row[cols['date']])
         code = cell(row, 'code')
         if d is None or not code:
-            skipped += 1
+            skipped.append([norm(c) for c in row][:8])
             continue
         fy = to_date(row[cols['fy_end']]) if 'fy_end' in cols else None
         items.append({
@@ -115,7 +116,7 @@ def parse_workbook(content):
             'industry': cell(row, 'industry'),
             'market': cell(row, 'market'),
         })
-    return items, as_of, skipped
+    return items, as_of, skipped, n_rows
 
 
 def main():
@@ -130,16 +131,31 @@ def main():
     if not hrefs:
         raise SystemExit('決算発表予定日のExcelへのリンクが見つかりません')
 
-    files, merged = [], {}
+    files, merged, diag = [], {}, []
     for href in hrefs:
         url = href if href.startswith('http') else BASE + href
         resp = requests.get(url, headers=UA, timeout=120)
         resp.raise_for_status()
-        items, as_of, skipped = parse_workbook(resp.content)
-        print('FILE', url, 'rows', len(items), 'skipped', skipped, 'as_of', as_of)
-        files.append({'url': url, 'as_of': as_of.isoformat() if as_of else '', 'rows': len(items)})
+        items, as_of, skipped, n_rows = parse_workbook(resp.content)
+        dups, dup_samples = 0, []
         for it in items:
-            merged[(it['code'], it['date'], it['kind'])] = it
+            key = (it['code'], it['date'], it['kind'])
+            if key in merged:
+                dups += 1
+                if len(dup_samples) < 10:
+                    dup_samples.append(key)
+            merged[key] = it
+        print('FILE', url, 'rows', len(items), 'skipped', len(skipped), 'as_of', as_of)
+        files.append({'url': url, 'as_of': as_of.isoformat() if as_of else '', 'rows': len(items)})
+        diag.append('FILE %s as_of=%s data_rows=%d parsed=%d skipped=%d dups=%d' % (
+            url.split('/')[-1], as_of, n_rows, len(items), len(skipped), dups))
+        for s in skipped[:25]:
+            diag.append('  SKIPPED %r' % (s,))
+        for s in dup_samples:
+            diag.append('  DUP %r' % (s,))
+    os.makedirs('data', exist_ok=True)
+    with open(os.path.join('data', 'earnings_jp_check.txt'), 'w', encoding='utf-8') as f:
+        f.write('\n'.join(diag) + '\n')
 
     items = sorted(merged.values(), key=lambda x: (x['date'], x['code']))
     if len(items) < MIN_ITEMS:
