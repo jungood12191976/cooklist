@@ -378,3 +378,7 @@ corsproxyは廃止。stooqは除外。
 - 🏘️ おわりの町(旧・世界の入口2)の連鎖を4→10本に拡張(`W2_CHAINS`)：光ファイバー・光通信／AI電力・データセンター設備／米銀→日本の銀行／原油・石油／建機・景気敏感／自動車・EV を追加。根拠は日付・出典つきで `W2_EVID` に。確認できた実例が無い連鎖(建機・自動車)は「確認できた実例はまだありません」と表示される。日本側の銘柄はすべて日経225構成銘柄。米国側の起爆剤の銘柄は `scripts/fetch_earnings_us.py` の `SYMS` に追加済み。
 - 韓国(SKハイニックス)の決算日：Nasdaq決算カレンダーに載らない(2026-10-07にActionsで確認)。TipRanksに10/27(引け後)の表記があるが二次情報。サムスンは未確認。
 
+## 2026-10-07f おわりの町のBGM・ウワサの港
+- 世界の入口3 → 「⚓ ウワサの港」に改名(画面キー world3 / renderWorldNews3 は据え置き)。背景絵 HARBOR_BG(キング提供)＋勇者とガーディアンを、おわりの町と同じ高さ(1671/941・絵は上下を切り詰め)・同じ配置(下端9%)で表示。CSSは .world-scene.endtown-scene / .harbor-scene を共通化。
+- おわりの町のBGM: 「にらみあいの行進」(イ短調・♩=132)。startStageBGM('owari') / stopStageBGM() / STAGE_SONGS / stageBuild。AudioContext(actx)を共用し、25msごとに0.3秒先まで予約して鳴らす。stopBGM()から stopStageBGM() が呼ばれる(他のBGMが始まれば止まる)。render()で world2 以外なら止める。音を切るボタン(rpgSoundToggle)にも連動。状態変数は stopBGM から早期に呼ばれてもよいよう var 宣言。
+- ウワサの港のBGMは未設定(試聴ページで検討中)。
