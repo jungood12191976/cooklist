@@ -102,20 +102,26 @@ def parse_workbook(content):
         n_rows += 1
         d = to_date(row[cols['date']])
         code = cell(row, 'code')
-        if d is None or not code:
-            skipped.append([norm(c) for c in row][:8])
+        raw_date = norm(row[cols['date']])
+        # 実物では、発表日が決まっていない会社は日付欄が「未定_Undecided」になっている(2026-10-07確認)。
+        undecided = d is None and ('未定' in raw_date or 'Undecided' in raw_date)
+        if not code or (d is None and not undecided):
+            skipped.append([norm(c) for c in row][:8])  # 末尾の注記行など
             continue
         fy = to_date(row[cols['fy_end']]) if 'fy_end' in cols else None
-        items.append({
+        item = {
             'code': code,
             'name': cell(row, 'name'),
             'name_en': cell(row, 'name_en'),
-            'date': d.isoformat(),
+            'date': d.isoformat() if d else '',
             'kind': cell(row, 'kind'),
             'fy_end': fy.isoformat() if fy else '',
             'industry': cell(row, 'industry'),
             'market': cell(row, 'market'),
-        })
+        }
+        if undecided:
+            item['undecided'] = True
+        items.append(item)
     return items, as_of, skipped, n_rows
 
 
@@ -147,8 +153,9 @@ def main():
             merged[key] = it
         print('FILE', url, 'rows', len(items), 'skipped', len(skipped), 'as_of', as_of)
         files.append({'url': url, 'as_of': as_of.isoformat() if as_of else '', 'rows': len(items)})
-        diag.append('FILE %s as_of=%s data_rows=%d parsed=%d skipped=%d dups=%d' % (
-            url.split('/')[-1], as_of, n_rows, len(items), len(skipped), dups))
+        n_und = sum(1 for it in items if it.get('undecided'))
+        diag.append('FILE %s as_of=%s data_rows=%d parsed=%d (うち日付未定=%d) skipped=%d dups=%d' % (
+            url.split('/')[-1], as_of, n_rows, len(items), n_und, len(skipped), dups))
         for s in skipped[:25]:
             diag.append('  SKIPPED %r' % (s,))
         for s in dup_samples:
@@ -157,11 +164,11 @@ def main():
     with open(os.path.join('data', 'earnings_jp_check.txt'), 'w', encoding='utf-8') as f:
         f.write('\n'.join(diag) + '\n')
 
-    items = sorted(merged.values(), key=lambda x: (x['date'], x['code']))
+    items = sorted(merged.values(), key=lambda x: (x['date'] or '9999-99-99', x['code']))
     if len(items) < MIN_ITEMS:
         raise SystemExit('件数が少なすぎるため書き込みません: %d' % len(items))
-    years = {int(i['date'][:4]) for i in items}
-    if min(years) < 2020 or max(years) > 2035:
+    years = {int(i['date'][:4]) for i in items if i['date']}
+    if not years or min(years) < 2020 or max(years) > 2035:
         raise SystemExit('日付が想定範囲外です: %s' % sorted(years))
 
     doc = {
