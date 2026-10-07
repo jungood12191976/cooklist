@@ -17,7 +17,10 @@ BACK, AHEAD = 14, 75
 # 起爆剤候補(日本株へ波及しうる米国側)。絞らず広めに持つ(キング方針)。使いながら画面側で減らす。
 SYMS = ['MU', 'NVDA', 'TSM', 'AVGO', 'AMAT', 'LRCX', 'KLAC', 'AMD', 'ASML', 'QCOM', 'INTC', 'TXN', 'ADI', 'ON', 'NXPI',
         'MCHP', 'WDC', 'STX', 'SNDK', 'ARM', 'SMCI', 'DELL', 'CSCO', 'ANET', 'VRT', 'MSFT', 'GOOGL', 'AMZN', 'META',
-        'ORCL', 'AAPL', 'TSLA', 'MRVL', 'COHR', 'GLW', 'TER']
+        'ORCL', 'AAPL', 'TSLA', 'MRVL', 'COHR', 'GLW', 'TER',
+        # 2026-10-07追加(連鎖の拡張): 光通信・AI電力・米銀・石油・建機・自動車
+        'LITE', 'CIEN', 'FN', 'VRT', 'GEV', 'ETN', 'CEG', 'VST', 'JPM', 'BAC', 'C', 'WFC', 'GS', 'MS',
+        'XOM', 'CVX', 'COP', 'SLB', 'CAT', 'DE', 'GM', 'F']
 
 
 def get(url):
