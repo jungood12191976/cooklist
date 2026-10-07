@@ -1,0 +1,4 @@
+items=225 fail=0 sliced=3 fetched_at=2026-10-07T12:17+09:00
+SLICED 285A キオクシアHD first=100 sliced=273 ok=True
+SLICED 8604 野村HD first=100 sliced=211 ok=True
+SLICED 9434 ソフトバンク first=100 sliced=252 ok=True
