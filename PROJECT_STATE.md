@@ -400,7 +400,11 @@ corsproxyは廃止。stooqは除外。
 - 過去データ: Yahoo日足は `oceanFetchSeries` の戻り値に `series`(直近22本・JST日付)を追加して流用。COTは `fetchOceanCOTHistory`(CFTC Socrata直接fetch・直近12週・純ポジション=買い−売り)。保存は localStorage `wd3:oceanspark` = {date, savedAt, series}(1日1回)。取得は `ensureOceanSpark`(パネルを開いた時のみ・失敗は同日再試行しない・失敗系列は前回キャッシュを残す)。描画は `oceanSparkSVG` / `oceanSparkBlockHTML`。
 - 朝の観測の保存形式(`wd3:oceanlog`)や判定ロジックは変更なし。
 - 数値整形 `oceanFmtVal(id, v)`: 米10年債=小数2桁+%(5.27%)、VIX/USDJPY=小数2桁(15.01 / 158.42)、COT=整数桁区切り。適用先: 海況の朝カード・現在値カード・朝→現在の比較表・旧「朝の海況チェック」モーダル。
-- 未対応(提案中): 「現在の市場を確認する」を押すと朝カードが比較表に切り替わるため、その間は折れ線が見えない。
+
+## 2026-10-07k 今日の海況：最初から開いたまま＋現在の比較は折れ線の下に追加(キング承認：B案)
+- `skySeaOpen` の初期値を true に(▼で閉じられるのは従来どおり)。
+- 「現在の市場を確認する」を押しても朝の観測カード(折れ線つき)は消さず、「朝の値→現在の値」の比較表と維持/見直す材料はその下に追加表示。ボタン「もう一度、現在の市場を確認する」は一番下。
+- 現在値(`skyNowSnapshot`)はメモリのみ・今日の海況パネル内でしか使われていない(コードで確認済み)。要らなくなった時は、`buildSkyMarketNowHTML` / `buildSkyComparisonHTML` / `fetchSkyNowSnapshot` とそのボタン3種を消せば取り除ける。
 
 ## 2026-10-07j 秘密のほこらのBGM「石の祈り」
 - キング選定(試聴ページ)。ニ調・♩=58・16小節。パッド＋器(ボウル)＋低い風→4小節ごとに竪琴・しずく・サブ・ガラスを足す。
