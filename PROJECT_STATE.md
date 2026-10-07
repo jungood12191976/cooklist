@@ -390,3 +390,8 @@ corsproxyは廃止。stooqは除外。
 - 全滅時: 前回保存を残し、triedAtで10分は自動再取得しない(描き直しループ防止)。
 - UI: ボタン「🔄 いま更新」(強制取得)、取得日時＋「◯分/時間/日前」を表示、自動取得は引けの後1回だけという注記。
 - 起動時の裏取得(setTimeout 5秒)は残してあるが、新鮮なら何もしない。
+
+## 2026-10-07h ウワサの港のBGM
+- ウワサの港(world3)のBGMを「あやしい酒場」に設定(4拍子・♩=128・ポルカ低音＋木琴の全音階連打＋半音ずれた和音。4小節ずつ層を足す)。startStageBGM('uwasa') / stageBuildUwasa。音符は midi 番号(e.m)で持つ(おわりの町の owari は音名 e.n)。
+- 新しい音色: xylo / reed(2本ずらし) / horn(霧笛) / wood / whisper / creak。world2・world3 以外の画面では render() が止める。
+
