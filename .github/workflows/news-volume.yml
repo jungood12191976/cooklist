@@ -1,0 +1,40 @@
+name: news-volume
+
+# 日経225の日別ニュース記事数(直近30日)を毎日取得して data/news_volume.json を更新する。毎日20:00(JST)。
+on:
+  schedule:
+    - cron: '0 11 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/fetch_news_volume.py'
+      - '.github/workflows/news-volume.yml'
+
+permissions:
+  contents: write
+
+concurrency: news-volume
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests
+      - run: python scripts/fetch_news_volume.py
+      - name: commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/news_volume.json data/news_volume_check.txt
+          if git diff --cached --quiet; then
+            echo "変更なし"
+            exit 0
+          fi
+          git commit -m "ニュース記事数(日経225)を更新"
+          git pull --rebase origin main
+          git push origin HEAD:main
