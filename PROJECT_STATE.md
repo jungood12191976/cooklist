@@ -395,3 +395,9 @@ corsproxyは廃止。stooqは除外。
 - ウワサの港(world3)のBGMを「あやしい酒場」に設定(4拍子・♩=128・ポルカ低音＋木琴の全音階連打＋半音ずれた和音。4小節ずつ層を足す)。startStageBGM('uwasa') / stageBuildUwasa。音符は midi 番号(e.m)で持つ(おわりの町の owari は音名 e.n)。
 - 新しい音色: xylo / reed(2本ずらし) / horn(霧笛) / wood / whisper / creak。world2・world3 以外の画面では render() が止める。
 
+## 2026-10-07i 今日の海況：全カードに折れ線＋数値の整形(キング承認：案B)
+- 天空の城「🌊 今日の海況」の朝の観測カード5枚(米10年債/VIX/米国先物/USDJPY/COT)の下に小さな折れ線(SVG)を常時表示。安値・高値と期間の注記つき。米国先物だけは2本線(S&P青・Nasdaq橙、始点を0%とした変化)。
+- 過去データ: Yahoo日足は `oceanFetchSeries` の戻り値に `series`(直近22本・JST日付)を追加して流用。COTは `fetchOceanCOTHistory`(CFTC Socrata直接fetch・直近12週・純ポジション=買い−売り)。保存は localStorage `wd3:oceanspark` = {date, savedAt, series}(1日1回)。取得は `ensureOceanSpark`(パネルを開いた時のみ・失敗は同日再試行しない・失敗系列は前回キャッシュを残す)。描画は `oceanSparkSVG` / `oceanSparkBlockHTML`。
+- 朝の観測の保存形式(`wd3:oceanlog`)や判定ロジックは変更なし。
+- 数値整形 `oceanFmtVal(id, v)`: 米10年債=小数2桁+%(5.27%)、VIX/USDJPY=小数2桁(15.01 / 158.42)、COT=整数桁区切り。適用先: 海況の朝カード・現在値カード・朝→現在の比較表・旧「朝の海況チェック」モーダル。
+- 未対応(提案中): 「現在の市場を確認する」を押すと朝カードが比較表に切り替わるため、その間は折れ線が見えない。
