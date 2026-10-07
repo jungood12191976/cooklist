@@ -343,3 +343,11 @@ corsproxyは廃止。stooqは除外。
 - 実データ確認（10/6、キングのブラウザ内でWorker経由）：285A 18,535円(前日比-585円/-3.06%)・出来高16,922,200株、5803 5,735円(+169円/+3.04%)・20,856,900株、日経 70,081.53円(+134.67円/+0.19%)。日経は昼休み枠のOANDA値(70,081.53)と一致。
 - 未対応：TOPIX・プライム売買代金・値上がり/値下がり数・業種は補完しない（取得手段未確認）。「後場の一言結論」など AIが書く文章は、シートの内容のまま（未取得の文のまま）。ルーティンの取得手順の改善は未着手（指示文を未確認）。
 - APP_BUILD 2026-10-06a。
+
+## 2026-10-07 世界の入口2: 決算日程の取得元調査（実装前・未実装）
+- Worker(king-stock-proxy)の許可ホスト(キングの内蔵ブラウザ・GitHub Pages上から実測): query1.finance.yahoo.com=200 / api.nasdaq.com=403「host not allowed」 / www.jpx.co.jp=403 / finance.yahoo.co.jp=403。
+- Yahooで将来の決算日は取れない: v7/quote=401(User is unable to access this feature)、v10 quoteSummary calendarEvents=401(Invalid Crumb)、getcrumb=401(Invalid Cookie)、chart `events=earn` は events なし。
+- 日本(JPX公式): `kessan09_1002.xlsx`(9月に四半期末/期末を迎えた会社・2026-10-01時点、ページ更新10/6)。毎営業日17時頃更新、全社網羅の保証なし。xlsxはWebFetchで読めず、列・225銘柄の有無は未確認。
+- 米国: NVIDIA IRは決算の28日前に告知(Q2 FY27: 7/29告知→8/26決算)。TSMC IR: 2026-10-15 14:00(台湾時間)にQ3説明会。
+- 韓国: サムスン速報(guidance)日=2025-10-14 / 2026-04-07 / 2026-07-07(事前告知は確認できず)。SKハイニックス確定決算=2026-01-29 / 04-23 / 07-29(MarketScreener、10/1時点でQ3は未掲載)。DART OpenAPI(list.json)はAPIキー必須で、返すのは公示の受付日(事後情報)。
+- 未検証: GitHub ActionsからJPX/Nasdaqに届くか、ActionsがこのリポジトリでON か、JPX Excelの中身。
