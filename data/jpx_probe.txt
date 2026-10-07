@@ -1,0 +1,54 @@
+run_at_utc 2026-10-07T01:46:59.095048+00:00
+PAGE status 200 bytes 26845
+PAGE_HINT 2026/10/06 更新
+PAGE_HINT 後5時頃を目処に、3月期・9月期決算会社の本決算・四半期決算について翌営業日分を更新いたします。
+PAGE_HINT 2026年8月に四半期末又は期末を迎えた会社（2026年10月1日時点）
+PAGE_HINT 2026年9月に四半期末又は期末を迎えた会社（2026年10月1日時点）
+PAGE_HINT 対象となる期末の翌月の上旬に掲載し、その後適宜情報を更新いたします。
+PAGE_HINT 上場会社から連絡のあった発表予定につきましては、毎日夜間に更新される「東証上場会社情報サービス」サイトでもご覧いただけます。
+LINKS 2
+---- FILE https://www.jpx.co.jp/listing/event-schedules/financial-announcement/tvdivq0000001ofb-att/kessan08_1002.xlsx | 
+download status 200 bytes 48910
+SHEET 'List' max_row 472 max_col 11
+nonempty_rows 468
+ROW 0 ['８月に四半期末又は期末を迎えた決算発表予定会社の一覧', '', '', '', '', '', '', '', '', '', '']
+ROW 1 ['List of companies scheduled to announce earnings whose end of quarters or fiscal years in August', '', '', '', '', '', '', '', '', '', '']
+ROW 2 ['2026年10月1日 現在', '', '', '', '', '', '', '', '', '', '']
+ROW 3 ['As of 2026/10/1', '', '', '', '', '', '', '', '', '', '']
+ROW 4 ['決算発表予定日\nScheduled Dates for Earnings Announcements', 'コード\nCode', '会社名', 'Issue Name', '決算期末\nFiscal Year-end', '業種名', 'Industry', '種別', 'Fiscal Year/Quarter', '市場区分', 'Market Segment']
+ROW 5 ['2026-09-15 00:00:00', '2678', 'アスクル', 'ASKUL Corporation', '2027-05-20 00:00:00', '小売業', 'Retail Trade', '第１四半期', 'First quarter', 'プライム', 'Prime']
+ROW 6 ['2026-09-17 00:00:00', '2796', 'ファーマライズホールディングス', 'Pharmarise Holdings Corporation', '2027-05-31 00:00:00', '小売業', 'Retail Trade', '第１四半期', 'First quarter', 'スタンダード', 'Standard']
+ROW 7 ['2026-09-18 00:00:00', '3544', 'サツドラホールディングス', 'SATUDORA HOLDINGS CO.,LTD.', '2027-05-15 00:00:00', '小売業', 'Retail Trade', '第１四半期', 'First quarter', 'スタンダード', 'Standard']
+ROW 8 ['2026-09-18 00:00:00', '6905', 'コーセル', 'COSEL CO.,LTD.', '2027-05-20 00:00:00', '電気機器', 'Electronic Appliances', '第１四半期', 'First quarter', 'プライム', 'Prime']
+ROW 9 ['2026-09-24 00:00:00', '3160', '大光', 'OOMITSU CO.,LTD.', '2027-05-31 00:00:00', '卸売業', 'Wholesale Trade', '第１四半期', 'First quarter', 'スタンダード', 'Standard']
+ROW 10 ['2026-09-24 00:00:00', '4716', '日本オラクル', 'ORACLE CORPORATION JAPAN', '2027-05-31 00:00:00', '情報・通信業', 'Information & Communication', '第１四半期', 'First quarter', 'スタンダード', 'Standard']
+ROW 11 ['2026-09-25 00:00:00', '2742', 'ハローズ', 'HALOWS CO.,LTD.', '2027-02-28 00:00:00', '小売業', 'Retail Trade', '第２四半期', 'Second quarter', 'プライム', 'Prime']
+ROW 12 ['2026-09-25 00:00:00', '2778', 'パレモ・ホールディングス', 'PALEMO HOLDINGS CO.,LTD.', '2027-02-20 00:00:00', '小売業', 'Retail Trade', '第２四半期', 'Second quarter', 'スタンダード', 'Standard']
+ROW 13 ['2026-09-25 00:00:00', '3333', 'あさひ', 'ASAHI CO.,LTD.', '2027-02-20 00:00:00', '小売業', 'Retail Trade', '第２四半期', 'Second quarter', 'プライム', 'Prime']
+ROW 14 ['2026-09-25 00:00:00', '4465', 'ニイタカ', 'Niitaka Co., Ltd.', '2027-05-31 00:00:00', '化学', 'Chemicals', '第１四半期', 'First quarter', 'スタンダード', 'Standard']
+target_hits 0
+---- FILE https://www.jpx.co.jp/listing/event-schedules/financial-announcement/tvdivq0000001ofb-att/kessan09_1002.xlsx | 
+download status 200 bytes 225924
+SHEET 'List' max_row 2803 max_col 11
+nonempty_rows 2799
+ROW 0 ['９月に四半期末又は期末を迎えた決算発表予定会社の一覧', '', '', '', '', '', '', '', '', '', '']
+ROW 1 ['List of companies scheduled to announce earnings whose end of quarters or fiscal years in September', '', '', '', '', '', '', '', '', '', '']
+ROW 2 ['2026年10月1日 現在', '', '', '', '', '', '', '', '', '', '']
+ROW 3 ['As of 2026/10/1', '', '', '', '', '', '', '', '', '', '']
+ROW 4 ['決算発表予定日\nScheduled Dates for Earnings Announcements', 'コード\nCode', '会社名', 'Issue Name', '決算期末\nFiscal Year-end', '業種名', 'Industry', '種別', 'Fiscal Year/Quarter', '市場区分', 'Market Segment']
+ROW 5 ['2026-10-05 00:00:00', '2753', 'あみやき亭', 'AMIYAKI TEI CO.,LTD.', '2027-03-31 00:00:00', '小売業', 'Retail Trade', '第２四半期', 'Second quarter', 'プライム', 'Prime']
+ROW 6 ['2026-10-08 00:00:00', '2408', 'ＫＧ情報', 'KG Intelligence CO.,LTD.', '2026-12-20 00:00:00', 'サービス業', 'Services', '第３四半期', 'Third quarter', 'スタンダード', 'Standard']
+ROW 7 ['2026-10-13 00:00:00', '4274', '細谷火工', 'HOSOYA PYRO-ENGINEERING CO.,LTD.', '2027-03-31 00:00:00', '化学', 'Chemicals', '第２四半期', 'Second quarter', 'スタンダード', 'Standard']
+ROW 8 ['2026-10-15 00:00:00', '2762', 'ＳＡＮＫＯ\u3000ＭＡＲＫＥＴＩＮＧ\u3000ＦＯＯＤＳ', 'SANKO MARKETING FOODS CO.,LTD.', '2027-06-30 00:00:00', '小売業', 'Retail Trade', '第１四半期', 'First quarter', 'スタンダード', 'Standard']
+ROW 9 ['2026-10-15 00:00:00', '6866', '日置電機', 'HIOKI E.E.CORPORATION', '2026-12-31 00:00:00', '電気機器', 'Electronic Appliances', '第３四半期', 'Third quarter', 'プライム', 'Prime']
+ROW 10 ['2026-10-16 00:00:00', '2411', 'ゲンダイエージェンシー', 'GENDAI AGENCY INC.', '2027-03-31 00:00:00', '情報・通信業', 'Information & Communication', '第２四半期', 'Second quarter', 'スタンダード', 'Standard']
+ROW 11 ['2026-10-20 00:00:00', '5933', 'アルインコ', 'ALINCO INCORPORATED', '2027-03-20 00:00:00', '金属製品', 'Metal Products', '第２四半期', 'Second quarter', 'プライム', 'Prime']
+ROW 12 ['2026-10-20 00:00:00', '5990', 'スーパーツール', 'SUPER TOOL CO.,LTD.', '2027-03-15 00:00:00', '金属製品', 'Metal Products', '第２四半期', 'Second quarter', 'スタンダード', 'Standard']
+ROW 13 ['2026-10-21 00:00:00', '296A', '令和アカウンティング・ホールディングス', 'Reiwa Accounting Holdings Co.,Ltd.', '2027-03-31 00:00:00', 'サービス業', 'Services', '第２四半期', 'Second quarter', 'グロース', 'Growth']
+ROW 14 ['2026-10-21 00:00:00', '4929', 'アジュバンホールディングス', 'ADJUVANT HOLDINGS CO.,LTD.', '2027-03-20 00:00:00', '化学', 'Chemicals', '第２四半期', 'Second quarter', 'スタンダード', 'Standard']
+HIT row 96 ['2026-10-28 00:00:00', '6857', 'アドバンテスト', 'ADVANTEST CORPORATION', '2027-03-31 00:00:00', '電気機器', 'Electronic Appliances', '第２四半期', 'Second quarter', 'プライム', 'Prime']
+HIT row 253 ['2026-10-30 00:00:00', '285A', 'キオクシアホールディングス', 'Kioxia Holdings Corporation', '2027-03-31 00:00:00', '電気機器', 'Electronic Appliances', '第２四半期', 'Second quarter', 'プライム', 'Prime']
+HIT row 401 ['2026-10-30 00:00:00', '8035', '東京エレクトロン', 'Tokyo Electron Limited', '2027-03-31 00:00:00', '電気機器', 'Electronic Appliances', '第２四半期', 'Second quarter', 'プライム', 'Prime']
+HIT row 663 ['2026-11-05 00:00:00', '6963', 'ローム', 'ROHM COMPANY LIMITED', '2027-03-31 00:00:00', '電気機器', 'Electronic Appliances', '第２四半期', 'Second quarter', 'プライム', 'Prime']
+HIT row 1214 ['2026-11-10 00:00:00', '5803', 'フジクラ', 'Fujikura Ltd.', '2027-03-31 00:00:00', '非鉄金属', 'Nonferrous Metals', '第２四半期', 'Second quarter', 'プライム', 'Prime']
+target_hits 5
