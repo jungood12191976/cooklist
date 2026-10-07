@@ -30,6 +30,15 @@ def load_universe():
     return [(c, names.get(c, '')) for c in codes]
 
 
+# 短くすると別の話題が混ざる銘柄は、検索語を手で固定する(2026-10-07 実データで「野村」「大塚」「明治」等の混入を確認)。
+# 値は (検索語, 除外語)。除外語は Googleニュースの「-語」で除く(例: ソフトバンクはグループの記事を除く)。
+OVERRIDE = {
+    '2269': ('明治ホールディングス', ''), '3861': ('王子ホールディングス', ''), '4578': ('大塚ホールディングス', ''),
+    '8604': ('野村ホールディングス', ''), '1963': ('日揮ホールディングス', ''), '9147': ('NIPPON EXPRESS', ''),
+    '9434': ('ソフトバンク', 'ソフトバンクグループ'),
+}
+
+
 def search_word(name):
     """検索に使う社名。HD/グループ本社などの付け足しを外して、報道で使われる短い名前に寄せる。"""
     n = name.replace('　', ' ').strip()
@@ -53,8 +62,8 @@ def get(url):
     return None
 
 
-def fetch_items(word, extra):
-    q = '"%s" 株 %s' % (word, extra)
+def fetch_items(word, extra, exclude=''):
+    q = '"%s" 株 %s%s' % (word, extra, (' -' + exclude) if exclude else '')
     url = 'https://news.google.com/rss/search?q=%s&hl=ja&gl=JP&ceid=JP:ja' % urllib.parse.quote(q)
     txt = get(url)
     time.sleep(SLEEP)
@@ -84,8 +93,11 @@ def main():
             old = {}
     items, diag, n_fail, n_trunc = {}, [], 0, 0
     for code, name in uni:
-        word = search_word(name) if name else code
-        got = fetch_items(word, 'when:%dd' % DAYS)
+        if code in OVERRIDE:
+            word, excl = OVERRIDE[code]
+        else:
+            word, excl = (search_word(name) if name else code), ''
+        got = fetch_items(word, 'when:%dd' % DAYS, excl)
         truncated = False
         if got is None:
             n_fail += 1
@@ -104,7 +116,7 @@ def main():
             start = first
             while start <= today:
                 end = min(start + datetime.timedelta(days=SLICE_DAYS), today + datetime.timedelta(days=1))
-                part = fetch_items(word, 'after:%s before:%s' % (start.isoformat(), end.isoformat()))
+                part = fetch_items(word, 'after:%s before:%s' % (start.isoformat(), end.isoformat()), excl)
                 if part is None:
                     ok_all = False
                 else:
