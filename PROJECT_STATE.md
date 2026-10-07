@@ -411,3 +411,8 @@ corsproxyは廃止。stooqは除外。
 - ステージBGMエンジンに `hokora` を追加(`stageBuildHokora` / `stageHush` / こだま用ディレイ `stageWetNode`)。
 - `screen==='setup'` のとき render()／ナビ／音トグル／使者ポップアップ復帰で `startStageBGM('hokora')`。勇者(hub)は従来の `baseBGM`(startBGM／夜は子守唄)のまま。
 - 世界の入口のBGMは未更新(現行の startWorldBGM)。ドラクエ風の音色で作り直し候補を試聴ページで選定中。
+
+## 2026-10-07l 世界の入口のBGM「つきのまわり道」
+- キング選定(試聴ページ3案の3番)。♩=76・ト・リディア・16小節。低い脈動＋ドローン＋輪(同じ音列が回る分散音)→4小節ごとに輪・低音・遠い鐘を足す。メロディーなし。
+- ステージBGMエンジンに `iriguchi` を追加(`stageBuildIriguchi`、音色 tri/orb/drone/pulse)。`startWorldBGM()` は `startStageBGM('iriguchi')` を呼ぶだけに変更(旧・渦まきの曲のコードは未使用で残してある)。
+- `screen==='world'` では render() がステージBGMを止めない。
