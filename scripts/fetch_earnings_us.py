@@ -17,7 +17,8 @@ BACK, AHEAD = 14, 75
 # 起爆剤候補(日本株へ波及しうる米国側)。絞らず広めに持つ(キング方針)。使いながら画面側で減らす。
 SYMS = ['MU', 'NVDA', 'TSM', 'AVGO', 'AMAT', 'LRCX', 'KLAC', 'AMD', 'ASML', 'QCOM', 'INTC', 'TXN', 'ADI', 'ON', 'NXPI',
         'MCHP', 'WDC', 'STX', 'SNDK', 'ARM', 'SMCI', 'DELL', 'CSCO', 'ANET', 'VRT', 'MSFT', 'GOOGL', 'AMZN', 'META',
-        'ORCL', 'AAPL', 'TSLA', 'MRVL', 'COHR', 'GLW', 'TER']
+        'ORCL', 'AAPL', 'TSLA', 'MRVL', 'COHR', 'GLW', 'TER',
+        'SKHY']  # SKハイニックス(米国上場分。2026-10-07追加。韓国の決算日の取得元として。Nasdaqが載せるかは実行結果で確認)
 
 
 def get(url):
