@@ -1,0 +1,40 @@
+name: earnings-us
+
+# 米国の決算発表予定日(Nasdaq API)を毎日07:30(JST)に取得して data/earnings_us.json を更新する。
+# 米国の決算発表予定日(Nasdaq API)を毎日07:30(JST)に取得して data/earnings_us.json を更新する。
+on:
+  schedule:
+    - cron: '30 22 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/fetch_earnings_us.py'
+      - '.github/workflows/earnings-us.yml'
+
+permissions:
+  contents: write
+
+concurrency: earnings-us
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests
+      - run: python scripts/fetch_earnings_us.py
+      - name: commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/earnings_us.json
+          if git diff --cached --quiet; then
+            echo "変更なし"
+            exit 0
+          fi
+          git commit -m "決算日程(米国)を更新"
+          git pull --rebase origin main
+          git push origin HEAD:main

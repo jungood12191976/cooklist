@@ -1,8 +1,0 @@
-NASDAQ 2026-10-15 HTTP 200 bytes 6250
-  rows=26 keys=['lastYearRptDt', 'lastYearEPS', 'time', 'symbol', 'name', 'marketCap', 'fiscalQuarterEnding', 'epsForecast', 'noOfEsts']
-  {"lastYearRptDt": "10/16/2025", "lastYearEPS": "$2.92", "time": "time-pre-market", "symbol": "TSM", "name": "Taiwan Semiconductor Manufacturing Company Ltd.", "marketCap": "$2,519,604,130,000", "fiscalQuarterEnding": "Sep/2026", "epsForecast": "$4.45", "noOfEsts": "6"}
-NASDAQ 2026-10-22 HTTP 200 bytes 32731
-  rows=143 keys=['lastYearRptDt', 'lastYearEPS', 'time', 'symbol', 'name', 'marketCap', 'fiscalQuarterEnding', 'epsForecast', 'noOfEsts']
-  {"lastYearRptDt": "10/23/2025", "lastYearEPS": "$0.11", "time": "time-not-supplied", "symbol": "INTC", "name": "Intel Corporation", "marketCap": "$614,072,250,000", "fiscalQuarterEnding": "Sep/2026", "epsForecast": "$0.27", "noOfEsts": "13"}
-NASDAQ 2026-10-28 HTTP 200 bytes 31957
-  rows=140 keys=['lastYearRptDt', 'lastYearEPS', 'time', 'symbol', 'name', 'marketCap', 'fiscalQuarterEnding', 'epsForecast', 'noOfEsts']
