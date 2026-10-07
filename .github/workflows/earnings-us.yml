@@ -1,7 +1,6 @@
 name: earnings-us
 
 # 米国の決算発表予定日(Nasdaq API)を毎日07:30(JST)に取得して data/earnings_us.json を更新する。
-# 米国の決算発表予定日(Nasdaq API)を毎日07:30(JST)に取得して data/earnings_us.json を更新する。
 on:
   schedule:
     - cron: '30 22 * * *'

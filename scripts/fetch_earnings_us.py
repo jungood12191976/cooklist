@@ -13,7 +13,7 @@ import requests
 H = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
      'Accept': 'application/json, text/plain, */*', 'Origin': 'https://www.nasdaq.com', 'Referer': 'https://www.nasdaq.com/'}
 OUT = os.path.join('data', 'earnings_us.json')
-BACK, AHEAD = 3, 75
+BACK, AHEAD = 14, 75
 # 起爆剤候補(日本株へ波及しうる米国側)。絞らず広めに持つ(キング方針)。使いながら画面側で減らす。
 SYMS = ['MU', 'NVDA', 'TSM', 'AVGO', 'AMAT', 'LRCX', 'KLAC', 'AMD', 'ASML', 'QCOM', 'INTC', 'TXN', 'ADI', 'ON', 'NXPI',
         'MCHP', 'WDC', 'STX', 'SNDK', 'ARM', 'SMCI', 'DELL', 'CSCO', 'ANET', 'VRT', 'MSFT', 'GOOGL', 'AMZN', 'META',
