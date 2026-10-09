@@ -3,7 +3,7 @@ FILE kessan08_1002.xlsx as_of=2026-10-01 data_rows=463 parsed=459 (うち日付�
   SKIPPED ['May include companies with irregular fiscal terms due to changes in the fiscal year.', '', '', '', '', '', '', '']
   SKIPPED ['※ テクニカル上場した会社は、前身となる会社（株式移転等を行った旧上場会社）の決算情報を発表する場合があります。', '', '', '', '', '', '', '']
   SKIPPED ['Technical listed companies may announce the financial information of their predecessor (former listed companies that have transferred stock, etc.)', '', '', '', '', '', '', '']
-FILE kessan09_1002.xlsx as_of=2026-10-01 data_rows=2794 parsed=2790 (うち日付未定=75) skipped=4 dups=0
+FILE kessan09_1009.xlsx as_of=2026-10-08 data_rows=2902 parsed=2898 (うち日付未定=58) skipped=4 dups=0
   SKIPPED ['※ 決算期変更による変則決算期中の会社を含む場合があります。', '', '', '', '', '', '', '']
   SKIPPED ['May include companies with irregular fiscal terms due to changes in the fiscal year.', '', '', '', '', '', '', '']
   SKIPPED ['※ テクニカル上場した会社は、前身となる会社（株式移転等を行った旧上場会社）の決算情報を発表する場合があります。', '', '', '', '', '', '', '']
