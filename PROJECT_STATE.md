@@ -495,3 +495,10 @@ corsproxyは廃止。stooqは除外。
 - 画面 `letters`（`renderSecretLetters`）。シート「手紙」(gid 165072080) のCSVを読み、記事ごとのカード。[Gmailを開く]／[不要]=アプリ内で非表示（`LETTERS_HIDDEN_KEY`）。
 - 未実装：メール全部不要→Gmailごみ箱へ（ごみ箱のみ・完全削除はしない）／平日21:00の要約定期実行／セール系メールの対象（キング未決定）。
 - BGM「手紙の広場」（キング選定・ホ長調♩=112・32小節A→A→B→A・フルート主旋律）：`STAGE_SONGS.tegami`、`TEGAMI_DATA`（1089音）、`stageBuildTegami`、音色 gflute/gstr/gpz/gharp/gbass/gtimp/gsnare を `stageFire` に追加。この画面でだけ鳴る（render()の除外リストと🔊切替に `letters` を追加）。実機の音は未確認（エンジン上の読み込み・JSエラーなしのみ確認）。
+
+## 2026-10-10c ケッサンの町(旧・おわりの町)
+- 名称を「おわりの町」→「ケッサンの町」に変更(ナビ名・画面タイトル。画面キー world2 / renderWorldChain2 / BGMキー 'owari' は据え置き)。
+- 背景 ENDTOWN_BG を新しい絵に差し替え(サイズは従来と同じ1080×711)。
+- 屋根の旗を2本追加(ENDTOWN_FLAGS: L0-2 / R0-2 の3コマ)。風の強さ(凪/そよ風/突風)が1.5〜4.5秒ごとに変わり、コマ切替の間隔もランダム。左右の旗は独立。画面を離れると停止。prefers-reduced-motion では静止。
+- 旗の位置(シーン比%): 左 left30.9/top19.9、右 left72.0/top13.3(.endtown-flag・幅7.81%)。
+- APP_BUILD 2026-10-10c
