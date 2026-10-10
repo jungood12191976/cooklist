@@ -490,3 +490,8 @@ corsproxyは廃止。stooqは除外。
 - 背景 HARBOR_BG をキング提供の新しい港の絵(1452×1083)に差し替え。表示サイズは従来どおり(`.harbor-scene`＝世界の入口と同じ1671/941・`cover`で上下を切り詰め・2人は`bottom:9%`)。勇者とガーディアンは変更なし。
 - キング提供の船2隻（白背景を透明に切り抜き）を `HARBOR_SHIP_BIG` / `HARBOR_SHIP_SMALL` として埋め込み、海をゆっくり横に漂い＋波でゆれるCSSアニメ（`.harbor-ship`）。大きい船=左の海(約34秒で往復)、小さい船=右の海(約27秒で往復)。桟橋・2人には重ならない範囲。`prefers-reduced-motion`では停止。
 - 船の位置・大きさ・速さはクロの仮置き(キング未確認)。調整はCSS `.harbor-ship.big/.small` の left/top/width と keyframes `harborDriftBig/Small`。
+
+## ✉️ ひみつの手紙（2026-10-10）
+- 画面 `letters`（`renderSecretLetters`）。シート「手紙」(gid 165072080) のCSVを読み、記事ごとのカード。[Gmailを開く]／[不要]=アプリ内で非表示（`LETTERS_HIDDEN_KEY`）。
+- 未実装：メール全部不要→Gmailごみ箱へ（ごみ箱のみ・完全削除はしない）／平日21:00の要約定期実行／セール系メールの対象（キング未決定）。
+- BGM「手紙の広場」（キング選定・ホ長調♩=112・32小節A→A→B→A・フルート主旋律）：`STAGE_SONGS.tegami`、`TEGAMI_DATA`（1089音）、`stageBuildTegami`、音色 gflute/gstr/gpz/gharp/gbass/gtimp/gsnare を `stageFire` に追加。この画面でだけ鳴る（render()の除外リストと🔊切替に `letters` を追加）。実機の音は未確認（エンジン上の読み込み・JSエラーなしのみ確認）。
