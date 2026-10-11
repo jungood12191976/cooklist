@@ -289,9 +289,10 @@
   /* 🔮 賢者のイシ(2026-10-11)：背景絵はキング提供待ち。それまでは石の光だけの仮の場面 */
   .world-scene.sage-scene{ background:radial-gradient(ellipse at 50% 40%, #43309a 0%, #1d1646 52%, #0a0922 100%); }
   .world-scene.sage-scene .world-front-row{ bottom:9%; }
-  .sage-orb{ position:absolute; left:50%; top:34%; width:19%; aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(circle at 36% 30%, #ffffff 0%, #ffeaa8 20%, #c9a2ff 55%, #5a3db0 100%); box-shadow:0 0 18px 6px rgba(201,162,255,.65), 0 0 56px 18px rgba(110,168,255,.4); animation:sageGlow 3.6s ease-in-out infinite; z-index:2; }
+  .sage-orb{ position:absolute; left:50%; top:34%; width:19%; aspect-ratio:1; transform:translate(-50%,-50%); clip-path:polygon(100.0% 50.0%,94.9% 52.9%,99.6% 56.5%,94.1% 58.8%,98.3% 62.9%,92.6% 64.5%,96.2% 69.1%,90.4% 69.9%,93.3% 75.0%,87.4% 75.0%,89.7% 80.4%,83.8% 79.7%,85.4% 85.4%,79.7% 83.8%,80.4% 89.7%,75.0% 87.4%,75.0% 93.3%,69.9% 90.4%,69.1% 96.2%,64.5% 92.6%,62.9% 98.3%,58.8% 94.1%,56.5% 99.6%,52.9% 94.9%,50.0% 100.0%,47.1% 94.9%,43.5% 99.6%,41.2% 94.1%,37.1% 98.3%,35.5% 92.6%,30.9% 96.2%,30.1% 90.4%,25.0% 93.3%,25.0% 87.4%,19.6% 89.7%,20.3% 83.8%,14.6% 85.4%,16.2% 79.7%,10.3% 80.4%,12.6% 75.0%,6.7% 75.0%,9.6% 69.9%,3.8% 69.1%,7.4% 64.5%,1.7% 62.9%,5.9% 58.8%,0.4% 56.5%,5.1% 52.9%,0.0% 50.0%,5.1% 47.1%,0.4% 43.5%,5.9% 41.2%,1.7% 37.1%,7.4% 35.5%,3.8% 30.9%,9.6% 30.1%,6.7% 25.0%,12.6% 25.0%,10.3% 19.6%,16.2% 20.3%,14.6% 14.6%,20.3% 16.2%,19.6% 10.3%,25.0% 12.6%,25.0% 6.7%,30.1% 9.6%,30.9% 3.8%,35.5% 7.4%,37.1% 1.7%,41.2% 5.9%,43.5% 0.4%,47.1% 5.1%,50.0% 0.0%,52.9% 5.1%,56.5% 0.4%,58.8% 5.9%,62.9% 1.7%,64.5% 7.4%,69.1% 3.8%,69.9% 9.6%,75.0% 6.7%,75.0% 12.6%,80.4% 10.3%,79.7% 16.2%,85.4% 14.6%,83.8% 20.3%,89.7% 19.6%,87.4% 25.0%,93.3% 25.0%,90.4% 30.1%,96.2% 30.9%,92.6% 35.5%,98.3% 37.1%,94.1% 41.2%,99.6% 43.5%,94.9% 47.1%); background:radial-gradient(circle at 36% 30%, #ffffff 0%, #ffeaa8 20%, #c9a2ff 55%, #5a3db0 100%); animation:sageGlow 3.6s ease-in-out infinite; z-index:2; }
+  .sage-halo{ position:absolute; left:50%; top:34%; width:19%; aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%; box-shadow:0 0 18px 6px rgba(201,162,255,.65), 0 0 56px 18px rgba(110,168,255,.4); animation:sageGlow 3.6s ease-in-out infinite; z-index:1; } /* ギザギザの石は clip-path で切るので、光はこの別の丸で出す */
   @keyframes sageGlow{ 0%,100%{ filter:brightness(1); transform:translate(-50%,-50%) scale(1); } 50%{ filter:brightness(1.28); transform:translate(-50%,-52%) scale(1.06); } }
-  @media (prefers-reduced-motion: reduce){ .sage-orb{ animation:none; } }
+  @media (prefers-reduced-motion: reduce){ .sage-orb, .sage-halo{ animation:none; } }
   .sg-lab{ font-size:13px; font-weight:bold; color:#ffe9a8; margin-bottom:6px; }
   .sg-ask{ display:block; width:100%; margin-top:10px; padding:11px 10px; font-size:15px; font-weight:bold; font-family:inherit; color:#1a1440; background:linear-gradient(#ffe9a8,#e3b94e); border:2px solid #fff3c8; border-radius:10px; box-shadow:0 3px 0 rgba(0,0,0,.35); cursor:pointer; }
   .sg-ask:disabled{ opacity:.55; cursor:default; }
@@ -4413,10 +4414,10 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const screenChanged = (screen !== lastRenderedScreen);
     const prevRenderedScreen = lastRenderedScreen;
     lastRenderedScreen = screen;
-    if (screen !== 'world' && screen !== 'world2' && screen !== 'world3' && screen !== 'setup' && screen !== 'letters') stopStageBGM();
+    if (screen !== 'world' && screen !== 'world2' && screen !== 'world3' && screen !== 'setup' && screen !== 'letters' && screen !== 'sage') stopStageBGM();
     if (screen === 'setup' && soundOn) startStageBGM('hokora'); // 秘密のほこら「石の祈り」(勇者の画面は従来のBGMのまま)
     // ほこら専用の曲を出たあと、ほこら・世界・天空の城・時のへや以外(勇者など)へ移ったら、いつものBGM(baseBGM)に戻す
-    if (screenChanged && prevRenderedScreen === 'setup' && soundOn && !['setup','world','world2','world3','letters','sky','timeroom'].includes(screen)) baseBGM();
+    if (screenChanged && prevRenderedScreen === 'setup' && soundOn && !['setup','world','world2','world3','letters','sage','sky','timeroom'].includes(screen)) baseBGM();
     if (screen === 'setup') renderSetup(root);
     else if (screen === 'graph') renderGraph(root);
     else if (screen === 'sky') renderSkyCastle(root);
@@ -8529,6 +8530,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   function buildSageScene(){
     const scene = document.createElement('div'); scene.className = 'world-scene sage-scene';
     const rnd = (a, b) => a + Math.random() * (b - a);
+    const halo = document.createElement('div'); halo.className = 'sage-halo'; scene.appendChild(halo);
     const orb = document.createElement('div'); orb.className = 'sage-orb'; scene.appendChild(orb);
     for (let n = 0; n < 14; n++) {
       const sp = document.createElement('div'); sp.className = 'lt-spark';
@@ -8550,6 +8552,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     root.appendChild(bar);
     const h1 = document.createElement('div'); h1.className = 'rpg-h1'; h1.textContent = '🔮 賢者のイシ'; root.appendChild(h1);
     root.appendChild(buildSageScene());
+    if (soundOn) startStageBGM('sage'); // 曲は「賢者の書斎」(再描画では鳴らし直さない)
     ensureDataDocs(SAGE_DOCS); // 決算・ニュースのJSONは、この画面を開いたときに先読みしておく
 
     // 相談の入力欄
@@ -9392,6 +9395,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     iriguchi:{ bpm:76, bpb:4, bars:16 }, // 世界の入口「つきのまわり道」(2026-10-07 キング選定。丸くめぐる輪・ト・リディア)
     hokora:{ bpm:58, bpb:4, bars:16 }, // 秘密のほこら「石の祈り」(2026-10-07 キング選定。ニ調・うなる器と深い響き)
     uwasa: { bpm:128, bpb:4, bars:16 }, // ウワサの港「あやしい酒場」(ずれた和音のポルカ。音は midi 番号で持つ)
+    sage: { bpm:84, bpb:3, bars:16 }, // 賢者のイシ「賢者の書斎」(2026-10-11 キング選定。ト短調・3拍子のオルゴールのワルツ)
     tegami: { bpm:112, bpb:4, bars:32 } // ひみつの手紙「手紙の広場」(2026-10-10 キング選定。ホ長調・フルート版)
   };
   // 「あやしい酒場」(2026-10-07 キング選定。4拍子・♩=128)：ポルカの低音＋木琴の全音階の連打＋半音ずれた和音。4小節ずつ層を足す。
@@ -9482,7 +9486,25 @@ ${keywordLine}${bpBlock}${conditionBlock}
     s.ev.sort((a, b) => a.t - b.t);
     return s;
   }
+  // 「賢者の書斎」(賢者のイシ。2026-10-11 キング選定)：ト短調・♩=84・3拍子・16小節。低音＋オルゴールの和音＋パッド＋旋律。前半と後半で音を足さない。
+  function stageBuildSage(){
+    const s = STAGE_SONGS.sage, ev = [], OFF = [0,-2,-4,-5], CH = [[0,3,7],[0,3,7],[0,4,7],[0,3,7]], M = [0,2,3,7,5,3];
+    s.total = s.bars * s.bpb;
+    const put = (t,d,v,m,g) => ev.push({ t:t, d:d, v:v, m:m, g:g || 1 });
+    for (let b = 0; b < 16; b++) {
+      const o = b * 3, r = 43 + OFF[b % 4], k = Math.floor(b / 4);
+      put(o, .9, 'sbass', r, 1);
+      CH[b % 4].forEach(n => { put(o + 1, .4, 'sbox', r + 12 + n, .7); put(o + 2, .4, 'sbox', r + 12 + n, .6); });
+      put(o, 2.8, 'spad', r + 12, k === 0 ? .6 : .45);
+      if (k === 0) { put(o, .9, 'sbox', r + 24 + M[(b * 3) % 6], .8); if (b % 2 === 1) put(o + 2, .9, 'sbox', r + 24 + M[(b * 3 + 2) % 6], .7); }
+      else [0,1,2].forEach(j => put(o + j, .9, 'sbox', r + 24 + M[(b * 3 + j) % 6], .85));
+    }
+    ev.sort((a, b) => a.t - b.t);
+    s.ev = ev;
+    return s;
+  }
   function stageBuild(key){
+    if (key === 'sage') return stageBuildSage();
     if (key === 'tegami') return stageBuildTegami();
     if (key === 'iriguchi') return stageBuildIriguchi();
     if (key === 'uwasa') return stageBuildUwasa();
@@ -9524,7 +9546,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     stageMasterNode();
     if (!stageWet) {
       const dl = actx.createDelay(2), fb = actx.createGain(), wg = actx.createGain(), inp = actx.createGain();
-      dl.delayTime.value = 60 / 58 * 0.75; fb.gain.value = 0.38; wg.gain.value = 0.6;
+      dl.delayTime.value = 60 / ((stageState && stageState.key === 'sage') ? 84 : 58) * 0.75; fb.gain.value = 0.38; wg.gain.value = 0.6;
       inp.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(wg); wg.connect(stageMaster);
       stageWet = inp;
     }
@@ -9646,6 +9668,15 @@ ${keywordLine}${bpBlock}${conditionBlock}
       o.connect(fl); fl.connect(g); g.connect(stageMasterNode()); o.start(at); o.stop(at + dur + 0.05);
     });
   }
+  // 「賢者の書斎」のオルゴール音(基音＋4倍音、すぐ減衰、こだまを少し足す)
+  function stageBoxS(f, at, gm){
+    [1, 4].forEach(m => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = 'sine'; o.frequency.value = f * m;
+      g.gain.setValueAtTime(0.0001, at); g.gain.linearRampToValueAtTime(0.075 * gm, at + 0.004); g.gain.exponentialRampToValueAtTime(0.0005, at + 0.9);
+      o.connect(g); stageOut(g, 0.35); o.start(at); o.stop(at + 0.95);
+    });
+  }
   function stageTimpL(at, gm){
     const o = actx.createOscillator(), g = actx.createGain();
     o.type = 'sine'; o.frequency.setValueAtTime(125, at); o.frequency.exponentialRampToValueAtTime(78, at + 0.14);
@@ -9680,6 +9711,9 @@ ${keywordLine}${bpBlock}${conditionBlock}
       case 'gpz':    stagePluckL('triangle', f, at, 0.25, 0.07 * gm, 2200, 500, 0.1); break;
       case 'gharp':  stagePluckL('triangle', f, at, 0.6, 0.085 * gm, 2800, 700, 0.2); break;
       case 'gbass':  stageTone('triangle', f, at, Math.min(dur * 0.95, 0.9), 0.24 * gm, 0.85, 0.006); break;
+      case 'sbass': stageTone('triangle', f, at, dur * 0.8, 0.15 * gm, 1, 0.05); stageTone('sine', f * 2, at, dur * 0.8, 0.15 * gm, 1, 0.05); break;
+      case 'spad': { const L = dur * 0.9; stageTone('sine', f, at, L, 0.0455 * gm, 1, dur * 0.4, 0, -6); stageTone('sine', f, at, L, 0.0455 * gm, 1, dur * 0.4, 0, 6); stageTone('triangle', f / 2, at, L, 0.0455 * gm, 1, dur * 0.4); break; }
+      case 'sbox': stageBoxS(f, at, gm); break;
       case 'gtimp':  stageTimpL(at, gm); break;
       case 'gsnare': stageNoise(at, 0.07, 0.07 * gm, 2200, 'band'); break;
       case 'pad': case 'sub': case 'glass': case 'harp': case 'bowl': case 'drip': case 'wind': stageHush(f, at, dur, gm, e.v); break;
@@ -12197,7 +12231,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-11c';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-11d';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
@@ -13465,6 +13499,7 @@ ${note}
     if (screen === 'world2') { if (soundOn) startStageBGM('owari'); else stopStageBGM(); return; }
     if (screen === 'world3') { if (soundOn) startStageBGM('uwasa'); else stopStageBGM(); return; }
     if (screen === 'letters') { if (soundOn) startStageBGM('tegami'); else stopStageBGM(); return; }
+    if (screen === 'sage') { if (soundOn) startStageBGM('sage'); else stopStageBGM(); return; }
     if (screen === 'setup') { if (soundOn) startStageBGM('hokora'); else stopStageBGM(); return; }
     if (soundOn) startBGM(); else stopBGM();
   });
