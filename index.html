@@ -8865,6 +8865,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
       await new Promise(rs => setTimeout(rs, 400)); // 429回避(既存の分足取得と同じ間隔)
     }
     if (items.some(x => x.ok)) {
+      const oldAsOf = worldAsOf(worldState.items), newAsOf = worldAsOf(items);
+      if (oldAsOf && newAsOf && oldAsOf !== newAsOf) lsSet(WORLD_PREV_KEY, { asOf: oldAsOf, map: worldCompact(worldState.items) });
       worldState = { status:'ok', items, fetchedAt: Date.now(), triedAt: Date.now() };
       lsSet(WORLD_SAVE_KEY, { items, fetchedAt: worldState.fetchedAt });
     } else if (worldState.items) {
@@ -8970,6 +8972,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     if (soundOn) startWorldBGM();
 
     if (worldState.status !== 'loading' && !worldIsFresh()) fetchWorldSignals(false);
+    fetchWorldNews(false);
     root.appendChild(buildWorldSignalPanel());
     root.appendChild(buildWorldNewsPanel());
   }
@@ -9068,35 +9071,95 @@ ${keywordLine}${bpBlock}${conditionBlock}
       vol: sig.volRatio != null && sig.volRatio > 1
     };
   }
+  // ---- 昨日からの変化用：米国の取引日が変わった取得のときだけ、前の取引日の成立/不成立を1つ控える(同じ日の「いま更新」では上書きしない)
+  const WORLD_PREV_KEY = 'wd3:worldsig_prev';
+  function worldAsOf(items){ const f = (items || []).find(x => x.ok); return f ? f.asOf : null; }
+  function worldCompact(items){ const m = {}; (items || []).forEach(x => { if (x.ok) m[x.sym] = x.sig.jiwajiwa ? 1 : 0; }); return m; }
+  function worldDiff(){
+    const p = lsGet(WORLD_PREV_KEY), cur = worldAsOf(worldState.items);
+    if (!p || !p.map || !cur || p.asOf === cur) return null;
+    const added = [], dropped = [];
+    worldState.items.forEach(x => {
+      if (!x.ok) return;
+      const was = p.map[x.sym];
+      if (was == null) return;
+      if (was === 0 && x.sig.jiwajiwa) added.push(x);
+      if (was === 1 && !x.sig.jiwajiwa) dropped.push(x);
+    });
+    return { asOf: p.asOf, added, dropped };
+  }
+  let worldShowAll = false;
+  function worldRow(x){
+    const row = document.createElement('div'); row.style.cssText = 'padding:8px 0; border-top:1px solid rgba(157,180,255,0.18);';
+    if (!x.ok) {
+      row.innerHTML = `<div style="font-size:14px; color:#fff;">⚠️ <b>${x.sym}</b> <span style="font-size:12px; color:#9db4ff;">${x.theme}</span></div><div style="font-size:12px; color:#8a93b8;">取得できません（${x.error}）</div>`;
+      return row;
+    }
+    const s = x.sig, c = worldCond(s);
+    const mark = b => b ? '<span style="color:#7be08a;">✓</span>' : '<span style="color:#8a93b8;">✗</span>';
+    const chg = s.changePct == null ? '' : `前日比 ${s.changePct >= 0 ? '+' : ''}${s.changePct.toFixed(2)}%`;
+    row.innerHTML =
+      `<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">` +
+        `<div style="font-size:14px; color:#fff;">${s.jiwajiwa ? '🟢' : '⚪'} <b>${x.sym}</b> <span style="font-size:12px; color:#9db4ff;">${x.theme}・${x.name}</span></div>` +
+        `<div style="font-size:12px; color:${s.jiwajiwa ? '#ffd76b' : '#8a93b8'}; white-space:nowrap;">${s.jiwajiwa ? 'じわじわ成立' : '成立せず'}</div>` +
+      `</div>` +
+      `<div style="font-size:12px; color:#c8d0f0; margin-top:2px;">上昇 ${s.upDays5}/5日 ${mark(c.up)} ／ 25日線との差 ${s.vs25Pct == null ? '不明' : (s.vs25Pct >= 0 ? '+' : '') + s.vs25Pct.toFixed(1) + '%'} ${mark(c.ma)} ／ 出来高 ${s.volRatio == null ? '不明' : s.volRatio.toFixed(2) + '倍'} ${mark(c.vol)} <span style="color:#8a93b8;">${chg}</span></div>`;
+    return row;
+  }
   function buildWorldSignalPanel(){
     const wrap = document.createElement('div'); wrap.className = 'pw';
     const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = '🌍 世界の信号表（米国側のテーマ代表）'; wrap.appendChild(t);
     const note = (txt, css) => { const d = document.createElement('div'); d.style.cssText = css || 'font-size:13px; color:#9db4ff; line-height:1.7;'; d.textContent = txt; wrap.appendChild(d); };
     if (!worldState.items) { note(worldState.status === 'loading' ? `世界をのぞいています…(${WORLD_WATCH.length}か所を順にたずねるので、1分ほど待ってね)` : 'まだ取得していません。'); return wrap; }
     const ok = worldState.items.filter(x => x.ok);
+    const nCond = x => Object.values(worldCond(x.sig)).filter(Boolean).length;
+    const full = ok.filter(x => x.sig.jiwajiwa);
+    const one = ok.filter(x => !x.sig.jiwajiwa && nCond(x) === 2); // 3条件のうち2つ満たす＝あと1条件(キング確定の3条件をそのまま数えただけ)
+    const first = ok[0];
+
+    // ---- 今夜の要点(取得済みの結果から機械的に並べるだけ。通信は増えない) ----
+    const sum = document.createElement('div'); sum.style.cssText = 'background:rgba(255,215,107,0.08); border:1px solid rgba(255,215,107,0.35); padding:8px 10px; margin-bottom:8px; font-size:12.5px; line-height:1.8; color:#e6ebff;';
+    const fmtPct = p => (p >= 0 ? '+' : '') + p.toFixed(2) + '%';
+    const chipLine = (label, arr, withPct) => {
+      const d = document.createElement('div');
+      const b = document.createElement('b'); b.style.color = '#ffd76b'; b.textContent = label; d.appendChild(b);
+      d.appendChild(document.createTextNode(' ' + (arr.length ? arr.map(x => `${x.sym}${withPct && x.sig.changePct != null ? '(' + fmtPct(x.sig.changePct) + ')' : ''}`).join('　') : 'なし')));
+      sum.appendChild(d);
+    };
+    const head = document.createElement('div'); head.style.cssText = 'font-size:12px; color:#ffd76b; margin-bottom:2px;'; head.textContent = `📜 今夜の要点（米国 ${first ? first.asOf : '不明'} の引けまで）`; sum.appendChild(head);
+    chipLine(`🟢 じわじわ成立 ${full.length}か所`, full, true);
+    chipLine(`⚪ あと1条件 ${one.length}か所`, one, true);
+    const withChg = ok.filter(x => x.sig.changePct != null).slice().sort((a, b) => b.sig.changePct - a.sig.changePct);
+    chipLine('📈 前日比 上位5', withChg.slice(0, 5), true);
+    chipLine('📉 前日比 下位5', withChg.slice(-5).reverse(), true);
+    const diff = worldDiff();
+    if (diff) {
+      chipLine(`🆕 前回(${diff.asOf})から新しく成立`, diff.added, false);
+      chipLine('⬇️ 前回から成立が外れた', diff.dropped, false);
+    } else {
+      const d = document.createElement('div'); d.style.color = '#8a93b8'; d.textContent = '🆕 前回からの変化：米国の取引日が変わると、ここに出ます（まだ前の日の記録がありません）。'; sum.appendChild(d);
+    }
+    const ng = worldState.items.length - ok.length;
+    if (ng > 0) { const d = document.createElement('div'); d.style.color = '#ff9c9c'; d.textContent = `⚠️ 取得できなかった ${ng}か所（下の「ほかのか所」に理由つきで出ます）`; sum.appendChild(d); }
+    wrap.appendChild(sum);
+
+    // ---- 一覧：成立＋あと1条件を先に出し、ほかはたたむ(消さない。開けば全件見える) ----
     const sorted = worldState.items.slice().sort((a, b) => {
-      const sa = a.ok ? (a.sig.jiwajiwa ? 10 : 0) + Object.values(worldCond(a.sig)).filter(Boolean).length : -1;
-      const sb = b.ok ? (b.sig.jiwajiwa ? 10 : 0) + Object.values(worldCond(b.sig)).filter(Boolean).length : -1;
+      const sa = a.ok ? (a.sig.jiwajiwa ? 10 : 0) + nCond(a) : -1;
+      const sb = b.ok ? (b.sig.jiwajiwa ? 10 : 0) + nCond(b) : -1;
       return sb - sa;
     });
-    sorted.forEach(x => {
-      const row = document.createElement('div'); row.style.cssText = 'padding:8px 0; border-top:1px solid rgba(157,180,255,0.18);';
-      if (!x.ok) {
-        row.innerHTML = `<div style="font-size:14px; color:#fff;">⚠️ <b>${x.sym}</b> <span style="font-size:12px; color:#9db4ff;">${x.theme}</span></div><div style="font-size:12px; color:#8a93b8;">取得できません（${x.error}）</div>`;
-        wrap.appendChild(row); return;
-      }
-      const s = x.sig, c = worldCond(s);
-      const mark = b => b ? '<span style="color:#7be08a;">✓</span>' : '<span style="color:#8a93b8;">✗</span>';
-      const chg = s.changePct == null ? '' : `前日比 ${s.changePct >= 0 ? '+' : ''}${s.changePct.toFixed(2)}%`;
-      row.innerHTML =
-        `<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">` +
-          `<div style="font-size:14px; color:#fff;">${s.jiwajiwa ? '🟢' : '⚪'} <b>${x.sym}</b> <span style="font-size:12px; color:#9db4ff;">${x.theme}・${x.name}</span></div>` +
-          `<div style="font-size:12px; color:${s.jiwajiwa ? '#ffd76b' : '#8a93b8'}; white-space:nowrap;">${s.jiwajiwa ? 'じわじわ成立' : '成立せず'}</div>` +
-        `</div>` +
-        `<div style="font-size:12px; color:#c8d0f0; margin-top:2px;">上昇 ${s.upDays5}/5日 ${mark(c.up)} ／ 25日線との差 ${s.vs25Pct == null ? '不明' : (s.vs25Pct >= 0 ? '+' : '') + s.vs25Pct.toFixed(1) + '%'} ${mark(c.ma)} ／ 出来高 ${s.volRatio == null ? '不明' : s.volRatio.toFixed(2) + '倍'} ${mark(c.vol)} <span style="color:#8a93b8;">${chg}</span></div>`;
-      wrap.appendChild(row);
-    });
-    const first = ok[0];
+    const inFocus = x => x.ok && (x.sig.jiwajiwa || nCond(x) === 2);
+    sorted.filter(inFocus).forEach(x => wrap.appendChild(worldRow(x)));
+    const rest = sorted.filter(x => !inFocus(x));
+    if (rest.length) {
+      const tg = document.createElement('button'); tg.className = 'rpg-btn wide'; tg.style.marginTop = '6px';
+      tg.textContent = worldShowAll ? `▲ ほかの${rest.length}か所をたたむ` : `▼ ほかの${rest.length}か所（成立せず・取得失敗）をひらく`;
+      tg.onclick = () => { playSelect(); worldShowAll = !worldShowAll; render(); };
+      wrap.appendChild(tg);
+      if (worldShowAll) rest.forEach(x => wrap.appendChild(worldRow(x)));
+    }
+
     const hhmm = new Date(worldState.fetchedAt).toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit', timeZone:'Asia/Tokyo' });
     const live = ok.some(x => x.live);
     const ageMin = Math.max(0, Math.floor((Date.now() - worldState.fetchedAt) / 60000));
@@ -9112,12 +9175,74 @@ ${keywordLine}${bpBlock}${conditionBlock}
     wrap.appendChild(b);
     return wrap;
   }
+
+  // ---- 世界の速報：20:00の引け後深掘りがシート「世界の入口」タブへ書いた行を、そのまま読んで出す(2026-10-11〜) ----
+  // 列(実物確認 2026-10-11)：date,kind,headline_ja,numbers,keywords,link_note,source,published,url,grade,body_read,fetched_at
+  const WORLD_NEWS_CSV_URL = 'https://docs.google.com/spreadsheets/d/' + SKY_BRIEF_SHEET_ID + '/export?format=csv&gid=2070042461';
+  let worldNews = { status:'idle', items:null, triedAt:0, error:null, showAll:false };
+  async function fetchWorldNews(force){
+    if (worldNews.status === 'loading') return;
+    if (!force && Date.now() - worldNews.triedAt < 10*60*1000) return;
+    worldNews.status = 'loading'; worldNews.triedAt = Date.now();
+    try {
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 15000);
+      const res = await fetch(WORLD_NEWS_CSV_URL + '&_=' + Date.now(), { cache:'no-store', signal: ctrl.signal });
+      clearTimeout(tid);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const rows = skyParseCSV(await res.text());
+      const header = rows[0] || [];
+      const ix = {}; header.forEach((h, i) => { ix[String(h).trim()] = i; });
+      ['date','kind','headline_ja'].forEach(k => { if (ix[k] == null) throw new Error('列の形が違います'); });
+      const g = (r, k) => ix[k] == null ? '' : String(r[ix[k]] == null ? '' : r[ix[k]]).trim();
+      const items = rows.slice(1).map((r, i) => ({
+        i, date: g(r,'date'), kind: g(r,'kind'), head: g(r,'headline_ja'), numbers: g(r,'numbers'), keywords: g(r,'keywords'),
+        note: g(r,'link_note'), source: g(r,'source'), published: g(r,'published'), url: g(r,'url'), grade: g(r,'grade'), body: g(r,'body_read')
+      })).filter(it => /^\d{4}-\d{2}-\d{2}$/.test(it.date) && it.head);
+      items.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.i - b.i)); // 新しい日が上。同じ日はシートの並び順のまま
+      worldNews.items = items; worldNews.error = null;
+    } catch(e) {
+      worldNews.error = (e && e.name === 'AbortError') ? '時間切れ' : String((e && e.message) || e);
+    }
+    worldNews.status = worldNews.items ? 'ok' : 'error';
+    if (screen === 'world') render();
+  }
   function buildWorldNewsPanel(){
     const wrap = document.createElement('div'); wrap.className = 'pw';
     const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = '📰 世界の速報・気になるキーワード'; wrap.appendChild(t);
-    const d = document.createElement('div'); d.style.cssText = 'font-size:13px; color:#9db4ff; line-height:1.7;';
-    d.textContent = '準備中です。夜20:00の引け後深掘りが、海外の業界誌や速報(運賃・韓国輸出など)から、日付・出典つきで見出しとキーワードをここへ届ける予定です。まだ届いていません。';
-    wrap.appendChild(d);
+    const note = (txt, css) => { const d = document.createElement('div'); d.style.cssText = css || 'font-size:13px; color:#9db4ff; line-height:1.7;'; d.textContent = txt; wrap.appendChild(d); };
+    if (!worldNews.items) {
+      note(worldNews.status === 'error' ? `読み込めませんでした（${worldNews.error}）。下のボタンでもう一度。` : '速報を読んでいます…');
+    } else if (!worldNews.items.length) {
+      note('シートに速報の行がまだありません。');
+    } else {
+      const list = worldNews.showAll ? worldNews.items : worldNews.items.slice(0, 8);
+      list.forEach(it => {
+        const card = document.createElement('div'); card.style.cssText = 'padding:8px 0; border-top:1px solid rgba(157,180,255,0.18); line-height:1.6;';
+        const meta = document.createElement('div'); meta.style.cssText = 'font-size:11px; color:#8a93b8;';
+        meta.textContent = `${it.date}　${it.kind}　確度${it.grade || '?'}`; card.appendChild(meta);
+        const h = document.createElement('div'); h.style.cssText = 'font-size:14px; color:#fff;'; h.textContent = it.head; card.appendChild(h);
+        if (it.numbers) { const d = document.createElement('div'); d.style.cssText = 'font-size:12px; color:#ffd76b;'; d.textContent = '数値：' + it.numbers; card.appendChild(d); }
+        if (it.keywords) { const d = document.createElement('div'); d.style.cssText = 'font-size:12px; color:#9db4ff;'; d.textContent = 'キーワード：' + it.keywords; card.appendChild(d); }
+        if (it.note) { const d = document.createElement('div'); d.style.cssText = 'font-size:12px; color:#c8a8ff;'; d.textContent = it.note; card.appendChild(d); } // 「仮説：…」で始まる行。事実ではないので色を分ける
+        const src = document.createElement('div'); src.style.cssText = 'font-size:11px; color:#8a93b8;';
+        src.appendChild(document.createTextNode(`出典 ${it.source}（公開 ${it.published || '不明'}）・${it.body === '本文' ? '本文まで読んだ' : '見出しのみ'}　`));
+        if (/^https?:\/\//i.test(it.url)) { const a = document.createElement('a'); a.href = it.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.style.color = '#9db4ff'; a.textContent = '元記事を開く'; src.appendChild(a); }
+        card.appendChild(src);
+        wrap.appendChild(card);
+      });
+      if (worldNews.items.length > 8) {
+        const tg = document.createElement('button'); tg.className = 'rpg-btn wide'; tg.style.marginTop = '6px';
+        tg.textContent = worldNews.showAll ? '▲ 新しい8件だけにする' : `▼ ぜんぶ見る（${worldNews.items.length}件）`;
+        tg.onclick = () => { playSelect(); worldNews.showAll = !worldNews.showAll; render(); };
+        wrap.appendChild(tg);
+      }
+    }
+    note('夜20:00の引け後深掘りが書いた分です。「仮説：」の行は私の推測で、事実ではありません。', 'font-size:11px; color:#8a93b8; line-height:1.6; margin-top:8px;');
+    const b = document.createElement('button'); b.className = 'rpg-btn wide'; b.style.marginTop = '6px';
+    b.textContent = worldNews.status === 'loading' ? '読み込み中…' : '🔄 速報を読み直す'; b.disabled = worldNews.status === 'loading';
+    b.onclick = () => { playSelect(); fetchWorldNews(true); };
+    wrap.appendChild(b);
     return wrap;
   }
 
@@ -12243,7 +12368,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-11f';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-11g';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
