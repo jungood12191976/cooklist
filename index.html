@@ -9189,6 +9189,15 @@ ${keywordLine}${bpBlock}${conditionBlock}
   // ---- 世界の速報：20:00の引け後深掘りがシート「世界の入口」タブへ書いた行を、そのまま読んで出す(2026-10-11〜) ----
   // 列(実物確認 2026-10-11)：date,kind,headline_ja,numbers,keywords,link_note,source,published,url,grade,body_read,fetched_at
   const WORLD_NEWS_CSV_URL = 'https://docs.google.com/spreadsheets/d/' + SKY_BRIEF_SHEET_ID + '/export?format=csv&gid=2070042461';
+  // シートN列 events：「日付｜種別｜名称」を「；」でつなぐ(例 2026-10-29｜決算｜サムスン電子 最終決算)。日付がYYYY-MM-DDでないもの・名称が空のものは捨てる
+  function parseWorldEvents(raw){
+    const out = [];
+    String(raw || '').split(/[；;]/).forEach(seg => {
+      const p = seg.split('｜').map(x => x.trim());
+      if (p.length >= 3 && /^\d{4}-\d{2}-\d{2}$/.test(p[0]) && p[2]) out.push({ date:p[0], kind:p[1] || 'その他', label:p.slice(2).join('｜') });
+    });
+    return out;
+  }
   let worldNews = { status:'idle', items:null, triedAt:0, error:null, showAll:false };
   async function fetchWorldNews(force){
     if (worldNews.status === 'loading') return;
@@ -9207,7 +9216,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       const g = (r, k) => ix[k] == null ? '' : String(r[ix[k]] == null ? '' : r[ix[k]]).trim();
       const items = rows.slice(1).map((r, i) => ({
         i, date: g(r,'date'), kind: g(r,'kind'), head: g(r,'headline_ja'), numbers: g(r,'numbers'), keywords: g(r,'keywords'),
-        note: g(r,'link_note'), source: g(r,'source'), published: g(r,'published'), url: g(r,'url'), grade: g(r,'grade'), body: g(r,'body_read'), primary: g(r,'primary')
+        note: g(r,'link_note'), source: g(r,'source'), published: g(r,'published'), url: g(r,'url'), grade: g(r,'grade'), body: g(r,'body_read'), primary: g(r,'primary'), evs: parseWorldEvents(g(r,'events'))
       })).filter(it => /^\d{4}-\d{2}-\d{2}$/.test(it.date) && it.head);
       items.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.i - b.i)); // 新しい日が上。同じ日はシートの並び順のまま
       worldNews.items = items; worldNews.error = null;
@@ -9215,7 +9224,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       worldNews.error = (e && e.name === 'AbortError') ? '時間切れ' : String((e && e.message) || e);
     }
     worldNews.status = worldNews.items ? 'ok' : 'error';
-    if (screen === 'world') render();
+    if (screen === 'world' || screen === 'world2') render();
   }
   function buildWorldNewsPanel(){
     const wrap = document.createElement('div'); wrap.className = 'pw';
@@ -9980,7 +9989,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   }
   function w2Events(ctx, usDoc){
     const ev = {};
-    const get = d => ev[d] || (ev[d] = { trig:{}, r1:[], earn:[], win:[], out:[] });
+    const get = d => ev[d] || (ev[d] = { trig:{}, r1:[], earn:[], win:[], out:[], news:[] });
     W2_CHAINS.forEach(ch => {
       const items = ((usDoc && usDoc.items) || []).filter(x => ch.trig.includes(x.symbol) && x.date >= ctx.today).map(x => ({ symbol:x.symbol, date:x.date, time:x.time, eps:x.eps_fc }));
       (ch.krEst || []).forEach(k => k.ds.filter(d => d >= ctx.today).forEach(d => items.push({ symbol:k.n + '(推定)', date:d, est:true })));
@@ -9994,6 +10003,13 @@ ${keywordLine}${bpBlock}${conditionBlock}
       const w = prevTradingDay(e.date, EARN_WINDOW_BD); if (w >= ctx.today) get(w).win.push(code);
       const o = prevTradingDay(e.date, 1); if (o >= ctx.today) get(o).out.push(code);
     });
+    // 📰 速報(シートのevents列)から拾った予定。公式日程ではない(速報の確度をそのまま持つ)。同じ日・種別・名称は1件にまとめる(2026-10-12)
+    const seenN = {};
+    ((ctx.wn) || []).forEach(it => (it.evs || []).forEach(x => {
+      if (x.date < ctx.today) return;
+      const k = x.date + '|' + x.kind + '|' + x.label; if (seenN[k]) return; seenN[k] = 1;
+      get(x.date).news.push({ date:x.date, kind:x.kind, label:x.label, grade:it.grade, source:it.source, url:it.url, published:it.published });
+    }));
     return ev;
   }
   function w2CalGrid(today){ // 月曜始まり・平日のみ。今週から2週(木・金なら3週)
@@ -10028,7 +10044,10 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const no = dates.find(d => d >= today && evs[d].out.length);
     const l2 = `🪟 決算窓の中 <b style="color:#bfe8a8;">${inWin}</b>銘柄　⚠ 直前ゾーン <b style="color:#ff9d6b;">${near}</b>銘柄` + (no ? `　▮ 次の回避ライン <b style="color:#ff9d6b;">${fmtMD(no)}引け</b> ${evs[no].out.length}銘柄` : '');
     const sm = document.createElement('div'); sm.style.cssText = 'font-size:12px; color:#c8d0f0; line-height:1.9; margin-bottom:8px;';
-    sm.innerHTML = l1 + '<br>' + l2; wrap.appendChild(sm);
+    // 📰 暦の枠(2〜3週)の外の予定も見えるよう、これから先の速報の予定を日付順に最大3件(2026-10-12)
+    const nl = []; dates.forEach(d => { if (d >= today) evs[d].news.forEach(x => nl.push({ d, x })); });
+    const l3 = nl.length ? `📰 次の速報の予定 ${nl.slice(0, 3).map(o => `<b style="color:#c8a8ff;">${fmtMD(o.d)}</b> ${escapeHtml(o.x.label)}`).join('　')}${nl.length > 3 ? ' ほか' + (nl.length - 3) + '件' : ''} <span style="color:#8a93b8;">(記事から拾った日付・公式日程ではない)</span>` : '';
+    sm.innerHTML = l1 + '<br>' + l2 + (l3 ? '<br>' + l3 : ''); wrap.appendChild(sm);
     // 暦
     const maxEarn = Math.max(1, ...grid.map(d => (evs[d] ? evs[d].earn.length : 0)));
     const g = document.createElement('div'); g.className = 'kcal';
@@ -10048,6 +10067,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
         if (e.earn.length) h += `<div style="color:#ffd76b; font-weight:bold;">📋${e.earn.length}</div>`;
         if (e.win.length) h += `<div style="color:#bfe8a8;">🪟${e.win.length}</div>`;
         if (e.out.length) h += `<div style="color:#ff9d6b;">▮${e.out.length}</div>`;
+        if (e.news.length) h += `<div style="color:#c8a8ff;">📰${e.news.length}</div>`;
         if (e.earn.length) c.style.backgroundColor = `rgba(255,215,107,${(0.06 + 0.34 * e.earn.length / maxEarn).toFixed(2)})`;
       }
       c.innerHTML = h;
@@ -10056,7 +10076,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     });
     wrap.appendChild(g);
     const lg = document.createElement('div'); lg.style.cssText = 'font-size:10px; color:#8a93b8; line-height:1.7; margin-top:6px;';
-    lg.innerHTML = '⚡起爆剤(米国の日付)　🌅日本の寄り(巻き添え1)　📋その日が決算の銘柄数(濃いほど多い)　🪟その日から決算窓に入る銘柄数　▮その日の引けがまたぎ回避ライン(決算日の前営業日)。日付をタップすると下に中身が出ます。';
+    lg.innerHTML = '⚡起爆剤(米国の日付)　🌅日本の寄り(巻き添え1)　📋その日が決算の銘柄数(濃いほど多い)　🪟その日から決算窓に入る銘柄数　▮その日の引けがまたぎ回避ライン(決算日の前営業日)　📰速報の記事から拾った予定(公式日程ではない)。日付をタップすると下に中身が出ます。';
     wrap.appendChild(lg);
     const nts = [ddNote('earnings_jp.json', '日本の決算日'), ddNote('earnings_us.json', '米国の決算日')].filter(Boolean);
     if (nts.length) { const d = document.createElement('div'); d.style.cssText = 'font-size:11px; color:#ffb86b; margin-top:6px;'; d.textContent = nts.join(' ／ '); wrap.appendChild(d); }
@@ -10085,6 +10105,13 @@ ${keywordLine}${bpBlock}${conditionBlock}
       if (e.earn.length) { any = true; h += sec(`📋 この日が決算の銘柄(${e.earn.length})`, '#ffd76b', e.earn.slice().sort().map(c => w2Chip(c, ctx, w2ChainIcons(c))).join('')); }
       if (e.win.length) { any = true; h += sec(`🪟 この日から決算窓に入る(${e.win.length}) 監視スタート`, '#bfe8a8', e.win.slice().sort().map(line).join('')); }
       if (e.out.length) { any = true; h += sec(`▮ この日の引けがまたぎ回避ライン(${e.out.length}) 翌営業日が決算`, '#ff9d6b', e.out.slice().sort().map(line).join('')); }
+    }
+    if (e && d >= ctx.today && e.news.length) {
+      any = true;
+      h += sec(`📰 速報の記事から拾った予定(${e.news.length}) 公式日程ではありません`, '#c8a8ff', e.news.map(x => {
+        const link = /^https?:\/\/[^\s"'<>]+$/i.test(x.url || '') ? ` <a href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer" style="color:#9db4ff;">元記事</a>` : '';
+        return `<div style="font-size:12px; color:#c8d0f0; padding:3px 0; line-height:1.6;"><span class="kchip"><b>${escapeHtml(x.kind)}</b></span> <b style="color:#fff;">${escapeHtml(x.label)}</b> <span style="color:#8a93b8;">確度${escapeHtml(x.grade || '?')}・出典 ${escapeHtml(x.source || '不明')}(公開 ${escapeHtml(x.published || '不明')})</span>${link}</div>`;
+      }).join(''));
     }
     if (!any) h += '<div style="font-size:12px; color:#8a93b8;">この日の予定はありません。</div>';
     const b = document.createElement('div'); b.innerHTML = h; wrap.appendChild(b);
@@ -10133,10 +10160,11 @@ ${keywordLine}${bpBlock}${conditionBlock}
     scene.appendChild(frontRow); root.appendChild(scene);
     if (soundOn) startStageBGM('owari'); // 曲は「にらみあいの行進」(再描画では鳴らし直さない)
     ensureDataDocs(['earnings_jp.json', 'earnings_us.json', 'news_volume.json']);
+    fetchWorldNews(false);   // 速報のevents列を暦に載せる(2026-10-12)
     const today = todayDateKey();
     const jpDoc = ddoc('earnings_jp.json'), usDoc = ddoc('earnings_us.json'), nv = ddoc('news_volume.json');
     const jp = jpDoc ? { byCode: (() => { const m = {}; jpDoc.items.forEach(x => { (m[x.code] = m[x.code] || []).push(x); }); return m; })() } : null;
-    const ctx = { today, jp, nv, jm: jiwaMap() };
+    const ctx = { today, jp, nv, jm: jiwaMap(), wn: worldNews.items };
     // 🗓️ ケッサン暦(2026-10-12 キング承認)：上に暦、下は「日付別」(標準)か「連鎖別」
     const evs = w2Events(ctx, usDoc);
     const grid = w2CalGrid(today);
@@ -10184,7 +10212,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const jpAt = jpDoc ? `${jpName}(確認レベルA・JPX更新日 ${escapeHtml(jpDoc.page_updated || '不明')})` : 'JPX(未読込)';
     const usAt = usDoc ? `Nasdaq決算カレンダー(確認レベルB・取得 ${escapeHtml((usDoc.fetched_at || '').slice(0, 16).replace('T', ' '))} UTC)` : 'Nasdaq(未読込)';
     fd.innerHTML = `日本の決算日：${jpAt}<br>米国の決算日：${usAt}。日付は米国の日付で、<b>確定か推定かは区別できません</b>。TSMCは台湾での発表のため、日本の反応日がずれる可能性があります(未確認)。<br>` +
-      `韓国：決算日程の自動取得元がまだありません。SKハイニックスは二次情報(TipRanks 10/27・Earnings Whispers 10/28、2026-10-07確認)の<b>推定2日</b>を併記しています(公式の案内はQ2が発表の前日でした)。サムスンは暫定業績の日付が事前に出ないため「未取得」と表示します。<br>` +
+      `韓国：決算日程の自動取得元がまだありません。SKハイニックスは二次情報(TipRanks 10/27・Earnings Whispers 10/28、2026-10-07確認)の<b>推定2日</b>を併記しています(公式の案内はQ2が発表の前日でした)。サムスンは暫定業績の日付が事前に出ないため「未取得」と表示します。速報の記事に書かれていた予定(シートN列events)は📰で別に載せています(確度B・公式日程ではない)。<br>` +
       `「巻き添え1＝米国日付の翌営業日の日本の寄り」は2026-10-01の実例に基づく目安、「巻き添え2＝その2営業日後」は<b>仮説(未検証)</b>です。何日後に効くかは、下の「答え合わせ」でデータを貯めて確かめます。<br>` +
       `連鎖の銘柄は「可能性の入口」で、最初は絞らず広く載せています。不要なものは使いながら減らします。ここは売買の断定ではありません。`;
     foot.appendChild(fd); root.appendChild(foot);
@@ -12549,7 +12577,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-12b';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-12c';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
