@@ -9197,7 +9197,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       const g = (r, k) => ix[k] == null ? '' : String(r[ix[k]] == null ? '' : r[ix[k]]).trim();
       const items = rows.slice(1).map((r, i) => ({
         i, date: g(r,'date'), kind: g(r,'kind'), head: g(r,'headline_ja'), numbers: g(r,'numbers'), keywords: g(r,'keywords'),
-        note: g(r,'link_note'), source: g(r,'source'), published: g(r,'published'), url: g(r,'url'), grade: g(r,'grade'), body: g(r,'body_read')
+        note: g(r,'link_note'), source: g(r,'source'), published: g(r,'published'), url: g(r,'url'), grade: g(r,'grade'), body: g(r,'body_read'), primary: g(r,'primary')
       })).filter(it => /^\d{4}-\d{2}-\d{2}$/.test(it.date) && it.head);
       items.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.i - b.i)); // 新しい日が上。同じ日はシートの並び順のまま
       worldNews.items = items; worldNews.error = null;
@@ -9229,6 +9229,18 @@ ${keywordLine}${bpBlock}${conditionBlock}
         src.appendChild(document.createTextNode(`出典 ${it.source}（公開 ${it.published || '不明'}）・${it.body === '本文' ? '本文まで読んだ' : '見出しのみ'}　`));
         if (/^https?:\/\//i.test(it.url)) { const a = document.createElement('a'); a.href = it.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.style.color = '#9db4ff'; a.textContent = '元記事を開く'; src.appendChild(a); }
         card.appendChild(src);
+        // 一次情報（シートM列 primary）：「名称｜URL｜確認日｜一次側の最新日付と値」か「なし」。空・なしは【1次情報なし】
+        const pr = document.createElement('div'); pr.style.cssText = 'font-size:11px;';
+        const pp = (it.primary || '').split('｜').map(x => x.trim());
+        if (!it.primary || /^なし/.test(it.primary)) {
+          if (it.grade === 'A') { pr.style.color = '#8a93b8'; pr.textContent = '一次情報：出典そのものが一次'; }
+          else { pr.style.color = '#ff9b9b'; pr.textContent = '【1次情報なし】'; }
+        } else {
+          pr.style.color = '#7be0a0';
+          pr.appendChild(document.createTextNode(`一次情報：${pp[0] || ''}${pp[2] ? '（確認 ' + pp[2] + '）' : ''} ${pp[3] || ''}　`));
+          if (/^https?:\/\//i.test(pp[1] || '')) { const a = document.createElement('a'); a.href = pp[1]; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.style.color = '#9db4ff'; a.textContent = '一次情報を開く'; pr.appendChild(a); }
+        }
+        card.appendChild(pr);
         wrap.appendChild(card);
       });
       if (worldNews.items.length > 8) {
@@ -12368,7 +12380,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-11g';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-12a';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
