@@ -611,3 +611,11 @@ corsproxyは廃止。stooqは除外。
 - 検証(実データ): シートの実際のN列・J列・G〜I列を使い、実関数(parseWorldEvents/w2Events/buildW2Day/buildW2CalPanel)を最小DOM代用品で実行し、全項目合格(節約: 画面の実機表示は未確認)。構文チェック(node --check)も合格。
 - 未確認: 夜のルーティンがN列を実際に書くか(初回=今夜20:00実行後に確認)／サムスン10/29の記事本文での記載と公式日程／画面の実機での見え方(スマホ)。
 - 注意: 今日(10/12)の暦は10/12〜10/23の2週間なので、10/28・10/29は暦のマスには出ず、サマリの3行目と、10/19の週になってからのマスに出る。
+
+## 2026-10-12d 米国の発表結果(実績EPS・反応日の前日比・😱)
+- キング承認: 判定＝反応日の終値が前日終値より下がったら。😱は大きめ。出すのは直近14日(`W2_RESULT_DAYS`)。時刻未定は発表日と翌日の両方を並べる(反応日は決め打ちしない)。
+- 実物確認(2026-10-12・キングの内蔵ブラウザ): `api.nasdaq.com/api/company/{SYM}/earnings-surprise` は eps(数値)・consensusForecast(文字列)・percentageSurprise(文字列)・dateReported(M/D/YYYY)を返す。2026-07〜09の57件でカレンダーの日付と全件一致。Worker(king-stock-proxy)は api.nasdaq.com が403(host not allowed)なので、実績EPSは Actions(`scripts/fetch_earnings_us.py`)で取って `data/earnings_us.json` に `eps_act/eps_cons/surprise` として保存する。
+- Nasdaqカレンダーは発表日を過ぎると time が全部 time-not-supplied に戻る(57件で確認)。発表前に埋まった時刻は、前回のファイルから引き継いで残す。
+- 値動きだけで反応日を推定する案は不採用(57件で発表日26/翌日31、ほぼ半々で決められない)。
+- 株価: 米国日足(`range=1mo`)を Worker 経由で取得し、日付はニューヨークの日付に直す(`w2UsCloses`)。表示は連鎖別カードの「発表結果(直近14日)」(`w2ResultHtml`)。日付別の暦には出していない(9/30のようにグリッド外の日があるため)。
+- 注意: Workerは直接URLを開くと「Not Found」になるが、`fetch`では正常に返る(2026-10-12に確認)。

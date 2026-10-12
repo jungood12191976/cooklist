@@ -10217,6 +10217,47 @@ ${keywordLine}${bpBlock}${conditionBlock}
       `連鎖の銘柄は「可能性の入口」で、最初は絞らず広く載せています。不要なものは使いながら減らします。ここは売買の断定ではありません。`;
     foot.appendChild(fd); root.appendChild(foot);
   }
+  // ===== 米国の発表結果(2026-10-12 キング承認: 直近14日・😱は大きめ・判定=反応日の終値が前日終値より下がったら) =====
+  const W2_RESULT_DAYS = 14; // 発表結果を出す日数(キング指定)
+  const W2_PX_CACHE = {};
+  function w2UsCloses(sym){ // Yahoo日足(米国)。自前Worker経由。日付はニューヨークの日付に直す
+    if (W2_PX_CACHE[sym]) return W2_PX_CACHE[sym];
+    const y = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=1mo&_cb=${Date.now()}`;
+    const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 12000);
+    const pr = fetch('https://king-stock-proxy.jungood1219.workers.dev/?url=' + encodeURIComponent(y), { cache:'no-store', signal: ctl.signal })
+      .then(r => r.ok ? r.json() : null)
+      .then(j => {
+        const r = j && j.chart && j.chart.result && j.chart.result[0];
+        if (!r || !r.meta || r.meta.symbol !== sym || !r.timestamp) return null;
+        const c = r.indicators && r.indicators.quote && r.indicators.quote[0] && r.indicators.quote[0].close;
+        if (!c) return null;
+        return { dates: r.timestamp.map(t => new Date(t * 1000).toLocaleDateString('en-CA', { timeZone:'America/New_York' })), close: c };
+      })
+      .catch(() => null)
+      .finally(() => clearTimeout(to));
+    W2_PX_CACHE[sym] = pr; pr.then(v => { if (!v) delete W2_PX_CACHE[sym]; });
+    return pr;
+  }
+  function w2Pct(cl, i, j){ const a = cl.close[i], b = cl.close[j]; return (a == null || b == null) ? null : (a / b - 1) * 100; }
+  function w2PctHtml(v){ if (v == null) return '<span style="color:#8a93b8;">終値待ち</span>'; return `<b style="color:${v < 0 ? '#ff8a8a' : '#8fe3a0'};">${v >= 0 ? '+' : ''}${v.toFixed(2)}%</b>`; }
+  function w2ResultHtml(x, cl){
+    const hasAct = typeof x.eps_act === 'number';
+    const sp = parseFloat(x.surprise);
+    const beat = isFinite(sp) && sp > 0;
+    let h = `<div style="font-size:12px; color:#fff;"><b>${escapeHtml(x.symbol)}</b> ${fmtMD(x.date)} ${escapeHtml(W2_TIME[x.time] || '')}　` +
+      (hasAct ? `実績EPS <b>$${x.eps_act}</b>（予想 $${escapeHtml(String(x.eps_cons || '-'))}${isFinite(sp) ? '・' + (sp >= 0 ? '+' : '') + sp + '%' : ''}）` : '<span style="color:#8a93b8;">実績EPS 取得待ち</span>') + '</div>';
+    if (!cl) return h + '<div style="font-size:11px; color:#8a93b8;">株価を取得できませんでした</div>';
+    const i = cl.dates.indexOf(x.date);
+    if (i < 1) return h + '<div style="font-size:11px; color:#8a93b8;">この日の株価が見つかりません</div>';
+    const A = w2Pct(cl, i, i - 1);                                  // 発表日の前日比
+    const N = (i + 1 < cl.dates.length) ? w2Pct(cl, i + 1, i) : null; // 翌日の前日比
+    let react = null, body = '';
+    if (x.time === 'time-pre-market') { react = A; body = `発表日 ${w2PctHtml(A)}`; }
+    else if (x.time === 'time-after-hours') { react = N; body = `翌日 ${w2PctHtml(N)}`; }
+    else { body = `発表日 ${w2PctHtml(A)}　翌日 ${w2PctHtml(N)}　<span style="color:#8a93b8;">(時刻未定のため両日。どちらで反応したかは見て判断)</span>`; }
+    const scare = beat && react != null && react < 0;
+    return h + `<div style="font-size:12px; color:#c8d0f0; margin:2px 0 6px;">${body}${scare ? ' <span style="font-size:26px; vertical-align:middle;" title="予想超えなのに終値が下がった">😱</span><span style="font-size:11px; color:#ffb0b0;">予想超えなのに下落</span>' : ''}</div>`;
+  }
   function buildChainCard(ch, ctx, usDoc, bad){
     const wrap = document.createElement('div'); wrap.className = 'pw';
     const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = `${ch.icon} ${ch.title}`; wrap.appendChild(t);
@@ -10226,6 +10267,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
     ch.trig.forEach(sym => { ((usDoc && usDoc.items) || []).filter(x => x.symbol === sym).forEach(x => trigRows.push(x)); });
     trigRows.sort((a, b) => a.date < b.date ? -1 : 1);
     const upcoming = trigRows.filter(x => x.date >= today), past = trigRows.filter(x => x.date < today);
+    const resFrom = skyAddDays(today, -W2_RESULT_DAYS);
+    const pastRecent = past.filter(x => x.date >= resFrom), pastOld = past.filter(x => x.date < resFrom);
     const nextD = upcoming.length ? upcoming[0].date : '';
     const R1 = nextD ? nextTradingDayAfter(nextD, 1) : '', R2 = nextD ? nextTradingDayAfter(nextD, 3) : '';
     const step = (label, dateTxt, bodyHtml, color) =>
@@ -10240,12 +10283,15 @@ ${keywordLine}${bpBlock}${conditionBlock}
       const trigChips = upcoming.map(x => ({ d: x.date, h: chip(x) })).concat(krItems).sort((x, y) => x.d < y.d ? -1 : x.d > y.d ? 1 : 0).map(x => x.h).join('');
       trigHtml = (upcoming.length ? '' : '<span style="font-size:12px; color:#8a93b8;">今後75日に載っている決算なし</span>') + trigChips +
         (ch.kr.length ? `<div style="font-size:11px; color:#8a93b8;">🇰🇷 ${ch.kr.map(escapeHtml).join('・')}：日程は未取得</div>` : '') +
-        (past.length ? `<div style="font-size:11px; color:#8a93b8;">発表済み(直近): ${past.slice(-4).map(x => escapeHtml(x.symbol) + ' ' + fmtMD(x.date)).join('、')}</div>` : '');
+        (pastOld.length ? `<div style="font-size:11px; color:#8a93b8;">発表済み(それ以前): ${pastOld.slice(-4).map(x => escapeHtml(x.symbol) + ' ' + fmtMD(x.date)).join('、')}</div>` : '') +
+        (pastRecent.length ? `<div style="font-size:11px; color:#ffd76b; margin-top:4px;">発表結果(直近${W2_RESULT_DAYS}日)</div><div class="w2res"></div>` : '');
     }
     let html = step('①起爆剤', nextD ? fmtMD(nextD) : '日付待ち', `<div style="font-size:12px; color:#c8d0f0; margin-bottom:2px;">🇺🇸 米国(${bad ? '悪決算' : '好決算'}なら…)</div>${trigHtml}`, '#ff9d6b');
     html += step('②巻き添え1', R1 ? fmtMD(R1) : '翌営業日', `<div style="font-size:11px; color:#9db4ff;">日本の寄り付き。${bad ? '売られる可能性' : '上がる可能性'}（2026-10-01に実例あり）</div>` + w2SortByEarn(ch.w1, ctx).map(c => w2Chip(c, ctx)).join(''), '#7ec8ff');
     html += step('③巻き添え2', R2 ? fmtMD(R2) + '〜' : '2〜3営業日後', `<div style="font-size:11px; color:#9db4ff;">${bad ? '連鎖して売られる' : '連鎖して上がる'}可能性。<b>仮説(未検証)</b></div>` + w2SortByEarn(ch.w2, ctx).map(c => w2Chip(c, ctx)).join(''), '#b9a6ff');
     const body = document.createElement('div'); body.innerHTML = html; wrap.appendChild(body);
+    const resHost = body.querySelector('.w2res');
+    if (resHost) { resHost.innerHTML = '<span style="font-size:12px; color:#8a93b8;">株価を取得中…</span>'; Promise.all(pastRecent.map(x => w2UsCloses(x.symbol).then(cl => w2ResultHtml(x, cl)))).then(a => { resHost.innerHTML = a.join(''); }); }
     // 根拠
     const evKeys = bad ? ch.bad : ch.good;
     const ev = document.createElement('div'); ev.style.cssText = 'font-size:11px; color:#9db4ff; line-height:1.6; border-top:1px solid rgba(157,180,255,0.18); padding-top:6px;';
@@ -12577,7 +12623,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-12c';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-12d';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;

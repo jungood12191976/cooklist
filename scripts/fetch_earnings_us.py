@@ -6,6 +6,13 @@ data/earnings_us.json に書く。GitHub Actions から毎日実行(.github/work
 data.rows に [lastYearRptDt,lastYearEPS,time,symbol,name,marketCap,fiscalQuarterEnding,epsForecast,noOfEsts] を返す。
 time は time-pre-market / time-after-hours / time-not-supplied。日付は米国の日付。
 ※「会社が確定発表した日」か「推定」かはAPIから区別できないため、画面では出典=Nasdaq(推定を含む)と表示する。
+
+2026-10-12追加(キングのブラウザで実物確認済み):
+- 発表日を過ぎた日付のカレンダー行は、time がすべて time-not-supplied に戻る(2026-07〜09の57件で確認)。
+  発表前に time が埋まっていた場合は、前回のファイルの値を残す。
+- 実績EPSは https://api.nasdaq.com/api/company/{SYM}/earnings-surprise の data.earningsSurpriseTable.rows
+  に [fiscalQtrEnd, dateReported(M/D/YYYY), eps(数値), consensusForecast(文字列), percentageSurprise(文字列)]。
+  57件でカレンダーの日付と dateReported が全件一致することを確認済み。
 """
 import datetime, json, os, sys, time
 import requests
@@ -38,8 +45,32 @@ def get(url):
     return None
 
 
+def load_old():
+    if os.path.exists(OUT):
+        try:
+            return json.load(open(OUT, encoding='utf-8'))
+        except (OSError, ValueError):
+            return None
+    return None
+
+
+def fetch_actual(sym, date_iso):
+    """earnings-surprise から、発表日(date_iso)に一致する行の実績EPS等を返す。取れなければ None。"""
+    j = get('https://api.nasdaq.com/api/company/' + sym + '/earnings-surprise')
+    time.sleep(0.5)
+    rows = (((j or {}).get('data') or {}).get('earningsSurpriseTable') or {}).get('rows') or []
+    y, m, d = date_iso.split('-')
+    want = '%d/%d/%s' % (int(m), int(d), y)
+    for r in rows:
+        if r.get('dateReported') == want and isinstance(r.get('eps'), (int, float)):
+            return {'eps_act': r['eps'], 'eps_cons': r.get('consensusForecast', ''), 'surprise': r.get('percentageSurprise', '')}
+    return None
+
+
 def main():
     today = datetime.datetime.now(datetime.timezone.utc).date()
+    old = load_old()
+    old_by = {(x['symbol'], x['date']): x for x in ((old or {}).get('items') or [])}
     items, n_days, n_fail = [], 0, 0
     for off in range(-BACK, AHEAD + 1):
         d = today + datetime.timedelta(days=off)
@@ -58,6 +89,19 @@ def main():
                               'eps_fc': row.get('epsForecast', '')})
     if n_days < 40 or n_fail > 15:
         sys.exit('取得できた日が少なすぎるため書き込みません: days=%d fail=%d' % (n_days, n_fail))
+    # 発表前に埋まっていた時刻は残す(発表後は time-not-supplied に戻るため)
+    for it in items:
+        o = old_by.get((it['symbol'], it['date']))
+        if o and it['time'] == 'time-not-supplied' and o.get('time') and o['time'] != 'time-not-supplied':
+            it['time'] = o['time']
+    # 発表日を過ぎた分は実績EPSを取る(取れなければ前回の値を残す)
+    for it in items:
+        o = old_by.get((it['symbol'], it['date'])) or {}
+        if it['date'] <= today.isoformat():
+            a = fetch_actual(it['symbol'], it['date'])
+            if a is None:
+                a = {k: o[k] for k in ('eps_act', 'eps_cons', 'surprise') if k in o}
+            it.update(a)
     doc = {'source': 'Nasdaq 決算カレンダーAPI', 'grade': 'B', 'note': '日付は米国の日付。確定/推定の区別はAPIにない。',
            'fetched_at': datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='minutes'),
            'days_ok': n_days, 'items': sorted(items, key=lambda x: (x['date'], x['symbol']))}
