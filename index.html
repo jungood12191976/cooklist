@@ -207,6 +207,40 @@
   .sky-date-sub{ text-align:center; font-size:11px; color:#9db4ff; margin:-8px 0 10px; letter-spacing:.5px; }
   .sky-panel{ position:relative; margin-top:12px; background:rgba(255,255,255,0.04); border:2px solid #6ea8ff; border-radius:12px; padding:12px; box-shadow:0 4px 0 rgba(0,0,0,0.3); animation: skyFadeUp 0.4s ease-out both; }
   .sky-section-title{ font-size:16px; font-weight:bold; color:#ffe9b0; margin-bottom:8px; text-shadow:0 0 8px rgba(255,215,107,0.4); }
+  /* ⚔️ 寄り付きの戦場（kabuステーション→Firebase のリアルタイム。2026-10-14 キング承認） */
+  .lv-panel{ border-color:#ffd76b; }
+  .lv-top{ display:flex; justify-content:space-between; align-items:center; gap:6px; }
+  .lv-top .sky-section-title{ margin-bottom:0; }
+  .lv-live{ font-size:11px; display:flex; align-items:center; gap:5px; color:#7dffa0; white-space:nowrap; }
+  .lv-live.stale{ color:#9a9a9a; }
+  .lv-dot{ width:8px; height:8px; border-radius:50%; background:#3dff7a; box-shadow:0 0 8px #3dff7a; }
+  .lv-live.stale .lv-dot{ background:#777; box-shadow:none; }
+  .lv-army{ margin:8px 0 4px; font-size:12px; color:#cfd9ff; }
+  .lv-abar{ display:flex; height:12px; border-radius:6px; overflow:hidden; border:1px solid #333; margin-top:3px; background:#333; }
+  .lv-abar .u{ background:#ff5a5a; } .lv-abar .e{ background:#777; } .lv-abar .d{ background:#4a8cff; }
+  .lv-albl{ display:flex; justify-content:space-between; font-size:11px; margin-top:2px; }
+  .lv-chips{ display:flex; gap:5px; margin:8px 0; flex-wrap:wrap; align-items:center; }
+  .lv-chip{ font-size:11px; padding:3px 8px; border-radius:10px; border:1px solid #5a78c8; color:#9fd0ff; background:transparent; cursor:pointer; font-family:inherit; }
+  .lv-chip.on{ background:#ffd76b; color:#1a1a1a; border-color:#ffd76b; font-weight:bold; }
+  .lv-btn{ margin-left:auto; font-size:11px; padding:3px 8px; border-radius:6px; background:#2a3f7a; color:#fff; border:1px solid #6ea8ff; cursor:pointer; font-family:inherit; }
+  .lv-row{ display:grid; grid-template-columns:1fr 96px; gap:6px; padding:7px 4px; border-top:1px solid rgba(255,255,255,.08); align-items:center; cursor:pointer; }
+  .lv-row.flash{ animation: lvFlash 1.2s ease-out; }
+  @keyframes lvFlash{ from{ background:rgba(255,215,107,.25); } to{ background:transparent; } }
+  .lv-nm{ font-size:14px; font-weight:bold; color:#fff; }
+  .lv-cd{ font-size:10px; color:#8fa0c8; margin-left:4px; font-weight:normal; }
+  .lv-sub{ font-size:11px; color:#b9c4e6; margin-top:2px; display:flex; gap:8px; flex-wrap:wrap; }
+  .lv-badges{ display:flex; gap:4px; margin-top:3px; flex-wrap:wrap; }
+  .lv-bd{ font-size:10px; padding:0 5px; border-radius:7px; background:rgba(255,215,107,.15); color:#ffe9a8; }
+  .lv-rt{ text-align:right; }
+  .lv-px{ font-size:15px; font-weight:bold; font-variant-numeric:tabular-nums; color:#fff; }
+  .lv-cp{ font-size:12px; font-variant-numeric:tabular-nums; }
+  .lv-up{ color:#ff6b6b; } .lv-dn{ color:#6aa6ff; } .lv-eq{ color:#cfd9ff; }
+  .lv-gauge{ position:relative; height:8px; background:#222; border-radius:4px; margin-top:4px; }
+  .lv-gauge .z{ position:absolute; left:50%; top:-2px; width:1px; height:12px; background:#aaa; }
+  .lv-gauge .b{ position:absolute; top:0; height:8px; border-radius:4px; }
+  .lv-gl{ font-size:10px; margin-top:1px; font-variant-numeric:tabular-nums; }
+  .lv-ex{ background:rgba(255,255,255,.05); border-radius:8px; padding:6px 8px; font-size:11px; color:#cfd9ff; display:grid; grid-template-columns:1fr 1fr; gap:2px 10px; margin:0 4px 4px; }
+  .lv-more{ display:block; width:100%; text-align:center; font-size:12px; color:#9fd0ff; margin-top:8px; background:transparent; border:none; cursor:pointer; font-family:inherit; }
   .lt-meta{ font-size:11px; color:#9db4ff; letter-spacing:.5px; margin-bottom:4px; }
   .lt-head{ font-size:14.5px; font-weight:bold; color:#fff; line-height:1.5; margin-bottom:6px; }
   .lt-ex{ margin:8px 0 2px; border:1px dashed #5a78c8; border-radius:8px; padding:6px 10px; background:rgba(60,90,170,.12); }
@@ -7895,6 +7929,163 @@ ${keywordLine}${bpBlock}${conditionBlock}
       <button class="sky-toggle-btn" data-brief-layer2="${skyEsc(id)}" style="margin-top:4px;">${l2open ? '▼' : '▶'} 第2層（決算・規制・要人発言・保有銘柄・ストーリー）</button>
       ${layer2}`;
   }
+  // ===== ⚔️ 寄り付きの戦場：kabuステーション(PCの kabu_live.ps1) → Firebase → ここで読む =====
+  // 2026-10-14 キング承認：9:00〜9:15だけ5秒ごとに自動で読む／並びの初期値はVWAP乖離が大きい順／最初は上位5体／ゲージは±3%で端。
+  // 合言葉はリポジトリに入れない。専用リンク(…#lk=合言葉)を一度開くと、この端末の localStorage(ktq:liveKey)に保存される。
+  const LIVE_FB = 'https://king-the-quest-live-default-rtdb.asia-southeast1.firebasedatabase.app';
+  const LIVE_GAUGE_MAX = 3;      // VWAP乖離ゲージが端まで届く%(キング確認済み 2026-10-14)
+  const LIVE_SHOW_FIRST = 5;     // 最初に開いておく体数(キング指定 2026-10-14)
+  const LIVE_STALE_SEC = 15;     // これ以上更新が無ければ「止まっています」
+  const skyLive = { data:null, fetchedAt:0, error:null, fetching:false, prevP:{}, flash:{}, open:{}, showAll:false,
+                    sort: (lsGet('ktq:liveSort') || 'vd') };
+  (function(){
+    try {
+      const m = String(location.hash || '').match(/(?:^#|&)lk=([A-Za-z0-9_-]{32,})/);
+      if (m) {
+        lsSet('ktq:liveKey', m[1]);
+        history.replaceState(null, '', location.pathname + location.search);
+      }
+    } catch(e){}
+  })();
+  function liveJstNow(){ const d = new Date(Date.now() + 9*3600*1000); return { hm: d.getUTCHours()*60 + d.getUTCMinutes() }; }
+  function liveInWindow(){
+    if (typeof skyIsTradingDay === 'function' && !skyIsTradingDay(todayDateKey())) return false;
+    const hm = liveJstNow().hm;
+    return hm >= 8*60+59 && hm < 9*60+16;
+  }
+  async function fetchSkyLive(){
+    const key = lsGet('ktq:liveKey');
+    if (!key || skyLive.fetching) { updateSkyLivePanel(); return; }
+    skyLive.fetching = true;
+    try {
+      const res = await fetch(`${LIVE_FB}/live/${encodeURIComponent(key)}.json`, { cache:'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const d = await res.json();
+      skyLive.flash = {};
+      if (d && Array.isArray(d.items)) {
+        for (const it of d.items) {
+          if (it && it.c != null && it.p != null) {
+            const before = skyLive.prevP[it.c];
+            if (before != null && before !== it.p && skyLive.data && skyLive.data.seq !== d.seq) skyLive.flash[it.c] = true;
+            skyLive.prevP[it.c] = it.p;
+          }
+        }
+      }
+      skyLive.data = d; skyLive.error = null;
+    } catch(e){ skyLive.error = String(e && e.message || e); }
+    skyLive.fetching = false; skyLive.fetchedAt = Date.now();
+    updateSkyLivePanel();
+  }
+  // 5秒ごと：天空の城を開いていて、画面が見えていて、9:00〜9:15のときだけ読む
+  setInterval(() => {
+    if (screen === 'sky' && document.visibilityState === 'visible') {
+      if (liveInWindow()) fetchSkyLive(); else updateSkyLivePanel();
+    }
+  }, 5000);
+
+  function liveFmt(n, d){ if (n == null || isNaN(n)) return '—'; return Number(n).toLocaleString('ja-JP', { minimumFractionDigits:d||0, maximumFractionDigits:d||0 }); }
+  function liveCls(n){ return (n == null) ? 'lv-eq' : (n > 0 ? 'lv-up' : (n < 0 ? 'lv-dn' : 'lv-eq')); }
+  function livePct(n){ return (n == null) ? '—' : ((n > 0 ? '+' : '') + Number(n).toFixed(2) + '%'); }
+  function liveSorted(items){
+    const arr = items.slice();
+    const k = skyLive.sort;
+    if (k === 'orig') return arr;
+    const v = (it) => k === 'vd' ? it.vd : (k === 'cp' ? it.cp : it.to);
+    arr.sort((a,b) => { const x = v(a), y = v(b); if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1; return y - x; });
+    return arr;
+  }
+  function liveRowHTML(it){
+    const bad = [];
+    if (it.r1 != null) bad.push(`🏅値上り率${it.r1}位`);
+    if (it.r4 != null) bad.push(`💰代金${it.r4}位`);
+    if (it.r6 != null) bad.push(`⚡出来高急増${it.r6}位`);
+    if (it.r7 != null) bad.push(`⚡代金急増${it.r7}位`);
+    const vd = it.vd;
+    const w = (vd == null) ? 0 : Math.min(Math.abs(vd) / LIVE_GAUGE_MAX, 1) * 50;
+    const bar = (vd == null || vd === 0) ? '' : (vd > 0
+      ? `<div class="b" style="left:50%;width:${w.toFixed(1)}%;background:#ff6b6b"></div>`
+      : `<div class="b" style="right:50%;width:${w.toFixed(1)}%;background:#6aa6ff"></div>`);
+    const toOku = (it.to == null) ? '—' : (it.to / 100).toFixed(1) + '億';
+    const open = !!skyLive.open[it.c];
+    const ex = open ? `<div class="lv-ex">
+        <span>始値 ${liveFmt(it.o)}</span><span>高値 ${liveFmt(it.h)}</span>
+        <span>安値 ${liveFmt(it.l)}</span><span>前日終値 ${liveFmt(it.pc)}</span>
+        <span>VWAP ${liveFmt(it.v,1)}</span><span>出来高 ${liveFmt(it.vol)}</span>
+        <span>現在値の時刻 ${skyEsc(String(it.t||'').slice(11,19) || '—')}</span>
+      </div>` : '';
+    return `<div class="lv-row${skyLive.flash[it.c] ? ' flash' : ''}" data-lv-code="${skyEsc(it.c)}">
+        <div>
+          <div class="lv-nm">${skyEsc(it.n || it.c)}<span class="lv-cd">${skyEsc(it.c)} ${skyEsc(it.k || '')}</span></div>
+          <div class="lv-sub"><span>窓 <span class="${liveCls(it.g)}">${livePct(it.g)}</span></span><span>始値比 <span class="${liveCls(it.vo)}">${livePct(it.vo)}</span></span><span>代金 ${toOku}</span></div>
+          ${bad.length ? `<div class="lv-badges">${bad.map(b => `<span class="lv-bd">${b}</span>`).join('')}</div>` : ''}
+        </div>
+        <div class="lv-rt">
+          <div class="lv-px">${liveFmt(it.p)}</div>
+          <div class="lv-cp ${liveCls(it.cp)}">${livePct(it.cp)}</div>
+          <div class="lv-gauge"><div class="z"></div>${bar}</div>
+          <div class="lv-gl ${liveCls(vd)}">VWAP ${livePct(vd)}</div>
+        </div>
+      </div>${ex}`;
+  }
+  function skyLiveInnerHTML(){
+    const title = '<div class="sky-section-title">⚔️ 寄り付きの戦場</div>';
+    if (!lsGet('ktq:liveKey')) {
+      return `<div class="lv-top">${title}</div><div class="sky-empty-note">この端末はまだ合言葉が入っていません。専用リンクを一度開くと、ここに9:00〜9:15の戦況が出ます。</div>`;
+    }
+    const d = skyLive.data;
+    const inWin = liveInWindow();
+    let liveTag;
+    if (d && d.u) {
+      const ut = new Date(d.u);
+      const ago = Math.max(0, Math.round((Date.now() - ut.getTime()) / 1000));
+      const hms = `${String(ut.getHours()).padStart(2,'0')}:${String(ut.getMinutes()).padStart(2,'0')}:${String(ut.getSeconds()).padStart(2,'0')}`;
+      if (inWin && ago <= LIVE_STALE_SEC) liveTag = `<span class="lv-live"><span class="lv-dot"></span>LIVE ${hms}（${ago}秒前）</span>`;
+      else if (inWin) liveTag = `<span class="lv-live stale"><span class="lv-dot"></span>止まっています（最終 ${hms}）</span>`;
+      else liveTag = `<span class="lv-live stale"><span class="lv-dot"></span>最終データ ${ut.getMonth()+1}/${ut.getDate()} ${hms.slice(0,5)}</span>`;
+    } else {
+      liveTag = `<span class="lv-live stale"><span class="lv-dot"></span>${skyLive.fetching || !skyLive.fetchedAt ? '読み込み中…' : 'データなし'}</span>`;
+    }
+    const sorts = [['vd','VWAP乖離'],['cp','前日比'],['to','売買代金'],['orig','元の順']];
+    const chips = `<div class="lv-chips">${sorts.map(([k,l]) => `<button class="lv-chip${skyLive.sort === k ? ' on' : ''}" data-lv-sort="${k}">${l}</button>`).join('')}<button class="lv-btn" data-lv-now="1">⟳ いま取得</button></div>`;
+    const err = skyLive.error ? `<div class="sky-empty-note" style="color:#ff9b6a;padding:4px 0;">読み込めませんでした（${skyEsc(skyLive.error)}）</div>` : '';
+    const items = (d && Array.isArray(d.items)) ? d.items.filter(Boolean) : [];
+    let army = '';
+    if (items.length) {
+      let up = 0, dn = 0, eq = 0;
+      for (const it of items) { if (it.vd == null) continue; if (it.vd > 0) up++; else if (it.vd < 0) dn++; else eq++; }
+      const tot = up + dn + eq || 1;
+      army = `<div class="lv-army">⚔ ${items.length}体の戦況（VWAPより上／下）
+        <div class="lv-abar"><div class="u" style="width:${up/tot*100}%"></div><div class="e" style="width:${eq/tot*100}%"></div><div class="d" style="width:${dn/tot*100}%"></div></div>
+        <div class="lv-albl"><span class="lv-up">上 ${up}体</span>${eq ? `<span class="lv-eq">同じ ${eq}体</span>` : ''}<span class="lv-dn">下 ${dn}体</span></div></div>`;
+    }
+    const sorted = liveSorted(items);
+    const shown = skyLive.showAll ? sorted : sorted.slice(0, LIVE_SHOW_FIRST);
+    const rest = sorted.length - shown.length;
+    const more = (sorted.length > LIVE_SHOW_FIRST)
+      ? `<button class="lv-more" data-lv-more="1">${skyLive.showAll ? '▲ 上位' + LIVE_SHOW_FIRST + '体だけにする' : '▼ 残り' + rest + '体を見る'}</button>` : '';
+    const body = items.length ? shown.map(liveRowHTML).join('') : (d ? '<div class="sky-empty-note">まだ戦況が届いていません。</div>' : '');
+    return `<div class="lv-top">${title}${liveTag}</div>${army}${chips}${err}${body}${more}`;
+  }
+  function updateSkyLivePanel(){
+    const panel = document.getElementById('skyLivePanel');
+    if (!panel) return;
+    panel.innerHTML = skyLiveInnerHTML();
+    skyLive.flash = {};
+  }
+  function buildSkyLivePanel(){
+    const panel = document.createElement('div'); panel.className = 'sky-panel lv-panel'; panel.id = 'skyLivePanel';
+    panel.addEventListener('click', (ev) => {
+      const t = ev.target.closest('[data-lv-sort],[data-lv-now],[data-lv-more],[data-lv-code]');
+      if (!t) return;
+      if (t.dataset.lvSort) { skyLive.sort = t.dataset.lvSort; lsSet('ktq:liveSort', skyLive.sort); updateSkyLivePanel(); }
+      else if (t.dataset.lvNow) { fetchSkyLive(); }
+      else if (t.dataset.lvMore) { skyLive.showAll = !skyLive.showAll; updateSkyLivePanel(); }
+      else if (t.dataset.lvCode) { const c = t.dataset.lvCode; skyLive.open[c] = !skyLive.open[c]; updateSkyLivePanel(); }
+    });
+    panel.innerHTML = skyLiveInnerHTML();
+    if (lsGet('ktq:liveKey') && (!skyLive.fetchedAt || Date.now() - skyLive.fetchedAt > 60*1000)) setTimeout(fetchSkyLive, 0);
+    return panel;
+  }
   function buildSkyBriefPanel(){
     const panel = document.createElement('div'); panel.className = 'sky-panel';
     const title = '<div class="sky-section-title">📜 今日の使徒からの手紙</div>';
@@ -7993,6 +8184,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     root.appendChild(scene);
 
     if (skyBrief.status === 'idle' || (skyBrief.status === 'ok' && Date.now() - skyBrief.fetchedAt > 3*60*1000)) fetchSkyBrief();
+    root.appendChild(buildSkyLivePanel());
     root.appendChild(buildSkyBriefPanel());
     root.appendChild(buildNextNotePanel());
 
