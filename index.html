@@ -223,6 +223,7 @@
   .lt-dd-link{ font-size:12.5px; line-height:1.6; margin:3px 0; }
   .lt-dd-link a{ color:#9fd0ff; word-break:break-all; }
   .lt-line{ font-size:13px; color:#dfe8ff; line-height:1.65; margin:5px 0; padding-left:1.2em; text-indent:-1.2em; }
+  .sky-panel.lt-pinned{ border-color:#ffd76b; background:rgba(255,215,107,0.07); }
   .lt-btns{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
   .lt-foot{ font-size:11.5px; color:#9db4ff; text-align:center; margin:16px 0 4px; line-height:1.7; }
   .sky-empty-note{ font-size:13.5px; color:#9db4ff; text-align:center; padding:10px 4px; line-height:1.6; }
@@ -8133,6 +8134,15 @@ ${keywordLine}${bpBlock}${conditionBlock}
   function lettersSaveHidden(set){
     try { localStorage.setItem(LETTERS_HIDDEN_KEY, JSON.stringify(Array.from(set))); } catch(e) {}
   }
+  // 📌のこす＝あとで読み返すための目印(2026-10-13 キング承認・案A)。この端末だけに保存。📌付きは一覧の先頭に集まる。
+  const LETTERS_PIN_KEY = 'ktq_letters_pinned_v1';
+  function lettersLoadPinned(){
+    try { const a = JSON.parse(localStorage.getItem(LETTERS_PIN_KEY) || '[]'); return new Set(Array.isArray(a) ? a : []); }
+    catch(e) { return new Set(); }
+  }
+  function lettersSavePinned(set){
+    try { localStorage.setItem(LETTERS_PIN_KEY, JSON.stringify(Array.from(set))); } catch(e) {}
+  }
   function lettersGmailUrl(mailId){
     // Gmailのスレッドを開くURL(16進ID)。アカウント指定なし。実機で開けるか未確認。
     return 'https://mail.google.com/mail/#all/' + mailId;
@@ -8299,10 +8309,13 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const hidden = lettersLoadHidden();
     const all = lettersState.items || [];
     const keyOf = it => it.mail + '|' + it.no;
-    const shown = all.filter(it => !hidden.has(keyOf(it)));
+    const pinned = lettersLoadPinned();
+    const visible = all.filter(it => !hidden.has(keyOf(it)));
+    const pinCount = visible.filter(it => pinned.has(keyOf(it))).length;
+    const shown = visible.filter(it => pinned.has(keyOf(it))).concat(visible.filter(it => !pinned.has(keyOf(it)))); // 📌付きを先頭へ(中の順番は元のまま)
 
     const sub = document.createElement('div'); sub.className = 'sky-date-sub';
-    sub.textContent = '届いた手紙 ' + shown.length + '通';
+    sub.textContent = '届いた手紙 ' + shown.length + '通' + (pinCount ? '（📌のこした手紙 ' + pinCount + '通）' : '');
     root.appendChild(sub);
 
     if (!shown.length) {
@@ -8310,11 +8323,12 @@ ${keywordLine}${bpBlock}${conditionBlock}
       p.innerHTML = '<div class="sky-empty-note">手紙はぜんぶ片づきました</div>'; root.appendChild(p);
     }
     shown.forEach(it => {
-      const card = document.createElement('div'); card.className = 'sky-panel';
+      const isPinned = pinned.has(keyOf(it));
+      const card = document.createElement('div'); card.className = 'sky-panel' + (isPinned ? ' lt-pinned' : '');
       const dm = /^\d{4}-(\d{2})-(\d{2})$/.exec(it.date);
       const dateTxt = dm ? (parseInt(dm[1], 10) + '/' + parseInt(dm[2], 10)) : it.date;
       card.innerHTML =
-        '<div class="lt-meta">' + skyEsc(it.source) + '｜' + skyEsc(dateTxt) + '</div>' +
+        '<div class="lt-meta">' + (isPinned ? '📌 ' : '') + skyEsc(it.source) + '｜' + skyEsc(dateTxt) + '</div>' +
         '<div class="lt-head">' + skyEsc(it.head) + '</div>' +
         it.lines.map(l => '<div class="lt-line">◆ ' + skyEsc(l) + '</div>').join('');
       if (it.explain && it.explain.length) { // 🔰 かんたん解説(ふだんは閉じる。💡の行は「仮説」なので色を変えて事実と分ける)
@@ -8329,8 +8343,10 @@ ${keywordLine}${bpBlock}${conditionBlock}
       const a = document.createElement('a'); a.className = 'rpg-settings-link'; a.textContent = '📧 Gmailを開く';
       a.href = lettersGmailUrl(it.mail); a.target = '_blank'; a.rel = 'noopener noreferrer'; a.style.textDecoration = 'none';
       const del = document.createElement('button'); del.className = 'rpg-settings-link'; del.textContent = '🗑️ 不要';
-      del.addEventListener('click', () => { playSelect(); const hs = lettersLoadHidden(); hs.add(keyOf(it)); lettersSaveHidden(hs); render(); });
-      btns.appendChild(a); btns.appendChild(del); card.appendChild(btns);
+      del.addEventListener('click', () => { playSelect(); const hs = lettersLoadHidden(); hs.add(keyOf(it)); lettersSaveHidden(hs); const ps = lettersLoadPinned(); if (ps.delete(keyOf(it))) lettersSavePinned(ps); render(); });
+      const pin = document.createElement('button'); pin.className = 'rpg-settings-link'; pin.textContent = isPinned ? '📌 はずす' : '📌 のこす';
+      pin.addEventListener('click', () => { playSelect(); const ps = lettersLoadPinned(); const k = keyOf(it); if (ps.has(k)) ps.delete(k); else ps.add(k); lettersSavePinned(ps); render(); });
+      btns.appendChild(a); btns.appendChild(pin); btns.appendChild(del); card.appendChild(btns);
       root.appendChild(card);
     });
 
@@ -12623,7 +12639,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-12d';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-13a';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
