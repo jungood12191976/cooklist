@@ -12639,7 +12639,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-13a';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-13b';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
@@ -13405,7 +13405,7 @@ ${note}
   async function callGeminiKeys(keys, body){
     let lastErr = null, text = null;
     for (const apiKey of keys) {
-      for (let attempt = 0; attempt < 2; attempt++) {
+      for (let attempt = 0; attempt < 4; attempt++) {
         try {
           const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
           const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body });
@@ -13417,6 +13417,8 @@ ${note}
             } catch(e2){}
             lastErr = new Error(describeGeminiError(res.status) + (detail ? `(詳細: ${detail})` : ''));
             if (res.status === 429 && attempt === 0) { await new Promise(r => setTimeout(r, 1500)); continue; }
+            // 503(Google側の混雑)は一時的なので、待ち時間を2秒→4秒→8秒と延ばし(少しランダムに)、最大3回やり直す(公式の推奨＝指数バックオフ＋ジッター)
+            if (res.status === 503 && attempt < 3) { await new Promise(r => setTimeout(r, 2000 * Math.pow(2, attempt) + Math.random() * 1000)); continue; }
             break; // 次のキーへ
           }
           const json = await res.json();
