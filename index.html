@@ -8540,7 +8540,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const q = sageState.q.trim();
     if (!q || sageState.busy) return;
     const keys = (geminiKeys && geminiKeys.length) ? geminiKeys : (geminiKey ? [geminiKey] : []);
-    sageState.askedQ = q; sageState.result = null; sageState.raw = null; sageState.error = null;
+    sageState.askedQ = q; sageState.result = null; sageState.raw = null; sageState.error = null; geminiTrace.length = 0;
     if (!keys.length) { sageState.error = 'APIキーが登録されていません(金の鉱山の「APIキーを管理」から追加してください)'; render(); return; }
     sageState.busy = true; render();
     try {
@@ -8555,6 +8555,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       if (parsed) sageState.result = parsed; else sageState.raw = String(text || '');
     } catch(e) {
       sageState.error = String((e && e.message) || e);
+      if (geminiTrace.length) sageState.error += '(通信の記録: ' + geminiTrace.map(r => r.n + '回目=' + r.st + (r.ms ? '・' + (r.ms / 1000).toFixed(1) + '秒' : '')).join(' → ') + ')';
     }
     sageState.busy = false;
     if (screen === 'sage') render();
@@ -12639,7 +12640,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-13b';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-13c';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
@@ -13402,13 +13403,16 @@ ${note}
     if (status >= 500) return 'Google側で一時的な問題が起きている可能性があります。';
     return `通信エラー(${status})が起きました。`;
   }
+  var geminiTrace = []; // 直近の呼び出しの記録(何回目に何が返ったか)。賢者のイシのエラー表示で使う
   async function callGeminiKeys(keys, body){
     let lastErr = null, text = null;
     for (const apiKey of keys) {
       for (let attempt = 0; attempt < 4; attempt++) {
+        const rec = { n: geminiTrace.length + 1, t0: Date.now(), st: '返事待ち', ms: 0 }; geminiTrace.push(rec);
         try {
           const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
           const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body });
+          rec.st = res.status; rec.ms = Date.now() - rec.t0;
           if (!res.ok) {
             let detail = '';
             try {
@@ -13425,7 +13429,7 @@ ${note}
           text = ((json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts) || []).map(p=>p.text||'').join('\n').trim();
           if (text) lastErr = null;
           break;
-        } catch(e){ lastErr = e; break; }
+        } catch(e){ rec.st = '通信エラー'; rec.ms = Date.now() - rec.t0; lastErr = e; break; }
       }
       if (text) break;
     }
