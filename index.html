@@ -9591,12 +9591,32 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const dashed = `${pts[n-2]} ${pts[n-1]}`;
     const peakI = counts.indexOf(Math.max(...counts.slice(0, n - 1)));
     const col = o.color || '#ffd76b';
+    // 株価の重ね描き(2026-10-14 キング承認)：赤い線＝終値、薄い棒＝出来高。記事数と同じ日付の位置に置く。休場日は無し(線はつなぐ)。
+    let pxBars = '', pxLine = '';
+    const px = o.px;
+    if (px) {
+      const idx = dates.map((d, i) => px[d] ? i : -1).filter(i => i >= 0);
+      if (idx.length) {
+        const cs = idx.map(i => px[dates[i]][0]), vs = idx.map(i => px[dates[i]][1] || 0);
+        const lo = Math.min(...cs), hi = Math.max(...cs), span = Math.max(hi - lo, hi * 0.005);
+        const vmx = Math.max(1, ...vs), bw = Math.max(2, (W - pad*2) / (n - 1) * 0.6);
+        const PY = c => 6 + (hi - c) / span * (H - 14);
+        idx.forEach((i, k) => {
+          const h = vs[k] / vmx * (H - 6) * 0.4;
+          pxBars += `<rect x="${(X(i) - bw/2).toFixed(1)}" y="${(H - 6 - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" fill="#8a93b8" opacity="0.35"/>`;
+        });
+        if (idx.length > 1) pxLine = `<polyline points="${idx.map((i, k) => `${X(i).toFixed(1)},${PY(cs[k]).toFixed(1)}`).join(' ')}" fill="none" stroke="#e8605a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+        else pxLine = `<circle cx="${X(idx[0]).toFixed(1)}" cy="${PY(cs[0]).toFixed(1)}" r="2.6" fill="#e8605a"/>`;
+      }
+    }
     return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%; height:${H}px; display:block;">` +
       `<line x1="${pad}" y1="${H-6}" x2="${W-pad}" y2="${H-6}" stroke="rgba(157,180,255,0.25)" stroke-width="1"/>` +
+      pxBars +
       `<polyline points="${done}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>` +
       `<polyline points="${dashed}" fill="none" stroke="${col}" stroke-width="2" stroke-dasharray="3 3" opacity="0.7"/>` +
       `<circle cx="${X(peakI).toFixed(1)}" cy="${Y(counts[peakI]).toFixed(1)}" r="2.6" fill="${col}"/>` +
       `<circle cx="${X(n-1).toFixed(1)}" cy="${Y(counts[n-1]).toFixed(1)}" r="2.6" fill="none" stroke="${col}" stroke-width="1.5"/>` +
+      pxLine +
       `</svg>`;
   }
 
@@ -9696,8 +9716,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
         `<div style="font-size:14px; color:#fff;"><b>${escapeHtml(r.code)}</b> <span style="font-size:12px; color:#9db4ff;">${escapeHtml(r.name)}</span></div>` +
         `<div style="font-size:12px; color:${L.color}; white-space:nowrap;" title="${escapeHtml(L.tip)}">${L.icon} ${L.text}</div>` +
       `</div>` +
-      newsSparkSvg(r.it.counts, dts, { color: L.color }) +
-      `<div style="display:flex; justify-content:space-between; font-size:10px; color:#6f78a0;"><span>${fmtMD(dts[0])}</span><span>${fmtMD(dts[dts.length-1])}</span></div>` +
+      newsSparkSvg(r.it.counts, dts, { color: L.color, px: r.it.px, h: r.it.px ? 90 : 56 }) +
+      `<div style="display:flex; justify-content:space-between; font-size:10px; color:#6f78a0;"><span>${fmtMD(dts[0])}</span>${r.it.px ? `<span><span style="color:${L.color};">━記事数</span> <span style="color:#e8605a;">━終値</span> <span style="color:#8a93b8;">▮出来高</span></span>` : ''}<span>${fmtMD(dts[dts.length-1])}</span></div>` +
       `<div style="font-size:12px; color:#c8d0f0; margin-top:2px;">直近7日 平均${r.c.aL.toFixed(1)}件/日 ／ それ以前 ${r.c.aP.toFixed(1)}件/日 ／ 昨日 ${r.c.yday}件・今日(途中) ${r.c.today}件 ／ 最多 ${peakV}件(${fmtMD(peakD)})${r.it.capped ? ' ／ ⚠上限到達あり' : ''}</div>` +
       `<div style="font-size:12px; margin-top:1px;">${jiwa}</div>`;
     return row;

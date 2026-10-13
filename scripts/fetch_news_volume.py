@@ -80,6 +80,48 @@ def fetch_items(word, extra, exclude=''):
     return out
 
 
+# 株価(終値・出来高)。ウワサの港の折れ線に赤い線(終値)と薄い棒(出来高)を重ねるため(2026-10-14 キング承認)。
+# 自前Worker経由を先に試し、だめなら Yahoo に直接。どちらも返り値は Yahoo chart API の JSON。
+WORKER = 'https://king-stock-proxy.jungood1219.workers.dev/?url='
+
+
+def fetch_prices(code, first, today):
+    y = 'https://query1.finance.yahoo.com/v8/finance/chart/%s.T?interval=1d&range=2mo' % code
+    for url in (WORKER + urllib.parse.quote(y, safe=''), y):
+        for k in range(2):
+            try:
+                r = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=20)
+                if r.status_code != 200:
+                    time.sleep(2)
+                    continue
+                res = r.json()['chart']['result'][0]
+                meta, ts = res['meta'], res.get('timestamp') or []
+                if meta.get('symbol') != code + '.T':
+                    break
+                q = res['indicators']['quote'][0]
+                cl, vo = q.get('close') or [], q.get('volume') or []
+                # 2026-10-14 実データで確認: 最新の足は close が null のことがある(出来高は入っている)。
+                # その足の日付が regularMarketTime の日付と同じなら、regularMarketPrice を終値として使う。
+                rmt, rmp = meta.get('regularMarketTime'), meta.get('regularMarketPrice')
+                rmd = datetime.datetime.fromtimestamp(rmt, JST).date() if rmt else None
+                px = {}
+                for i, t in enumerate(ts):
+                    d = datetime.datetime.fromtimestamp(t, JST).date()
+                    if not (first <= d <= today):
+                        continue
+                    c = cl[i] if i < len(cl) else None
+                    if c is None and d == rmd and isinstance(rmp, (int, float)):
+                        c = rmp
+                    if c is None:
+                        continue
+                    v = vo[i] if i < len(vo) and vo[i] is not None else 0
+                    px[d.isoformat()] = [round(c, 2), int(v)]
+                return px
+            except Exception:
+                time.sleep(2)
+    return None
+
+
 def main():
     today = datetime.datetime.now(JST).date()
     dates = [today - datetime.timedelta(days=DAYS - 1 - i) for i in range(DAYS)]
@@ -91,7 +133,7 @@ def main():
             old = json.load(open(OUT, encoding='utf-8')).get('items', {})
         except Exception:
             old = {}
-    items, diag, n_fail, n_trunc = {}, [], 0, 0
+    items, diag, n_fail, n_trunc, n_pxfail = {}, [], 0, 0, 0
     for code, name in uni:
         if code in OVERRIDE:
             word, excl = OVERRIDE[code]
@@ -125,11 +167,17 @@ def main():
                 start = end
             diag.append('SLICED %s %s first=%d sliced=%d ok=%s' % (code, name, len(got), len(links), ok_all))
         cnt = collections.Counter(d for d in links.values() if first <= d <= today)
+        px = fetch_prices(code, first, today)
+        if px is None:
+            n_pxfail += 1
+            px = (old.get(code) or {}).get('px', {})
+            diag.append('PXFAIL %s %s' % (code, name))
         items[code] = {
             'name': name,
             'q': word,
             'counts': [cnt.get(d, 0) for d in dates],
             'capped': truncated and any(v >= CAP for v in cnt.values()),
+            'px': px,
         }
     if len(items) < 150 or n_fail > 60:
         sys.exit('取得できた銘柄が少なすぎるため書き込みません: items=%d fail=%d' % (len(items), n_fail))
@@ -140,12 +188,13 @@ def main():
         'window_days': DAYS,
         'dates': [d.isoformat() for d in dates],
         'note': '記事数は注目度の代用(期待値そのものではない)。当日分は途中経過。転載記事も数える。',
+        'px_source': 'Yahoo Finance 日足(chart API) 終値・出来高。px は {日付: [終値, 出来高]}。休場日は無し',
         'items': items,
     }
     os.makedirs('data', exist_ok=True)
     with open(OUT, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, separators=(',', ':'))
-    diag.insert(0, 'items=%d fail=%d sliced=%d fetched_at=%s' % (len(items), n_fail, n_trunc, doc['fetched_at']))
+    diag.insert(0, 'items=%d fail=%d sliced=%d pxfail=%d fetched_at=%s' % (len(items), n_fail, n_trunc, n_pxfail, doc['fetched_at']))
     open(DIAG, 'w', encoding='utf-8').write('\n'.join(diag) + '\n')
     print(diag[0])
 
