@@ -8540,7 +8540,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const q = sageState.q.trim();
     if (!q || sageState.busy) return;
     const keys = (geminiKeys && geminiKeys.length) ? geminiKeys : (geminiKey ? [geminiKey] : []);
-    sageState.askedQ = q; sageState.result = null; sageState.raw = null; sageState.error = null; geminiTrace.length = 0;
+    sageState.askedQ = q; sageState.result = null; sageState.raw = null; sageState.error = null; sageState.model = null; geminiTrace.length = 0;
     if (!keys.length) { sageState.error = 'APIキーが登録されていません(金の鉱山の「APIキーを管理」から追加してください)'; render(); return; }
     sageState.busy = true; render();
     try {
@@ -8551,11 +8551,12 @@ ${keywordLine}${bpBlock}${conditionBlock}
         callGeminiKeys(keys, body),
         new Promise((_, rej) => setTimeout(() => rej(new Error((SAGE_TIMEOUT_MS / 1000) + '秒たっても返事が来ませんでした')), SAGE_TIMEOUT_MS))
       ]);
+      sageState.model = geminiLastModel;
       const parsed = sageParse(text);
       if (parsed) sageState.result = parsed; else sageState.raw = String(text || '');
     } catch(e) {
       sageState.error = String((e && e.message) || e);
-      if (geminiTrace.length) sageState.error += '(通信の記録: ' + geminiTrace.map(r => r.n + '回目=' + r.st + (r.ms ? '・' + (r.ms / 1000).toFixed(1) + '秒' : '')).join(' → ') + ')';
+      if (geminiTrace.length) sageState.error += '(通信の記録: ' + geminiTrace.map(r => r.n + '回目[' + String(r.model || '').replace('gemini-', '') + ']=' + r.st + (r.ms ? '・' + (r.ms / 1000).toFixed(1) + '秒' : '')).join(' → ') + ')';
     }
     sageState.busy = false;
     if (screen === 'sage') render();
@@ -8648,6 +8649,9 @@ ${keywordLine}${bpBlock}${conditionBlock}
       }
       if (sageState.result.notEnough) {
         const n = document.createElement('div'); n.className = 'sg-note'; n.textContent = '材料が足りず、賢者が言えなかったこと：' + sageState.result.notEnough; root.appendChild(n);
+      }
+      if (sageState.model && sageState.model !== GEMINI_MODELS[0]) {
+        const n = document.createElement('div'); n.className = 'sg-note'; n.textContent = '予備のモデル(' + sageState.model + ')で答えました。いつものモデルが混んでいたためです。'; root.appendChild(n);
       }
     }
 
@@ -12640,7 +12644,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-13c';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-13d';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
@@ -13404,34 +13408,51 @@ ${note}
     return `通信エラー(${status})が起きました。`;
   }
   var geminiTrace = []; // 直近の呼び出しの記録(何回目に何が返ったか)。賢者のイシのエラー表示で使う
+  var geminiLastModel = null; // 直近の呼び出しで実際に答えたモデル
+  // モデルの順番(キング承認 2026-10-13)：まず従来の3.6、混雑(503)や無応答が続いたら3.8、さらにだめなら3.5-flash-lite。どれもGoogle公式の料金表で無料枠あり(2026-10-13確認)
+  const GEMINI_MODELS = ['gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-3.5-flash-lite'];
+  const GEMINI_REQ_TIMEOUT_MS = 30000; // 1回の返事を待つ上限(これを超えたら次へ)
   async function callGeminiKeys(keys, body){
     let lastErr = null, text = null;
-    for (const apiKey of keys) {
-      for (let attempt = 0; attempt < 4; attempt++) {
-        const rec = { n: geminiTrace.length + 1, t0: Date.now(), st: '返事待ち', ms: 0 }; geminiTrace.push(rec);
-        try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-          const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body });
-          rec.st = res.status; rec.ms = Date.now() - rec.t0;
-          if (!res.ok) {
-            let detail = '';
-            try {
-              const errJson = await res.json();
-              detail = (errJson && errJson.error && errJson.error.message) ? errJson.error.message : '';
-            } catch(e2){}
-            lastErr = new Error(describeGeminiError(res.status) + (detail ? `(詳細: ${detail})` : ''));
-            if (res.status === 429 && attempt === 0) { await new Promise(r => setTimeout(r, 1500)); continue; }
-            // 503(Google側の混雑)は一時的なので、待ち時間を2秒→4秒→8秒と延ばし(少しランダムに)、最大3回やり直す(公式の推奨＝指数バックオフ＋ジッター)
-            if (res.status === 503 && attempt < 3) { await new Promise(r => setTimeout(r, 2000 * Math.pow(2, attempt) + Math.random() * 1000)); continue; }
-            break; // 次のキーへ
-          }
-          const json = await res.json();
-          text = ((json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts) || []).map(p=>p.text||'').join('\n').trim();
-          if (text) lastErr = null;
-          break;
-        } catch(e){ rec.st = '通信エラー'; rec.ms = Date.now() - rec.t0; lastErr = e; break; }
+    geminiLastModel = null;
+    for (let mi = 0; mi < GEMINI_MODELS.length && !text; mi++) {
+      const model = GEMINI_MODELS[mi], lastModel = (mi === GEMINI_MODELS.length - 1);
+      for (const apiKey of keys) {
+        // 次のモデルが控えているうちは、503/無応答は1回だけやり直して早めに切り替える(最後のモデルだけ最大3回やり直す)
+        const maxAttempt = lastModel ? 4 : 2;
+        for (let attempt = 0; attempt < maxAttempt; attempt++) {
+          const rec = { n: geminiTrace.length + 1, t0: Date.now(), st: '返事待ち', ms: 0, model: model }; geminiTrace.push(rec);
+          const ac = new AbortController(), tm = setTimeout(() => ac.abort(), GEMINI_REQ_TIMEOUT_MS);
+          let retry = false;
+          try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+            const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body, signal: ac.signal });
+            rec.st = res.status; rec.ms = Date.now() - rec.t0;
+            if (!res.ok) {
+              let detail = '';
+              try {
+                const errJson = await res.json();
+                detail = (errJson && errJson.error && errJson.error.message) ? errJson.error.message : '';
+              } catch(e2){}
+              lastErr = new Error(describeGeminiError(res.status) + (detail ? `(詳細: ${detail})` : ''));
+              if (res.status === 429 && attempt === 0) { await new Promise(r => setTimeout(r, 1500)); continue; }
+              // 503(Google側の混雑)は一時的なので、待ち時間を延ばし(少しランダムに)やり直す(公式の推奨＝指数バックオフ＋ジッター)
+              if (res.status === 503 && attempt < maxAttempt - 1) { await new Promise(r => setTimeout(r, 2000 * Math.pow(2, attempt) + Math.random() * 1000)); continue; }
+              break; // 次のキーへ
+            }
+            const json = await res.json();
+            text = ((json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts) || []).map(p=>p.text||'').join('\n').trim();
+            if (text) { lastErr = null; geminiLastModel = model; }
+            break;
+          } catch(e){
+            rec.ms = Date.now() - rec.t0;
+            if (e && e.name === 'AbortError') { rec.st = '無応答' + Math.round(GEMINI_REQ_TIMEOUT_MS / 1000) + '秒'; lastErr = new Error('Googleから返事が来ませんでした(' + Math.round(GEMINI_REQ_TIMEOUT_MS / 1000) + '秒)'); }
+            else { rec.st = '通信エラー'; lastErr = e; }
+            break;
+          } finally { clearTimeout(tm); }
+        }
+        if (text) break;
       }
-      if (text) break;
     }
     if (!text) throw (lastErr || new Error('取得できませんでした'));
     return text;
