@@ -12644,7 +12644,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-13d';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-13e';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
@@ -13418,6 +13418,7 @@ ${note}
     for (let mi = 0; mi < GEMINI_MODELS.length && !text; mi++) {
       const model = GEMINI_MODELS[mi], lastModel = (mi === GEMINI_MODELS.length - 1);
       for (const apiKey of keys) {
+        let busy = false; // このモデル自体が混んでいる(503/無応答)。キーを変えても同じなので、次のキーは試さず次のモデルへ
         // 次のモデルが控えているうちは、503/無応答は1回だけやり直して早めに切り替える(最後のモデルだけ最大3回やり直す)
         const maxAttempt = lastModel ? 4 : 2;
         for (let attempt = 0; attempt < maxAttempt; attempt++) {
@@ -13438,7 +13439,8 @@ ${note}
               if (res.status === 429 && attempt === 0) { await new Promise(r => setTimeout(r, 1500)); continue; }
               // 503(Google側の混雑)は一時的なので、待ち時間を延ばし(少しランダムに)やり直す(公式の推奨＝指数バックオフ＋ジッター)
               if (res.status === 503 && attempt < maxAttempt - 1) { await new Promise(r => setTimeout(r, 2000 * Math.pow(2, attempt) + Math.random() * 1000)); continue; }
-              break; // 次のキーへ
+              if (res.status === 503) busy = true;
+              break; // 次のキーへ(503のときはキーを変えても同じなので、下で次のモデルへ)
             }
             const json = await res.json();
             text = ((json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts) || []).map(p=>p.text||'').join('\n').trim();
@@ -13446,12 +13448,12 @@ ${note}
             break;
           } catch(e){
             rec.ms = Date.now() - rec.t0;
-            if (e && e.name === 'AbortError') { rec.st = '無応答' + Math.round(GEMINI_REQ_TIMEOUT_MS / 1000) + '秒'; lastErr = new Error('Googleから返事が来ませんでした(' + Math.round(GEMINI_REQ_TIMEOUT_MS / 1000) + '秒)'); }
+            if (e && e.name === 'AbortError') { busy = true; rec.st = '無応答' + Math.round(GEMINI_REQ_TIMEOUT_MS / 1000) + '秒'; lastErr = new Error('Googleから返事が来ませんでした(' + Math.round(GEMINI_REQ_TIMEOUT_MS / 1000) + '秒)'); }
             else { rec.st = '通信エラー'; lastErr = e; }
             break;
           } finally { clearTimeout(tm); }
         }
-        if (text) break;
+        if (text || busy) break;
       }
     }
     if (!text) throw (lastErr || new Error('取得できませんでした'));
