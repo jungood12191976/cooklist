@@ -8732,16 +8732,17 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const q = sageState.q.trim();
     if (!q || sageState.busy) return;
     const keys = (geminiKeys && geminiKeys.length) ? geminiKeys : (geminiKey ? [geminiKey] : []);
-    sageState.askedQ = q; sageState.result = null; sageState.raw = null; sageState.error = null; sageState.model = null; geminiTrace.length = 0;
+    sageState.askedQ = q; sageState.result = null; sageState.raw = null; sageState.error = null; sageState.model = null; sageState.probe = null; sageState.probing = false; geminiTrace.length = 0;
     if (!keys.length) { sageState.error = 'APIキーが登録されていません(金の鉱山の「APIキーを管理」から追加してください)'; render(); return; }
     sageState.busy = true; render();
     try {
       await sageEnsureDocs();
       const mats = sageBuildMaterials(); sageState.mats = mats;
       const body = JSON.stringify({ contents:[{ parts:[{ text: sageBuildPrompt(q, mats.text) }] }], generationConfig:{ temperature: SAGE_TEMPERATURE } });
+      const deadline = Date.now() + SAGE_TIMEOUT_MS;
       const text = await Promise.race([
-        callGeminiKeys(keys, body),
-        new Promise((_, rej) => setTimeout(() => rej(new Error((SAGE_TIMEOUT_MS / 1000) + '秒たっても返事が来ませんでした')), SAGE_TIMEOUT_MS))
+        callGeminiStream(keys, body, deadline),
+        new Promise((_, rej) => setTimeout(() => rej(new Error((SAGE_TIMEOUT_MS / 1000) + '秒たっても返事が来ませんでした')), SAGE_TIMEOUT_MS + 5000))
       ]);
       sageState.model = geminiLastModel;
       const parsed = sageParse(text);
@@ -8749,9 +8750,15 @@ ${keywordLine}${bpBlock}${conditionBlock}
     } catch(e) {
       sageState.error = String((e && e.message) || e);
       if (geminiTrace.length) sageState.error += '(通信の記録: ' + geminiTrace.map(r => r.n + '回目[' + String(r.model || '').replace('gemini-', '') + ']=' + r.st + (r.ms ? '・' + (r.ms / 1000).toFixed(1) + '秒' : '')).join(' → ') + ')';
+      sageState.probing = true;
     }
     sageState.busy = false;
     if (screen === 'sage') render();
+    if (sageState.probing) {
+      try { sageState.probe = await geminiProbe(keys); } catch(e){ sageState.probe = null; }
+      sageState.probing = false;
+      if (screen === 'sage') render();
+    }
   }
 
   // 仮の場面：背景絵はキング提供待ち。それまでは「石の光」だけ。2人の後ろ姿は他の場面と同じ位置。
@@ -8812,7 +8819,14 @@ ${keywordLine}${bpBlock}${conditionBlock}
     }
     if (sageState.error) {
       const p = document.createElement('div'); p.className = 'sky-panel';
-      p.innerHTML = '<div class="sky-empty-note">賢者の声が届きませんでした<br><span style="font-size:11px;opacity:.8;">' + skyEsc(sageState.error) + '</span></div>';
+      let probeHtml = '';
+      if (sageState.probing) probeHtml = '<br><span style="font-size:11.5px;">短い質問でGoogleの様子を調べています…</span>';
+      else if (sageState.probe) {
+        const okAny = sageState.probe.some(r => r.st === 200);
+        probeHtml = '<br><span style="font-size:11.5px;">短い質問のテスト：' + skyEsc(sageState.probe.map(r => r.model.replace('gemini-', '') + '=' + (r.st === 200 ? '通った' : r.st)).join(' / ')) + '<br>'
+          + (okAny ? '→ 短い質問なら通りました。質問が長い(材料が多い)ことが原因の可能性があります。' : '→ 短い質問も通りませんでした。Google側が混んでいる可能性が高いです。') + '</span>';
+      }
+      p.innerHTML = '<div class="sky-empty-note">賢者の声が届きませんでした<br><span style="font-size:11px;opacity:.8;">' + skyEsc(sageState.error) + '</span>' + probeHtml + '</div>';
       root.appendChild(p);
     }
     if (sageState.raw) {
@@ -12856,7 +12870,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-14a';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-14b';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
@@ -13660,7 +13674,11 @@ ${note}
             break;
           } catch(e){
             rec.ms = Date.now() - rec.t0;
-            if (e && e.name === 'AbortError') { busy = true; rec.st = '無応答' + Math.round(GEMINI_REQ_TIMEOUT_MS / 1000) + '秒'; lastErr = new Error('Googleから返事が来ませんでした(' + Math.round(GEMINI_REQ_TIMEOUT_MS / 1000) + '秒)'); }
+            if (e && e.name === 'AbortError') {
+              rec.st = '無応答' + Math.round(GEMINI_REQ_TIMEOUT_MS / 1000) + '秒'; lastErr = new Error('Googleから返事が来ませんでした(' + Math.round(GEMINI_REQ_TIMEOUT_MS / 1000) + '秒)');
+              if (lastModel) continue; // 最後のモデルは諦めずにやり直す(2026-10-14 修正：ここで全部やめていた)
+              busy = true;
+            }
             else { rec.st = '通信エラー'; lastErr = e; }
             break;
           } finally { clearTimeout(tm); }
@@ -13670,6 +13688,107 @@ ${note}
     }
     if (!text) throw (lastErr || new Error('取得できませんでした'));
     return text;
+  }
+  // ===== 賢者のイシ用：答えを少しずつ受け取る呼び出し(2026-10-14 キング承認) =====
+  // Google公式リファレンスの streamGenerateContent(?alt=sse)。受け付けたか(200)が先に分かるので、
+  // 受け付けたら全体の上限(deadline)まで待ち、断られたら(503)・受け付けの返事がなければすぐ次のモデルへ。
+  // ※実際のGoogleがすぐ200を返し始めるかは開発環境から未確認(Googleに届かないため)。実機で確認する。
+  const GEMINI_ACCEPT_TIMEOUT_MS = 30000; // 受け付けの返事(最初の応答)を待つ上限
+  function geminiSseLine(line, acc){
+    line = line.replace(/\r$/, '');
+    if (!line.startsWith('data:')) return;
+    const payload = line.slice(5).trim(); if (!payload || payload === '[DONE]') return;
+    let j; try { j = JSON.parse(payload); } catch(e){ return; }
+    if (j.error) { acc.err = j.error; return; }
+    const parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
+    parts.forEach(pp => { if (pp && !pp.thought && pp.text) acc.out += pp.text; });
+  }
+  async function callGeminiStream(keys, body, deadline){
+    let lastErr = null, text = null;
+    geminiLastModel = null;
+    const left = () => deadline - Date.now();
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    for (let mi = 0; mi < GEMINI_MODELS.length && !text; mi++) {
+      const model = GEMINI_MODELS[mi], lastModel = (mi === GEMINI_MODELS.length - 1);
+      for (const apiKey of keys) {
+        let busy = false;
+        const maxAttempt = lastModel ? 5 : 2;
+        for (let attempt = 0; attempt < maxAttempt; attempt++) {
+          if (left() <= 1000) throw (lastErr || new Error('時間切れになりました'));
+          const rec = { n: geminiTrace.length + 1, t0: Date.now(), st: '返事待ち', ms: 0, model: model }; geminiTrace.push(rec);
+          const ac = new AbortController();
+          let accepted = false, dl = null;
+          const tm = setTimeout(() => ac.abort(), Math.min(GEMINI_ACCEPT_TIMEOUT_MS, left()));
+          try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${encodeURIComponent(apiKey)}`;
+            const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body, signal: ac.signal });
+            clearTimeout(tm);
+            rec.st = res.status; rec.ms = Date.now() - rec.t0;
+            if (!res.ok) {
+              let detail = '';
+              try { const ej = await res.json(); detail = (ej && ej.error && ej.error.message) ? ej.error.message : ''; } catch(e2){}
+              lastErr = new Error(describeGeminiError(res.status) + (detail ? `(詳細: ${detail})` : ''));
+              if (res.status === 429 && attempt === 0 && left() > 3000) { await sleep(1500); continue; }
+              if (res.status === 503 && attempt < maxAttempt - 1) {
+                const w = Math.min(2000 * Math.pow(2, attempt) + Math.random() * 1000, left() - 2000);
+                if (w > 0) { await sleep(w); continue; }
+              }
+              if (res.status === 503) busy = true;
+              break;
+            }
+            // 受け付けた：ここからは全体の上限まで待つ
+            accepted = true; rec.st = '受付→考え中';
+            dl = setTimeout(() => ac.abort(), Math.max(1000, left()));
+            const reader = res.body.getReader(), dec = new TextDecoder(), acc = { out:'', err:null };
+            let buf = '';
+            for (;;) {
+              const { value, done } = await reader.read();
+              if (done) break;
+              buf += dec.decode(value, { stream:true });
+              let i;
+              while ((i = buf.indexOf('\n')) >= 0) { geminiSseLine(buf.slice(0, i), acc); buf = buf.slice(i + 1); }
+            }
+            if (buf) geminiSseLine(buf, acc);
+            clearTimeout(dl);
+            rec.ms = Date.now() - rec.t0;
+            const out = acc.out.trim();
+            if (out) { text = out; lastErr = null; geminiLastModel = model; rec.st = '受付→完了'; }
+            else if (acc.err) {
+              rec.st = '受付→エラー' + (acc.err.code ? '(' + acc.err.code + ')' : '');
+              lastErr = new Error(describeGeminiError(acc.err.code || 500) + (acc.err.message ? `(詳細: ${acc.err.message})` : ''));
+              if (acc.err.code === 503) busy = true;
+            } else { rec.st = '受付→空の返事'; lastErr = new Error('賢者の返事が空でした'); }
+            break;
+          } catch(e){
+            clearTimeout(tm); if (dl) clearTimeout(dl);
+            rec.ms = Date.now() - rec.t0;
+            if (e && e.name === 'AbortError') {
+              if (accepted) { rec.st = '受付→考え中に時間切れ'; throw new Error('賢者が考えている途中で時間切れになりました'); }
+              rec.st = '受付なし' + Math.round(GEMINI_ACCEPT_TIMEOUT_MS / 1000) + '秒';
+              lastErr = new Error('Googleが受け付けませんでした(' + Math.round(GEMINI_ACCEPT_TIMEOUT_MS / 1000) + '秒)');
+              if (lastModel) continue; // 最後のモデルは上限までやり直す
+              busy = true; break;
+            }
+            rec.st = '通信エラー'; lastErr = e; break;
+          }
+        }
+        if (text || busy) break;
+      }
+    }
+    if (!text) throw (lastErr || new Error('取得できませんでした'));
+    return text;
+  }
+  // 全部失敗したときだけ：1行の短い質問を3つのモデルへ同時に送り、通るかを見る(原因が「質問の長さ」か「Googleの混雑」かの見分け)
+  async function geminiProbe(keys){
+    const body = JSON.stringify({ contents:[{ parts:[{ text:'「OK」とだけ返してください。' }] }] });
+    return Promise.all(GEMINI_MODELS.map(async model => {
+      const ac = new AbortController(), t0 = Date.now(), tm = setTimeout(() => ac.abort(), 20000);
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(keys[0])}`, { method:'POST', headers:{'Content-Type':'application/json'}, body, signal: ac.signal });
+        return { model: model, st: res.status, ms: Date.now() - t0 };
+      } catch(e){ return { model: model, st: (e && e.name === 'AbortError') ? '無応答20秒' : '通信エラー', ms: Date.now() - t0 }; }
+      finally { clearTimeout(tm); }
+    }));
   }
   async function fetchGoldMineContext(code, conditionSummary, btnEl){
     if (btnEl) { btnEl.disabled = true; btnEl.textContent = '検索中…'; }
