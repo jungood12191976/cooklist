@@ -7930,7 +7930,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       ${layer2}`;
   }
   // ===== ⚔️ 寄り付きの戦場：kabuステーション(PCの kabu_live.ps1) → Firebase → ここで読む =====
-  // 2026-10-14 キング承認：9:00〜9:15だけ5秒ごとに自動で読む／並びの初期値はVWAP乖離が大きい順／最初は上位5体／ゲージは±3%で端。
+  // 2026-10-14 キング承認：9:00〜9:30だけ5秒ごとに自動で読む（2026-10-14 キング指示で9:15→9:30）／並びの初期値はVWAP乖離が大きい順／最初は上位5体／ゲージは±3%で端。
   // 合言葉はリポジトリに入れない。専用リンク(…#lk=合言葉)を一度開くと、この端末の localStorage(ktq:liveKey)に保存される。
   const LIVE_FB = 'https://king-the-quest-live-default-rtdb.asia-southeast1.firebasedatabase.app';
   const LIVE_GAUGE_MAX = 3;      // VWAP乖離ゲージが端まで届く%(キング確認済み 2026-10-14)
@@ -7951,7 +7951,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   function liveInWindow(){
     if (typeof skyIsTradingDay === 'function' && !skyIsTradingDay(todayDateKey())) return false;
     const hm = liveJstNow().hm;
-    return hm >= 8*60+59 && hm < 9*60+16;
+    return hm >= 8*60+59 && hm < 9*60+31;
   }
   async function fetchSkyLive(){
     const key = lsGet('ktq:liveKey');
@@ -7976,7 +7976,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     skyLive.fetching = false; skyLive.fetchedAt = Date.now();
     updateSkyLivePanel();
   }
-  // 5秒ごと：天空の城を開いていて、画面が見えていて、9:00〜9:15のときだけ読む
+  // 5秒ごと：天空の城を開いていて、画面が見えていて、9:00〜9:30のときだけ読む
   setInterval(() => {
     if (screen === 'sky' && document.visibilityState === 'visible') {
       if (liveInWindow()) fetchSkyLive(); else updateSkyLivePanel();
@@ -8030,7 +8030,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   function skyLiveInnerHTML(){
     const title = '<div class="sky-section-title">⚔️ 寄り付きの戦場</div>';
     if (!lsGet('ktq:liveKey')) {
-      return `<div class="lv-top">${title}</div><div class="sky-empty-note">この端末はまだ合言葉が入っていません。専用リンクを一度開くと、ここに9:00〜9:15の戦況が出ます。</div>`;
+      return `<div class="lv-top">${title}</div><div class="sky-empty-note">この端末はまだ合言葉が入っていません。専用リンクを一度開くと、ここに9:00〜9:30の戦況が出ます。</div>`;
     }
     const d = skyLive.data;
     const inWin = liveInWindow();
