@@ -49,4 +49,9 @@ def main():
     print('::notice::完了 届いていた質問', len([l for l in lines if '"message"' in l]), '件 / 起こした数', fired, '/ URLの形', 'ok' if url.startswith('https://api.anthropic.com/v1/claude_code/routines/') and url.endswith('/fire') else 'NG')
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as e:
+        import traceback
+        print('::error::' + ' | '.join(traceback.format_exc().strip().splitlines()[-4:]))
+        raise
