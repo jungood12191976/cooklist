@@ -1,5 +1,5 @@
 """賢者のイシ(クロ)の中継：アプリが ntfy に送った質問を拾い、クロのルーティンを API トリガーで起こす。
-GitHub Actions から5分ごとに動く。ルーティンのURLとトークンは GitHub の Secrets(SAGE_ROUTINE_URL / SAGE_ROUTINE_TOKEN)。
+GitHub Actions から5分ごとに動く。ルーティンのURLとトークンは GitHub の Secrets(SAGEURL / SAGETOKEN。2026-10-14 キングの入力でアンダーバーが通らなかったため記号なしの名前に)。
 公式: https://code.claude.com/docs/en/routines (API trigger / /fire / text フィールド / beta ヘッダー)
 """
 import json, os, re, sys, pathlib, urllib.request

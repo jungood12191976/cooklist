@@ -24,8 +24,8 @@ jobs:
           restore-keys: sage-seen-
       - run: python3 scripts/sage_relay.py
         env:
-          SAGE_ROUTINE_URL: ${{ secrets.SAGE_ROUTINE_URL }}
-          SAGE_ROUTINE_TOKEN: ${{ secrets.SAGE_ROUTINE_TOKEN }}
+          SAGE_ROUTINE_URL: ${{ secrets.SAGEURL }}
+          SAGE_ROUTINE_TOKEN: ${{ secrets.SAGETOKEN }}
       - uses: actions/cache/save@v4
         if: always()
         with:

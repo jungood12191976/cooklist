@@ -670,6 +670,6 @@ corsproxyは廃止。stooqは除外。
 - 流れ：アプリ → ntfy(トピックはindex.htmlの`SAGE_RELAY_URL`) → GitHub Actions `sage-relay.yml`(5分ごと・`scripts/sage_relay.py`) → ルーティン「賢者のイシ：クロが質問に答える」(trig_01MDzMNXewuKVBX7VJTxxxpP・スケジュールなし) → シート「賢者」タブ(gid 254722726：qid/asked_at/question/answered_at/answer_json/status) → アプリがCSVで読む(調べ中があるあいだ1分ごと)。
 - 送る形：`{"qid":12桁英数小文字,"q":質問(1000字まで),"t":JST}`。ルーティンは同じqidが「完了」なら何もしない。中継は既読のntfyメッセージIDをActionsのキャッシュに保存して二重に起こさない。
 - 実機テスト(私がfire_triggerで1回)：約3分でシートに3パターン＋理由(出典・日付つき)＋notEnough が書かれた(qid testkuro01)。
-- キングの手作業(今回1回だけ)：①claude.ai/code/routines でこのルーティンにAPIトリガーを追加しトークン発行 ②GitHubのSecretsに SAGE_ROUTINE_URL と SAGE_ROUTINE_TOKEN を登録。これが済むまで中継は「Secrets未設定」で何もしない。
+- キングの手作業(今回1回だけ)：①claude.ai/code/routines でこのルーティンにAPIトリガーを追加しトークン発行 ②GitHubのSecretsに SAGEURL と SAGETOKEN を登録(当初の名前 SAGE_ROUTINE_URL 等はキングの入力でエラーになったため変更)。これが済むまで中継は「Secrets未設定」で何もしない。
 - 削除：Gemini版の材料づくり・プロンプト・streamGenerateContent呼び出し・短い質問テスト。`callGeminiKeys`は他の機能(金の鉱山など)が使うので残す。
 - ルーティンのモデルは作成時の既定(claude-opus-5-5)。利用枠を節約したいなら sonnet に下げられる(キング確認待ち)。
