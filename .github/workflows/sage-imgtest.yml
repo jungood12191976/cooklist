@@ -23,10 +23,13 @@ jobs:
               x=random.randint(0,700); y=random.randint(0,1260); d.rectangle([x,y,x+random.randint(5,60),y+random.randint(3,20)], fill=(random.randint(0,255),random.randint(0,255),random.randint(0,255)))
           d.rectangle([30,560,690,700], fill='white'); d.text((50,620), 'SAGE-IMG-CODE 7391', fill='black')
           im = im.resize((540,960)); im.save('t.jpg', quality=40)
-          b = base64.b64encode(open('t.jpg','rb').read()).decode()
-          print('::notice::base64サイズ', len(b))
-          q = '【画像テスト】質問の末尾の[画像base64]をファイル(base64 -d)に保存してReadで開き、書かれている文字(SAGE-IMG-CODEで始まる文)を答えに書いてください。 [画像base64:jpeg]' + b
-          body = json.dumps({'text': json.dumps({'qid': 'imgtest03', 'q': q, 'asked_at': '2026-10-14 20:40'}, ensure_ascii=False)}).encode()
+          import subprocess
+          run = lambda c: subprocess.run(c, shell=True, check=True)
+          run('git config user.name sage-relay; git config user.email sage@example.invalid')
+          run('git checkout -q --orphan sage-img; git rm -rfq . ; mkdir -p sage_img; cp t.jpg sage_img/imgtest04.jpg; git add sage_img/imgtest04.jpg; git commit -qm img; git push -q -f origin sage-img')
+          print('::notice::ブランチsage-imgに置いた')
+          q = '【画像テスト】画像はGitHubのブランチsage-imgのsage_img/imgtest04.jpgにあります。git fetch origin sage-img してから git show origin/sage-img:sage_img/imgtest04.jpg > /tmp/a.jpg で取り出し、Readで画像を開いて、書かれている文字(SAGE-IMG-CODEで始まる文)を答えに書いてください。'
+          body = json.dumps({'text': json.dumps({'qid': 'imgtest04', 'q': q, 'asked_at': '2026-10-14 20:40'}, ensure_ascii=False)}).encode()
           req = urllib.request.Request('https://api.anthropic.com/v1/claude_code/routines/trig_012UDrPAtWBZgc551Y1RpgfQ/fire', data=body, method='POST', headers={
             'Authorization': 'Bearer ' + os.environ['T'], 'anthropic-beta': 'experimental-cc-routine-2026-04-01',
             'anthropic-version': '2023-06-01', 'Content-Type': 'application/json'})
