@@ -13,7 +13,7 @@ def main():
     if not SEEN.exists(): SEEN.write_text('')  # キャッシュ保存が空振りで失敗しないように
     url, token = os.environ.get('SAGE_ROUTINE_URL', '').strip(), os.environ.get('SAGE_ROUTINE_TOKEN', '').strip()
     if not url or not token:
-        print('::notice::Secrets(SAGEURL / SAGETOKEN)が未設定のため何もしません'); return
+        print('::notice::未設定のため何もしません SAGEURL=' + ('あり' if url else 'なし') + ' / SAGETOKEN=' + ('あり' if token else 'なし')); return
     seen = set(SEEN.read_text().split()) if SEEN.exists() else set()
     with urllib.request.urlopen(TOPIC_URL + '/json?poll=1&since=40m', timeout=30) as r:
         lines = r.read().decode('utf-8', 'replace').splitlines()
