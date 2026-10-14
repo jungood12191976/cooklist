@@ -1,0 +1,33 @@
+name: sage-relay
+
+# 賢者のイシ(クロ)：アプリから届いた質問を5分ごとに拾い、クロのルーティンを起こす(scripts/sage_relay.py)。
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency: sage-relay
+
+jobs:
+  relay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache/restore@v4
+        with:
+          path: .sage_seen
+          key: sage-seen-${{ github.run_id }}
+          restore-keys: sage-seen-
+      - run: python3 scripts/sage_relay.py
+        env:
+          SAGE_ROUTINE_URL: ${{ secrets.SAGE_ROUTINE_URL }}
+          SAGE_ROUTINE_TOKEN: ${{ secrets.SAGE_ROUTINE_TOKEN }}
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: .sage_seen
+          key: sage-seen-${{ github.run_id }}

@@ -664,3 +664,12 @@ corsproxyは廃止。stooqは除外。
 - PC側 kabu_live.ps1：毎サイクル取得済みの売買代金ランキング(Type=4・東証プライム)を、9:05と9:10の最初のサイクルで1回ずつ Firebase `/live/<合言葉>/snap/a|b` に保存（{u, rk4:[{c,no,p,to(百万円),cp}], op:{コード:始値}}）。-Once では保存しない。追加のAPI呼び出しなし。朝の起動時の削除で前日分も消える。
 - アプリ側 `buildMornPanel`：snap を読む（9:05〜9:35は20秒ごと、それ以外は10分ごと）。日経225で絞って売買代金順に並べ直し、①前日下落(Yahoo日足) ②225中 MORN_TOP_N=50 位以内 ③その時点の値段＞始値（kabu板の始値、無ければYahoo日足の始値。10/14に25銘柄で両者一致を確認）。試験用の診断表示と手動ボタンは削除。
 - 注意：kabuランキングに何位まで載るか未確認。ランキングに出ていない225銘柄は判定対象外になる。翌朝の実データで「ランキングに入っていた日経225：N銘柄」を確認する。
+## 2026-10-14d 賢者のイシ：頭脳をGeminiからクロへ(キング指示・A方式)
+- キング：「Geminiは使えないので削除、中身だけクロに。フォーマット・文章は今のまま」。
+- 確認済み：ルーティンのAPIトリガー(/fire)はブラウザから直接呼べない(preflightのOPTIONSに405・CORSヘッダーなし。2026-10-14 実測)。
+- 流れ：アプリ → ntfy(トピックはindex.htmlの`SAGE_RELAY_URL`) → GitHub Actions `sage-relay.yml`(5分ごと・`scripts/sage_relay.py`) → ルーティン「賢者のイシ：クロが質問に答える」(trig_01MDzMNXewuKVBX7VJTxxxpP・スケジュールなし) → シート「賢者」タブ(gid 254722726：qid/asked_at/question/answered_at/answer_json/status) → アプリがCSVで読む(調べ中があるあいだ1分ごと)。
+- 送る形：`{"qid":12桁英数小文字,"q":質問(1000字まで),"t":JST}`。ルーティンは同じqidが「完了」なら何もしない。中継は既読のntfyメッセージIDをActionsのキャッシュに保存して二重に起こさない。
+- 実機テスト(私がfire_triggerで1回)：約3分でシートに3パターン＋理由(出典・日付つき)＋notEnough が書かれた(qid testkuro01)。
+- キングの手作業(今回1回だけ)：①claude.ai/code/routines でこのルーティンにAPIトリガーを追加しトークン発行 ②GitHubのSecretsに SAGE_ROUTINE_URL と SAGE_ROUTINE_TOKEN を登録。これが済むまで中継は「Secrets未設定」で何もしない。
+- 削除：Gemini版の材料づくり・プロンプト・streamGenerateContent呼び出し・短い質問テスト。`callGeminiKeys`は他の機能(金の鉱山など)が使うので残す。
+- ルーティンのモデルは作成時の既定(claude-opus-5-5)。利用枠を節約したいなら sonnet に下げられる(キング確認待ち)。
