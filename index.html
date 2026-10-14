@@ -3223,26 +3223,19 @@
     }
     return wrap;
   }
-  // ===== 🌅 朝の答え(試験)（キング指示 2026-10-05）：9:05版と9:10版。朝のうちに「取れるか・何秒かかるか・遅れはあるか」を自分の目で確かめるための試験パネル =====
-  // 候補＝①前日終値が前々日より下落 ②9:0x時点の売買代金が225銘柄中の上位N位以内 ③9:0x時点の価格が最初の足の始値より上。
+  // ===== 🌅 朝の答え（2026-10-05 試験で開始 → 2026-10-14 キング承認で kabu データに切替）=====
+  // Yahooの5分足は9:00の足が抜ける(10/14に実データで確認)ため、PCの kabu_live.ps1 が 9:05/9:10 に保存する
+  // 「売買代金ランキング(東証プライム・kabu)」の写し(/live/<合言葉>/snap/a|b)を読む。アプリを開いていなくても後から見られる。
+  // 候補＝①前日終値が前々日より下落(Yahoo日足) ②その時点の売買代金が日経225の中で上位N位以内(kabuランキングを225で絞って並べ直す)
+  //       ③その時点の値段が今日の始値より上(始値はkabuの板。板が無い銘柄はYahoo日足の始値。10/14に両者一致を25銘柄で確認)。
   // MORN_TOP_N=50 はキングが数字を見て指摘した値(仮置き。決定ではない)。変えるならこの1か所だけ。
   const MORN_TOP_N = 50;
+  const MORN_FB = 'https://king-the-quest-live-default-rtdb.asia-southeast1.firebasedatabase.app';
   const MORN_SLOTS = [
-    { key:'a', label:'9:05版', at:545, last:'09:00' }, // 9:05に取りに行く。使う足＝9:00の足(9:00〜9:05)まで
-    { key:'b', label:'9:10版', at:550, last:'09:05' }  // 9:10に取りに行く。使う足＝9:05の足(9:05〜9:10)まで
+    { key:'a', label:'9:05の答え', at:545 },
+    { key:'b', label:'9:10の答え', at:550 }
   ];
-  let mornTimer = null, mornRunning = {}, mornMem = {}, mornDailyCache = null;
-  function mornKey(slotKey, manual){ return 'kq_morn_' + todayDateKey() + '_' + slotKey + (manual ? '_m' : ''); }
-  function mornLoad(slotKey){
-    if (mornMem[slotKey] && mornMem[slotKey].day === todayDateKey()) return mornMem[slotKey];
-    mornMem[slotKey] = null;
-    try { const a = localStorage.getItem(mornKey(slotKey, false)); if (a) return (mornMem[slotKey] = JSON.parse(a)); } catch(e){}
-    return null;
-  }
-  function mornSave(slotKey, res){
-    mornMem[slotKey] = res;
-    try { localStorage.setItem(mornKey(slotKey, !!res.manual), JSON.stringify(res)); } catch(e){}
-  }
+  let mornTimer = null, mornDailyCache = null, mornState = { snaps:{}, at:0, loading:false, err:null, day:'' };
   async function mornPool(items, fn, n){
     let i = 0; const out = new Array(items.length);
     async function w(){ while (i < items.length) { const k = i++; out[k] = await fn(items[k]); } }
@@ -3264,74 +3257,76 @@
     return null;
   }
   function mornCodes(){ return NIKKEI225.map(c => String(c).replace(/\.T$/i, '')); }
-  // 日足(前日・前々日の終値)。同じ日のうちは使い回す
+  // 日足：前日・前々日の終値と、今日の始値(あれば)。今日の始値がまだ無い銘柄があれば、次に呼ばれた時に取り直す
   async function mornDaily(){
-    if (mornDailyCache && mornDailyCache.day === todayDateKey()) return mornDailyCache.map;
-    const codes = mornCodes(); const map = {};
+    const today = todayDateKey();
+    if (mornDailyCache && mornDailyCache.day === today && mornDailyCache.openN >= 200) return mornDailyCache;
+    const codes = mornCodes(); const close = {}, open = {}; let openN = 0;
     await mornPool(codes, async c => {
       const r = await mornGet(c + '.T', '1d', '5d'); if (!r) return;
       const q = r.indicators.quote[0]; const m = {};
-      r.timestamp.forEach((t, i) => { if (q.close[i] != null) m[new Date((t + 32400) * 1000).toISOString().slice(0, 10)] = q.close[i]; });
-      map[c] = m;
+      r.timestamp.forEach((t, i) => {
+        const d = new Date((t + 32400) * 1000).toISOString().slice(0, 10);
+        if (d < today && q.close[i] != null) m[d] = q.close[i];
+        if (d === today && q.open[i] != null) { open[c] = q.open[i]; openN++; }
+      });
+      close[c] = m;
     }, 10);
-    mornDailyCache = { day: todayDateKey(), map };
-    return map;
+    mornDailyCache = { day: today, close, open, openN };
+    return mornDailyCache;
   }
-  async function mornRun(slot, manual){
-    if (mornRunning[slot.key]) return;
-    mornRunning[slot.key] = true; mornFill();
-    const t0 = Date.now(); const codes = mornCodes();
-    let res;
+  async function mornLoadSnaps(){
+    const key = lsGet('ktq:liveKey');
+    if (!key || mornState.loading) return;
+    mornState.loading = true;
     try {
-      const [daily, intra] = await Promise.all([mornDaily(), mornPool(codes, async c => ({ c, r: await mornGet(c + '.T', '5m', '1d') }), 10)]);
-      const hm = (t, gmt) => { const d = new Date((t + gmt) * 1000); return d.toISOString().slice(11, 16); };
-      let barDate = ''; const rows = []; let got = 0, cntLast = 0, has0900 = 0, lastSeen = '', rmtMax = 0, dailyOk = 0;
-      intra.forEach(o => { if (o.r && o.r.meta && o.r.meta.regularMarketTime) rmtMax = Math.max(rmtMax, o.r.meta.regularMarketTime); });
-      intra.forEach(o => {
-        const r = o.r; if (!r) return; const gmt = r.meta.gmtoffset || 32400; const q = r.indicators.quote[0];
-        const bars = []; r.timestamp.forEach((t, i) => { if (q.close[i] != null && q.open[i] != null) bars.push({ d: new Date((t + gmt) * 1000).toISOString().slice(0, 10), m: hm(t, gmt), o: q.open[i], c: q.close[i], v: q.volume[i] || 0 }); });
-        if (!bars.length) return;
-        const day = bars[bars.length - 1].d; if (day > barDate) barDate = day;
-      });
-      intra.forEach(o => {
-        const r = o.r; if (!r) return; const gmt = r.meta.gmtoffset || 32400; const q = r.indicators.quote[0];
-        const bars = []; r.timestamp.forEach((t, i) => { if (q.close[i] != null && q.open[i] != null) bars.push({ d: new Date((t + gmt) * 1000).toISOString().slice(0, 10), m: hm(t, gmt), o: q.open[i], c: q.close[i], v: q.volume[i] || 0 }); });
-        const today = bars.filter(b => b.d === barDate);
-        if (today.length && today[today.length - 1].m > lastSeen) lastSeen = today[today.length - 1].m;
-        const use = today.filter(b => b.m <= slot.last); if (!use.length) return;
-        got++; if (use[use.length - 1].m === slot.last) cntLast++; if (use[0].m === '09:00') has0900++;
-        const dm = daily[o.c] || {}; const ds = Object.keys(dm).filter(k => k < barDate).sort();
-        let prevRet = null; if (ds.length >= 2) { dailyOk++; prevRet = dm[ds[ds.length - 1]] / dm[ds[ds.length - 2]] - 1; }
-        const open = use[0].o, sig = use[use.length - 1].c;
-        rows.push({ c: o.c, prevRet, up: sig / open - 1, val: use.reduce((a, b) => a + b.v * b.c, 0) });
-      });
-      rows.sort((a, b) => b.val - a.val); rows.forEach((x, i) => { x.rank = i + 1; });
-      const cand = rows.filter(x => x.prevRet != null && x.prevRet < 0 && x.up > 0 && x.rank <= MORN_TOP_N);
-      const now = new Date();
-      res = {
-        manual: !!manual, day: todayDateKey(), barDate, ranAt: now.toTimeString().slice(0, 8), sec: Math.round((Date.now() - t0) / 100) / 10,
-        total: codes.length, got, cntLast, has0900, dailyOk, lastSeen,
-        delayMin: rmtMax ? Math.round((Date.now() / 1000 - rmtMax) / 6) / 10 : null,
-        status: cntLast >= 150 ? 'ok' : (cntLast >= 30 ? 'part' : 'fail'),
-        cand: cand.slice(0, 10).map(x => ({ c: x.c, p: x.prevRet, u: x.up, r: x.rank })), candN: cand.length
-      };
-    } catch(e){
-      res = { manual: !!manual, day: todayDateKey(), ranAt: new Date().toTimeString().slice(0, 8), sec: Math.round((Date.now() - t0) / 100) / 10, status: 'fail', err: String(e && e.message || e), total: codes.length, got: 0, cntLast: 0, has0900: 0, cand: [], candN: 0 };
-    }
-    mornRunning[slot.key] = false; mornSave(slot.key, res); mornFill();
+      const res = await fetch(`${MORN_FB}/live/${encodeURIComponent(key)}/snap.json`, { cache:'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const s = await res.json() || {};
+      const today = todayDateKey(); const snaps = {};
+      MORN_SLOTS.forEach(sl => { const x = s[sl.key]; if (x && typeof x.u === 'string' && x.u.slice(0, 10) === today && Array.isArray(x.rk4)) snaps[sl.key] = x; });
+      const need = MORN_SLOTS.some(sl => snaps[sl.key]);
+      const daily = need ? await mornDaily() : null;
+      MORN_SLOTS.forEach(sl => { if (snaps[sl.key]) snaps[sl.key].res = mornJudge(snaps[sl.key], daily); });
+      mornState.snaps = snaps; mornState.err = null; mornState.day = today;
+    } catch(e){ mornState.err = String(e && e.message || e); }
+    mornState.loading = false; mornState.at = Date.now();
+    mornFill();
+  }
+  // 1枚の写しから候補を出す(条件はキング確定の3つのまま)
+  function mornJudge(snap, daily){
+    const set = new Set(mornCodes());
+    const rows = snap.rk4.filter(a => a && set.has(String(a.c)))
+      .map(a => ({ c: String(a.c), no: a.no, p: a.p, to: a.to }))
+      .sort((x, y) => (x.no || 999) - (y.no || 999));
+    rows.forEach((x, i) => { x.rank = i + 1; });
+    const op = snap.op || {};
+    const out = []; let noOpen = 0;
+    rows.forEach(x => {
+      if (x.rank > MORN_TOP_N || x.p == null) return;
+      const dm = (daily && daily.close[x.c]) || {}; const ds = Object.keys(dm).sort();
+      if (ds.length < 2) return;
+      const prevRet = dm[ds[ds.length - 1]] / dm[ds[ds.length - 2]] - 1;
+      const open = op[x.c] != null ? op[x.c] : (daily && daily.open[x.c]);
+      if (open == null) { noOpen++; return; }
+      const up = x.p / open - 1;
+      if (prevRet < 0 && up > 0) out.push({ c: x.c, prevRet, up, rank: x.rank, to: x.to });
+    });
+    return { n225: rows.length, cand: out, noOpen };
   }
   function mornVisible(){
     const j = battleJst();
     return skyIsTradingDay(todayDateKey()) && j.min >= 8 * 60 && j.min < 15 * 60 + 35;
   }
   function mornTick(){
+    if (!skyIsTradingDay(todayDateKey())) { mornFill(); return; }
     const j = battleJst();
-    if (!skyIsTradingDay(todayDateKey())) return;
-    MORN_SLOTS.forEach(s => {
-      const done = mornLoad(s.key); if ((done && !done.manual) || mornRunning[s.key]) return;
-      if (j.min >= s.at && j.min < s.at + 5) mornRun(s, false);
-    });
-    mornFill();
+    const missing = MORN_SLOTS.some(s => !mornState.snaps[s.key]);
+    const stale = mornState.day !== todayDateKey();
+    // 9:05〜9:35は写しが届くまで20秒ごと。それ以外は開いた時に1回
+    const wait = (j.min >= 545 && j.min < 575 && missing) ? 20000 : 10 * 60000;
+    if (document.visibilityState === 'visible' && mornVisible() && (stale || !mornState.at || Date.now() - mornState.at > wait)) mornLoadSnaps();
+    else mornFill();
   }
   function mornFill(){
     const wrap = document.getElementById('mornPanel'); if (!wrap) return;
@@ -3339,38 +3334,43 @@
     wrap.querySelectorAll('.morn-body').forEach(n => n.remove());
     const body = document.createElement('div'); body.className = 'morn-body';
     const j = battleJst();
+    const line = (txt, css) => { const d = document.createElement('div'); d.style.cssText = css; d.textContent = txt; return d; };
+    if (!lsGet('ktq:liveKey')) {
+      body.appendChild(line('この端末はまだ合言葉が入っていません。専用リンクを一度開くと、ここにPCのkabuから答えが届きます。', 'font-size:13px;color:#9aa4cc;line-height:1.6;'));
+      wrap.appendChild(body); return;
+    }
     MORN_SLOTS.forEach(s => {
       const box = document.createElement('div'); box.style.cssText = 'border-top:1px solid rgba(255,215,107,.25);padding:8px 0 6px;';
-      const res = mornLoad(s.key);
-      const hh = '9:' + String(s.at - 540).padStart(2, '0');
-      let head = '', sub = '';
-      if (mornRunning[s.key]) { head = `⏳ ${s.label}：取りに行っています…`; }
-      else if (!res) { head = `🕘 ${s.label}：${hh}になったら自動で取ります`; if (j.min >= s.at + 5) sub = 'アプリを開いたのが遅かったので自動では取っていません。下のボタンで試せます。'; }
-      else {
-        const mark = res.status === 'ok' ? '✅' : res.status === 'part' ? '⚠️' : '❌';
-        const word = res.status === 'ok' ? '取れた' : res.status === 'part' ? '一部だけ取れた' : '取れなかった';
-        head = `${mark} ${s.label}：${res.ranAt}に${word}（${res.sec}秒）${res.manual ? '【手動】' : ''}`;
-        sub = `${s.last}の足が取れた ${res.cntLast}/${res.total}銘柄 ・ 9:00の足あり ${res.has0900}銘柄 ・ 最後の足 ${res.lastSeen || 'なし'} ・ Yahoo時刻の遅れ ${res.delayMin == null ? '不明' : res.delayMin + '分'}${res.barDate && res.barDate !== res.day ? ' ・ ※データは ' + res.barDate + ' のもの' : ''}${res.err ? ' ・ エラー ' + res.err : ''}`;
-      }
-      const h = document.createElement('div'); h.style.cssText = 'font-size:16px;font-weight:bold;color:#ffd76b;line-height:1.5;'; h.textContent = head; box.appendChild(h);
-      if (sub) { const d = document.createElement('div'); d.style.cssText = 'font-size:12px;color:#9aa4cc;line-height:1.6;'; d.textContent = sub; box.appendChild(d); }
-      if (res && res.cand) {
-        const d = document.createElement('div'); d.style.cssText = 'font-size:13px;color:#e6eeff;margin-top:4px;'; d.textContent = `候補 ${res.candN}銘柄（①前日下落 ②売買代金${MORN_TOP_N}位以内 ③始値より上）` + (res.candN > res.cand.length ? `　※上位${res.cand.length}件を表示` : ''); box.appendChild(d);
-        res.cand.forEach(x => {
-          const nm = nameFor(x.c); const l = document.createElement('div'); l.style.cssText = 'font-size:13px;color:#cfd8ff;line-height:1.6;';
-          l.textContent = `${x.c} ${nm || ''}　前日 ${(x.p * 100).toFixed(1)}%　寄り後 +${(x.u * 100).toFixed(2)}%　売買代金${x.r}位`; box.appendChild(l);
+      const snap = mornState.snaps[s.key];
+      const head = 'font-size:16px;font-weight:bold;color:#ffd76b;line-height:1.5;';
+      const sub = 'font-size:12px;color:#9aa4cc;line-height:1.6;';
+      if (!snap) {
+        box.appendChild(line(`${s.label}`, head));
+        box.appendChild(line(mornState.loading ? '読みに行っています…'
+          : (j.min < s.at ? `${'9:' + String(s.at - 540).padStart(2, '0')}になると、PCのkabuから届きます` : 'まだ届いていません（PCのkabuが動いていない可能性があります）'), sub));
+      } else {
+        const ut = new Date(snap.u); const hms = `${ut.getHours()}:${String(ut.getMinutes()).padStart(2,'0')}:${String(ut.getSeconds()).padStart(2,'0')}`;
+        const r = snap.res || { cand: [], n225: 0, noOpen: 0 };
+        box.appendChild(line(`${s.label}　候補 ${r.cand.length}銘柄`, head));
+        box.appendChild(line(`kabu ${hms} 時点　（売買代金ランキングに入っていた日経225：${r.n225}銘柄）`, sub));
+        if (!r.cand.length) box.appendChild(line('3つの条件をすべて満たす銘柄はありませんでした。', 'font-size:13px;color:#cfd8ff;margin-top:4px;'));
+        r.cand.forEach(x => {
+          const row = document.createElement('div'); row.style.cssText = 'margin-top:6px;line-height:1.45;';
+          row.appendChild(line(`${nameFor(x.c) || x.c}`, 'font-size:15px;font-weight:bold;color:#e6eeff;'));
+          row.appendChild(line(`${x.c}　前日 ${(x.prevRet * 100).toFixed(1)}%　始値から +${(x.up * 100).toFixed(2)}%　売買代金 225中${x.rank}位${x.to != null ? '（' + (x.to / 100).toFixed(0) + '億円）' : ''}`, 'font-size:13px;color:#cfd8ff;'));
+          box.appendChild(row);
         });
+        if (r.noOpen) box.appendChild(line(`始値がまだ分からず判定できなかった銘柄：${r.noOpen}`, sub));
       }
-      const btn = document.createElement('button'); btn.className = 'rpg-settings-link'; btn.style.cssText = 'margin-top:6px;font-size:12px;'; btn.textContent = '🧪 いま試す（手動）';
-      btn.disabled = !!mornRunning[s.key]; btn.addEventListener('click', () => { mornRun(s, true); }); box.appendChild(btn);
       body.appendChild(box);
     });
-    const note = document.createElement('div'); note.style.cssText = 'font-size:11px;color:#8a93b8;margin-top:6px;line-height:1.6;'; note.textContent = '試験中です。朝のあいだアプリを開いたままにしてください。結果はこの端末に保存されます。'; body.appendChild(note);
+    body.appendChild(line(`条件：①前日に下げた ②売買代金が日経225の中で${MORN_TOP_N}位以内 ③今の値段が始値より上`, 'font-size:11px;color:#8a93b8;margin-top:6px;line-height:1.6;'));
+    if (mornState.err) body.appendChild(line('読めませんでした：' + mornState.err, 'font-size:11px;color:#ff9a9a;'));
     wrap.appendChild(body);
   }
   function buildMornPanel(){
     const wrap = document.createElement('div'); wrap.className = 'pw'; wrap.id = 'mornPanel';
-    const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = '🌅 朝の答え（試験）'; wrap.appendChild(t);
+    const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = '🌅 朝の答え'; wrap.appendChild(t);
     if (!mornTimer) { mornTimer = setInterval(mornTick, 10000); setTimeout(mornTick, 1500); }
     setTimeout(mornFill, 0);
     return wrap;
@@ -13054,7 +13054,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-14d';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-14e';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
