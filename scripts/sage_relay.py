@@ -26,10 +26,18 @@ def main():
         if ev.get('event') != 'message': continue
         mid = str(ev.get('id', ''))
         if not mid or mid in seen: continue
-        try: body = json.loads(ev.get('message', ''))
+        # 4KBを超える長い質問(手紙つき)は、ntfyが自動で添付ファイル(attachment.json)にして届ける(実験で確認済み)
+        raw = ev.get('message', '')
+        att = ev.get('attachment') or {}
+        if att.get('url', '').startswith('https://ntfy.sh/file/') and 0 < int(att.get('size', 0)) <= 60000:
+            try:
+                with urllib.request.urlopen(att['url'], timeout=30) as ar: raw = ar.read().decode('utf-8', 'replace')
+            except Exception as e:
+                print('::warning::添付を取れませんでした', mid, e); continue  # 次の回にやり直す
+        try: body = json.loads(raw)
         except Exception: seen.add(mid); continue
         qid, q = str(body.get('qid', '')), str(body.get('q', '')).strip()
-        if not re.fullmatch(r'[0-9a-z]{6,24}', qid) or not q or len(q) > 1000:
+        if not re.fullmatch(r'[0-9a-z]{6,24}', qid) or not q or len(q) > 4500:
             seen.add(mid); continue
         if fired >= MAX_FIRE: break
         text = json.dumps({'qid': qid, 'q': q, 'asked_at': body.get('t', '')}, ensure_ascii=False)

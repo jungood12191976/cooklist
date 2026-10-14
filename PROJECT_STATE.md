@@ -676,3 +676,10 @@ corsproxyは廃止。stooqは除外。
 - 2026-10-14 追記：ルーティンは キングが Claude Code のルーティン画面で作り直したもの(trig_012UDrPAtWBZgc551Y1RpgfQ・Sonnet 5.5・コネクタはGoogle Sheetsだけ・リポジトリcooklist)。私が作った trig_01MDzMNXewuKVBX7VJTxxxpP は停止。API トリガーは Claude Code のルーティン画面でしか付けられない(Claudeアプリ側の「スケジュールタスクを編集」には項目なし)。
 - ルーティンのURLは秘密ではないので `scripts/sage_relay.py` の `ROUTINE_URL` に直書き。GitHub Secrets は **SAGETOKEN だけ**使う(SAGEURL は中身が不正だったため使わない)。中継の結果は Actions の注記(annotation)に出る＝公開APIの check-runs/<job>/annotations で読める。
 - 14:3x JST 実機通しテスト：アプリの質問(qid bjedawop641v)→中継が起こす(200)→クロが「調べ中」を書いた、まで確認。
+
+## 2026-10-14h 賢者のイシ「✉️ 手紙をつける」(画像添付・キング承認、名前もキング指定)
+- 方式：アプリが画像(スマホのスクショ)を長辺1280pxのJPEGに縮め → Geminiで「文字と数字だけ」読み取り(`sageReadLetter`・`SAGE_LETTER_MODELS`＝3.5-flash-lite→3.6-flash→3.8-flash。実験で一番速く通った順) → 質問の後ろに「【手紙(画像)から読み取った内容】」として足して送る。画像そのものは保存も送信もしない(クロに渡るのは文字だけ)。読めなかったら「文章だけで送りました」と出して文章だけ送る。
+- 試して不可だった道(2026-10-14実測)：①ntfyの画像URLをクロに開かせる→クロの実行環境から開けない ②base64を質問に混ぜる→/fireのtextは65536字上限＋クロが長い文字列を正確に書き写せない ③GitHubブランチ経由→クロの環境でgit操作が拒否された。
+- 質問の長さ：アプリ側は本文1000字＋手紙2800字まで。4KBを超えるとntfyが自動で添付ファイル(attachment.json)にして届ける(実験で確認)ので、`scripts/sage_relay.py`が添付URLを取りに行って読む(60000バイトまで)。中継の上限は4500字。
+- Geminiの画像読みは混雑(503)で遅くなることがある(実測：3.6が503→3.8が40秒無応答→lite成功で約50秒)。
+- 実験用の`imgtest.html`と一時ワークフローは削除済み。試験用ブランチ`sage-img`がリモートに残っている(この環境からは消せない・中身は試験画像だけ)。

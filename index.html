@@ -348,6 +348,12 @@
   .sg-lab{ font-size:13px; font-weight:bold; color:#ffe9a8; margin-bottom:6px; }
   .sg-ask{ display:block; width:100%; margin-top:10px; padding:11px 10px; font-size:15px; font-weight:bold; font-family:inherit; color:#1a1440; background:linear-gradient(#ffe9a8,#e3b94e); border:2px solid #fff3c8; border-radius:10px; box-shadow:0 3px 0 rgba(0,0,0,.35); cursor:pointer; }
   .sg-ask:disabled{ opacity:.55; cursor:default; }
+  .sg-letter-row{ display:flex; align-items:center; gap:10px; margin-top:10px; }
+  .sg-letter{ padding:8px 14px; font-size:13.5px; font-family:inherit; color:#e9eeff; background:rgba(120,150,255,.16); border:1.5px solid rgba(157,180,255,.5); border-radius:10px; }
+  .sg-letter:disabled{ opacity:.55; }
+  .sg-letter-thumb{ width:40px; height:40px; object-fit:cover; border-radius:6px; border:1.5px solid #ffe9a8; }
+  .sg-letter-txt{ font-size:13px; color:#ffe9a8; }
+  .sg-letter-x{ margin-left:auto; width:32px; height:32px; font-size:14px; color:#e9eeff; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.3); border-radius:50%; }
   .sg-note{ font-size:11.5px; color:#9db4ff; line-height:1.65; margin-top:8px; }
   .sg-warn{ font-size:12.5px; color:#ffb48a; line-height:1.65; margin-top:8px; }
   .sg-ans{ font-size:15px; color:#fff; line-height:1.75; margin:4px 0 8px; }
@@ -8810,16 +8816,54 @@ ${keywordLine}${bpBlock}${conditionBlock}
     }, 60000);
   }
 
+  // 手紙(画像)：スマホのスクショを小さくして、Geminiに「文字だけ」読み取ってもらい、質問の後ろに足して送る。
+  // 画像そのものはどこにも保存せず、クロにも渡らない(クロに渡るのは文字だけ)。2026-10-14 キング承認(名前は「手紙をつける」)
+  const SAGE_LETTER_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-3.8-flash']; // 実験(imgtest.html)で一番速く通った順
+  const SAGE_Q_MAX = 1000, SAGE_LETTER_MAX = 2800;
+  function sageShrinkLetter(file){
+    return new Promise((res, rej) => {
+      const url = URL.createObjectURL(file), im = new Image();
+      im.onload = () => {
+        const draw = (maxSide) => { const sc = Math.min(1, maxSide / Math.max(im.width, im.height)); const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(im.width * sc)); c.height = Math.max(1, Math.round(im.height * sc)); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); return c; };
+        const big = draw(1280), small = draw(96);
+        const b64 = big.toDataURL('image/jpeg', 0.75).split(',')[1], thumb = small.toDataURL('image/jpeg', 0.7);
+        URL.revokeObjectURL(url); res({ b64: b64, thumb: thumb });
+      };
+      im.onerror = () => { URL.revokeObjectURL(url); rej(new Error('画像を開けませんでした')); };
+      im.src = url;
+    });
+  }
+  async function sageReadLetter(b64){
+    const keys = (geminiKeys && geminiKeys.length) ? geminiKeys : (geminiKey ? [geminiKey] : []);
+    if (!keys.length) throw new Error('キーなし');
+    const prompt = 'この画像に写っている文字と数字を、見えるとおりに書き出してください。推測は書かず、読めない所は「読めない」と書いてください。';
+    const body = JSON.stringify({ contents:[{ parts:[{ text: prompt }, { inline_data:{ mime_type:'image/jpeg', data: b64 } }] }] });
+    return await callGeminiKeys(keys, body, SAGE_LETTER_MODELS);
+  }
+
   // 質問を送る(中継へ)
   async function sageAsk(){
     const q = sageState.q.trim();
     if (!q || sageState.sending) return;
-    sageState.sending = true; sageState.sendErr = null; render();
+    sageState.sending = true; sageState.sendErr = null; sageState.notice = null; sageState.sendMsg = null;
+    const letter = sageState.letter;
+    if (letter) sageState.sendMsg = '✉️ 手紙を読んでいます…';
+    render();
+    let sendQ = q.slice(0, SAGE_Q_MAX);
+    if (letter) {
+      try {
+        const txt = (await sageReadLetter(letter.b64)).trim();
+        if (txt) sendQ += '\n\n【手紙(画像)から読み取った内容】\n' + txt.slice(0, SAGE_LETTER_MAX);
+        else sageState.notice = '手紙は読めなかったので、文章だけで送りました。';
+      } catch(e) { sageState.notice = '手紙は読めなかったので、文章だけで送りました。'; }
+      sageState.letter = null;
+      sageState.sendMsg = null;
+    }
     const qid = sageNewId(), t = sageJstNow();
     let ok = false;
-    try { const res = await fetch(SAGE_RELAY_URL, { method:'POST', body: JSON.stringify({ qid: qid, q: q.slice(0, 1000), t: t }), headers:{ 'Content-Type':'text/plain' } }); ok = res.ok; } catch(e) { ok = false; }
-    if (ok) { const o = sageAskedLoad(); o[qid] = { q: q.slice(0, 1000), at: Date.now(), t: t }; sageAskedSave(o); sageState.q = ''; sageEnsurePoll(); }
-    else sageState.sendErr = '送れませんでした。電波を確認して、もう一度どうぞ';
+    try { const res = await fetch(SAGE_RELAY_URL, { method:'POST', body: JSON.stringify({ qid: qid, q: sendQ, t: t }), headers:{ 'Content-Type':'text/plain' } }); ok = res.ok; } catch(e) { ok = false; }
+    if (ok) { const o = sageAskedLoad(); o[qid] = { q: q.slice(0, SAGE_Q_MAX), at: Date.now(), t: t }; sageAskedSave(o); sageState.q = ''; sageEnsurePoll(); }
+    else { sageState.sendErr = '送れませんでした。電波を確認して、もう一度どうぞ'; sageState.notice = null; }
     sageState.sending = false;
     if (screen === 'sage') render();
   }
@@ -8865,13 +8909,33 @@ ${keywordLine}${bpBlock}${conditionBlock}
     ta.placeholder = '例：キオクシアが下がった背景について、海外の見方は？'; ta.value = sageState.q;
     ta.addEventListener('input', () => { sageState.q = ta.value; });
     inp.appendChild(ta);
-    const btn = document.createElement('button'); btn.className = 'sg-ask'; btn.textContent = sageState.sending ? '🔮 送っています…' : '🔮 賢者に聞く';
+    // 手紙(画像)をつける
+    const lrow = document.createElement('div'); lrow.className = 'sg-letter-row';
+    const fin = document.createElement('input'); fin.type = 'file'; fin.accept = 'image/*'; fin.style.display = 'none';
+    fin.addEventListener('change', async () => {
+      const f = fin.files && fin.files[0]; if (!f) return;
+      try { sageState.letter = await sageShrinkLetter(f); sageState.notice = null; } catch(e) { sageState.notice = '手紙(画像)を開けませんでした。別の画像でもう一度どうぞ'; }
+      render();
+    });
+    lrow.appendChild(fin);
+    if (sageState.letter) {
+      const th = document.createElement('img'); th.className = 'sg-letter-thumb'; th.src = sageState.letter.thumb; th.alt = '手紙'; lrow.appendChild(th);
+      const lt = document.createElement('span'); lt.className = 'sg-letter-txt'; lt.textContent = '✉️ 手紙をつけました'; lrow.appendChild(lt);
+      const lx = document.createElement('button'); lx.className = 'sg-letter-x'; lx.textContent = '✕'; lx.setAttribute('aria-label', '手紙をはずす'); lx.disabled = sageState.sending;
+      lx.addEventListener('click', () => { sageState.letter = null; render(); }); lrow.appendChild(lx);
+    } else {
+      const lb = document.createElement('button'); lb.className = 'sg-letter'; lb.textContent = '✉️ 手紙をつける'; lb.disabled = sageState.sending;
+      lb.addEventListener('click', () => { fin.click(); }); lrow.appendChild(lb);
+    }
+    inp.appendChild(lrow);
+    const btn = document.createElement('button'); btn.className = 'sg-ask'; btn.textContent = sageState.sending ? (sageState.sendMsg || '🔮 送っています…') : '🔮 賢者に聞く';
     btn.disabled = sageState.sending;
     btn.addEventListener('click', () => { if (!sageState.q.trim()) { ta.focus(); return; } playSelect(); sageAsk(); });
     inp.appendChild(btn);
     const note = document.createElement('div'); note.className = 'sg-note';
     note.textContent = '賢者に声が届くまで約10〜25分かかります。';
     inp.appendChild(note);
+    if (sageState.notice) { const w = document.createElement('div'); w.className = 'sg-warn'; w.textContent = sageState.notice; inp.appendChild(w); }
     if (sageState.sendErr) { const w = document.createElement('div'); w.className = 'sg-warn'; w.textContent = sageState.sendErr; inp.appendChild(w); }
     root.appendChild(inp);
 
@@ -12915,7 +12979,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-14g';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-14h';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
@@ -13683,11 +13747,12 @@ ${note}
   // モデルの順番(キング承認 2026-10-13)：まず従来の3.6、混雑(503)や無応答が続いたら3.8、さらにだめなら3.5-flash-lite。どれもGoogle公式の料金表で無料枠あり(2026-10-13確認)
   const GEMINI_MODELS = ['gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-3.5-flash-lite'];
   const GEMINI_REQ_TIMEOUT_MS = 30000; // 1回の返事を待つ上限(これを超えたら次へ)
-  async function callGeminiKeys(keys, body){
+  async function callGeminiKeys(keys, body, models){
+    models = models || GEMINI_MODELS;
     let lastErr = null, text = null;
     geminiLastModel = null;
-    for (let mi = 0; mi < GEMINI_MODELS.length && !text; mi++) {
-      const model = GEMINI_MODELS[mi], lastModel = (mi === GEMINI_MODELS.length - 1);
+    for (let mi = 0; mi < models.length && !text; mi++) {
+      const model = models[mi], lastModel = (mi === models.length - 1);
       for (const apiKey of keys) {
         let busy = false; // このモデル自体が混んでいる(503/無応答)。キーを変えても同じなので、次のキーは試さず次のモデルへ
         // 次のモデルが控えているうちは、503/無応答は1回だけやり直して早めに切り替える(最後のモデルだけ最大4回やり直す＝待ち時間2→4→8→16秒)
