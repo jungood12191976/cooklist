@@ -13,29 +13,26 @@ jobs:
     steps:
       - run: |
           pip install pillow -q
-          python3 - <<'PY'
+          python3 - <<'PY2'
+          import os, json, base64, random, urllib.request
           from PIL import Image, ImageDraw
-          im = Image.new('RGB', (600, 240), 'white'); d = ImageDraw.Draw(im)
-          d.text((30, 100), 'SAGE-IMG-CODE 7391', fill='black'); im.save('t.jpg', quality=70)
-          PY
-          R=$(curl -sS -m 30 -X PUT -H "Filename: t.jpg" -H "Title: imgtest" --data-binary @t.jpg https://ntfy.sh/ktq-sage-imgtest-4f7a21c9)
-          echo "$R" | python3 -c "import sys,json; j=json.load(sys.stdin); a=j.get('attachment',{}); print('::notice::ntfy添付 url=',a.get('url'),' size=',a.get('size'),' expires=',a.get('expires'))"
-          URL=$(echo "$R" | python3 -c "import sys,json; print(json.load(sys.stdin)['attachment']['url'])")
-          echo "URL=$URL" >> $GITHUB_ENV
-          CODE=$(curl -sS -m 30 -o /dev/null -w "%{http_code} %{content_type}" "$URL")
-          echo "::notice::認証なしで取得 $CODE"
-      - run: |
-          python3 - <<'PY'
-          import os, json, urllib.request
-          q = '【画像テスト】次のURLの画像を開き、書かれている文字(SAGE-IMG-CODEで始まる文)をそのまま答えに書いてください: ' + os.environ['URL']
-          body = json.dumps({'text': json.dumps({'qid': 'imgtest01', 'q': q, 'asked_at': '2026-10-14 20:30'}, ensure_ascii=False)}).encode()
+          random.seed(1)
+          im = Image.new('RGB', (720, 1280), 'white'); d = ImageDraw.Draw(im)
+          for i in range(400):
+              x=random.randint(0,700); y=random.randint(0,1260); d.rectangle([x,y,x+random.randint(5,60),y+random.randint(3,20)], fill=(random.randint(0,255),random.randint(0,255),random.randint(0,255)))
+          d.rectangle([30,560,690,700], fill='white'); d.text((50,620), 'SAGE-IMG-CODE 7391', fill='black')
+          im.save('t.jpg', quality=55)
+          b = base64.b64encode(open('t.jpg','rb').read()).decode()
+          print('::notice::base64サイズ', len(b))
+          q = '【画像テスト】質問の末尾の[画像base64]をファイル(base64 -d)に保存してReadで開き、書かれている文字(SAGE-IMG-CODEで始まる文)を答えに書いてください。 [画像base64:jpeg]' + b
+          body = json.dumps({'text': json.dumps({'qid': 'imgtest02', 'q': q, 'asked_at': '2026-10-14 20:40'}, ensure_ascii=False)}).encode()
           req = urllib.request.Request('https://api.anthropic.com/v1/claude_code/routines/trig_012UDrPAtWBZgc551Y1RpgfQ/fire', data=body, method='POST', headers={
             'Authorization': 'Bearer ' + os.environ['T'], 'anthropic-beta': 'experimental-cc-routine-2026-04-01',
             'anthropic-version': '2023-06-01', 'Content-Type': 'application/json'})
           try:
             r = urllib.request.urlopen(req, timeout=30); print('::notice::起こした', r.status)
           except Exception as e:
-            print('::error::失敗', e)
-          PY
+            print('::error::失敗', e, getattr(e,'read',lambda:b'')()[:300])
+          PY2
         env:
           T: ${{ secrets.SAGETOKEN }}
