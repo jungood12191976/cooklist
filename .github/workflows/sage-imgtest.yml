@@ -1,0 +1,41 @@
+name: sage-imgtest
+# 賢者の画像添付の実験(一時。確認後に削除する)
+on:
+  push:
+    paths:
+      - '.github/workflows/sage-imgtest.yml'
+permissions:
+  contents: read
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: |
+          pip install pillow -q
+          python3 - <<'PY'
+          from PIL import Image, ImageDraw
+          im = Image.new('RGB', (600, 240), 'white'); d = ImageDraw.Draw(im)
+          d.text((30, 100), 'SAGE-IMG-CODE 7391', fill='black'); im.save('t.jpg', quality=70)
+          PY
+          R=$(curl -sS -m 30 -X PUT -H "Filename: t.jpg" -H "Title: imgtest" --data-binary @t.jpg https://ntfy.sh/ktq-sage-imgtest-4f7a21c9)
+          echo "$R" | python3 -c "import sys,json; j=json.load(sys.stdin); a=j.get('attachment',{}); print('::notice::ntfy添付 url=',a.get('url'),' size=',a.get('size'),' expires=',a.get('expires'))"
+          URL=$(echo "$R" | python3 -c "import sys,json; print(json.load(sys.stdin)['attachment']['url'])")
+          echo "URL=$URL" >> $GITHUB_ENV
+          CODE=$(curl -sS -m 30 -o /dev/null -w "%{http_code} %{content_type}" "$URL")
+          echo "::notice::認証なしで取得 $CODE"
+      - run: |
+          python3 - <<'PY'
+          import os, json, urllib.request
+          q = '【画像テスト】次のURLの画像を開き、書かれている文字(SAGE-IMG-CODEで始まる文)をそのまま答えに書いてください: ' + os.environ['URL']
+          body = json.dumps({'text': json.dumps({'qid': 'imgtest01', 'q': q, 'asked_at': '2026-10-14 20:30'}, ensure_ascii=False)}).encode()
+          req = urllib.request.Request('https://api.anthropic.com/v1/claude_code/routines/trig_012UDrPAtWBZgc551Y1RpgfQ/fire', data=body, method='POST', headers={
+            'Authorization': 'Bearer ' + os.environ['T'], 'anthropic-beta': 'experimental-cc-routine-2026-04-01',
+            'anthropic-version': '2023-06-01', 'Content-Type': 'application/json'})
+          try:
+            r = urllib.request.urlopen(req, timeout=30); print('::notice::起こした', r.status)
+          except Exception as e:
+            print('::error::失敗', e)
+          PY
+        env:
+          T: ${{ secrets.SAGETOKEN }}
