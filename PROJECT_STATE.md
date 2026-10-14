@@ -673,3 +673,6 @@ corsproxyは廃止。stooqは除外。
 - キングの手作業(今回1回だけ)：①claude.ai/code/routines でこのルーティンにAPIトリガーを追加しトークン発行 ②GitHubのSecretsに SAGEURL と SAGETOKEN を登録(当初の名前 SAGE_ROUTINE_URL 等はキングの入力でエラーになったため変更)。これが済むまで中継は「Secrets未設定」で何もしない。
 - 削除：Gemini版の材料づくり・プロンプト・streamGenerateContent呼び出し・短い質問テスト。`callGeminiKeys`は他の機能(金の鉱山など)が使うので残す。
 - ルーティンのモデルは作成時の既定(claude-opus-5-5)。利用枠を節約したいなら sonnet に下げられる(キング確認待ち)。
+- 2026-10-14 追記：ルーティンは キングが Claude Code のルーティン画面で作り直したもの(trig_012UDrPAtWBZgc551Y1RpgfQ・Sonnet 5.5・コネクタはGoogle Sheetsだけ・リポジトリcooklist)。私が作った trig_01MDzMNXewuKVBX7VJTxxxpP は停止。API トリガーは Claude Code のルーティン画面でしか付けられない(Claudeアプリ側の「スケジュールタスクを編集」には項目なし)。
+- ルーティンのURLは秘密ではないので `scripts/sage_relay.py` の `ROUTINE_URL` に直書き。GitHub Secrets は **SAGETOKEN だけ**使う(SAGEURL は中身が不正だったため使わない)。中継の結果は Actions の注記(annotation)に出る＝公開APIの check-runs/<job>/annotations で読める。
+- 14:3x JST 実機通しテスト：アプリの質問(qid bjedawop641v)→中継が起こす(200)→クロが「調べ中」を書いた、まで確認。
