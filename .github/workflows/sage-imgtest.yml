@@ -5,12 +5,13 @@ on:
     paths:
       - '.github/workflows/sage-imgtest.yml'
 permissions:
-  contents: read
+  contents: write
 jobs:
   t:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@v4
       - run: |
           pip install pillow -q
           python3 - <<'PY2'
@@ -25,7 +26,7 @@ jobs:
           b = base64.b64encode(open('t.jpg','rb').read()).decode()
           print('::notice::base64サイズ', len(b))
           q = '【画像テスト】質問の末尾の[画像base64]をファイル(base64 -d)に保存してReadで開き、書かれている文字(SAGE-IMG-CODEで始まる文)を答えに書いてください。 [画像base64:jpeg]' + b
-          body = json.dumps({'text': json.dumps({'qid': 'imgtest02', 'q': q, 'asked_at': '2026-10-14 20:40'}, ensure_ascii=False)}).encode()
+          body = json.dumps({'text': json.dumps({'qid': 'imgtest03', 'q': q, 'asked_at': '2026-10-14 20:40'}, ensure_ascii=False)}).encode()
           req = urllib.request.Request('https://api.anthropic.com/v1/claude_code/routines/trig_012UDrPAtWBZgc551Y1RpgfQ/fire', data=body, method='POST', headers={
             'Authorization': 'Bearer ' + os.environ['T'], 'anthropic-beta': 'experimental-cc-routine-2026-04-01',
             'anthropic-version': '2023-06-01', 'Content-Type': 'application/json'})
