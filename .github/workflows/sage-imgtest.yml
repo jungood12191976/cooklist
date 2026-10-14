@@ -21,7 +21,7 @@ jobs:
           for i in range(400):
               x=random.randint(0,700); y=random.randint(0,1260); d.rectangle([x,y,x+random.randint(5,60),y+random.randint(3,20)], fill=(random.randint(0,255),random.randint(0,255),random.randint(0,255)))
           d.rectangle([30,560,690,700], fill='white'); d.text((50,620), 'SAGE-IMG-CODE 7391', fill='black')
-          im.save('t.jpg', quality=55)
+          im = im.resize((540,960)); im.save('t.jpg', quality=40)
           b = base64.b64encode(open('t.jpg','rb').read()).decode()
           print('::notice::base64サイズ', len(b))
           q = '【画像テスト】質問の末尾の[画像base64]をファイル(base64 -d)に保存してReadで開き、書かれている文字(SAGE-IMG-CODEで始まる文)を答えに書いてください。 [画像base64:jpeg]' + b
