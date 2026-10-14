@@ -7,12 +7,13 @@ import json, os, re, sys, pathlib, urllib.request
 
 TOPIC_URL = 'https://ntfy.sh/ktq-sage-a9381535c5b4e768376e'
 SEEN = pathlib.Path('.sage_seen/ids.txt')
+ROUTINE_URL = 'https://api.anthropic.com/v1/claude_code/routines/trig_012UDrPAtWBZgc551Y1RpgfQ/fire'  # 秘密ではない(住所)。鍵はSAGETOKENだけ
 MAX_FIRE = 5  # 1回の実行で起こす上限(ルーティンは1時間30回まで)
 
 def main():
     SEEN.parent.mkdir(exist_ok=True)
     if not SEEN.exists(): SEEN.write_text('')  # キャッシュ保存が空振りで失敗しないように
-    url, token = os.environ.get('SAGE_ROUTINE_URL', '').strip(), os.environ.get('SAGE_ROUTINE_TOKEN', '').strip()
+    url, token = ROUTINE_URL, os.environ.get('SAGE_ROUTINE_TOKEN', '').strip()
     if not url or not token:
         print('::notice::未設定のため何もしません SAGEURL=' + ('あり' if url else 'なし') + ' / SAGETOKEN=' + ('あり' if token else 'なし')); return
     seen = set(SEEN.read_text().split()) if SEEN.exists() else set()
