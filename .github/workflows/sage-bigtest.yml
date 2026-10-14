@@ -1,0 +1,33 @@
+name: sage-bigtest
+# 長い質問がntfyでどう届くかの実験(一時。確認後に削除)
+on:
+  push:
+    paths:
+      - '.github/workflows/sage-bigtest.yml'
+permissions:
+  contents: read
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - run: |
+          python3 - <<'PY'
+          import json, urllib.request
+          T = 'https://ntfy.sh/ktq-sage-bigtest-8c21e7d4'
+          body = json.dumps({'qid': 'bigtest01', 'q': '質問です。' + 'あ' * 3500, 't': 'x'}, ensure_ascii=False)
+          print('::notice::送る大きさ(バイト)', len(body.encode('utf-8')))
+          urllib.request.urlopen(urllib.request.Request(T, data=body.encode('utf-8'), method='POST', headers={'Content-Type': 'text/plain'}), timeout=30).read()
+          import time; time.sleep(2)
+          lines = urllib.request.urlopen(T + '/json?poll=1&since=2m', timeout=30).read().decode('utf-8').splitlines()
+          for l in lines:
+              ev = json.loads(l)
+              if ev.get('event') != 'message': continue
+              m = ev.get('message', '')
+              print('::notice::event keys', sorted(ev.keys()), ' message先頭', m[:60].replace('\n', ' '), ' message長', len(m), ' attachment', json.dumps(ev.get('attachment'), ensure_ascii=False)[:300])
+              a = ev.get('attachment')
+              if a:
+                  d = urllib.request.urlopen(a['url'], timeout=30).read().decode('utf-8', 'replace')
+                  try: j = json.loads(d); print('::notice::添付をJSONとして読めた qid=', j.get('qid'), ' q長', len(j.get('q', '')))
+                  except Exception as e: print('::notice::添付はJSONではない', d[:80])
+          PY
