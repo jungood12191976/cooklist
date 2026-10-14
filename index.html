@@ -8870,7 +8870,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     btn.addEventListener('click', () => { if (!sageState.q.trim()) { ta.focus(); return; } playSelect(); sageAsk(); });
     inp.appendChild(btn);
     const note = document.createElement('div'); note.className = 'sg-note';
-    note.textContent = '賢者(クロ)がWebで調べて答えます。届くまで約10〜25分。答えはこの下に出ます。';
+    note.textContent = '賢者に声が届くまで約10〜25分かかります。';
     inp.appendChild(note);
     if (sageState.sendErr) { const w = document.createElement('div'); w.className = 'sg-warn'; w.textContent = sageState.sendErr; inp.appendChild(w); }
     root.appendChild(inp);
@@ -12915,7 +12915,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-14f';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-14g';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
