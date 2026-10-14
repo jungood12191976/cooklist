@@ -13,7 +13,7 @@ def main():
     if not SEEN.exists(): SEEN.write_text('')  # キャッシュ保存が空振りで失敗しないように
     url, token = os.environ.get('SAGE_ROUTINE_URL', '').strip(), os.environ.get('SAGE_ROUTINE_TOKEN', '').strip()
     if not url or not token:
-        print('Secrets(SAGE_ROUTINE_URL / SAGE_ROUTINE_TOKEN)が未設定のため何もしません'); return
+        print('::notice::Secrets(SAGEURL / SAGETOKEN)が未設定のため何もしません'); return
     seen = set(SEEN.read_text().split()) if SEEN.exists() else set()
     with urllib.request.urlopen(TOPIC_URL + '/json?poll=1&since=40m', timeout=30) as r:
         lines = r.read().decode('utf-8', 'replace').splitlines()
@@ -38,14 +38,14 @@ def main():
             'Content-Type': 'application/json'})
         try:
             with urllib.request.urlopen(req, timeout=30) as r:
-                print('起こしました', qid, r.status, json.loads(r.read()).get('claude_code_session_url', ''))
+                print('::notice::起こしました', qid, r.status)
             seen.add(mid); fired += 1
         except urllib.error.HTTPError as e:
-            print('起こせませんでした', qid, e.code, e.read()[:300])
+            print('::warning::起こせませんでした', qid, e.code, e.read()[:300].decode('utf-8', 'replace').replace('\n', ' '))
             if e.code in (400, 401, 403, 404): seen.add(mid)  # やり直しても同じ
     SEEN.parent.mkdir(exist_ok=True)
     SEEN.write_text('\n'.join(sorted(seen)[-500:]))
-    print('完了: 起こした数', fired)
+    print('::notice::完了 届いていた質問', len([l for l in lines if '"message"' in l]), '件 / 起こした数', fired, '/ URLの形', 'ok' if url.startswith('https://api.anthropic.com/v1/claude_code/routines/') and url.endswith('/fire') else 'NG')
 
 if __name__ == '__main__':
     main()
