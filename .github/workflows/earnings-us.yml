@@ -8,6 +8,7 @@ on:
   push:
     paths:
       - 'scripts/fetch_earnings_us.py'
+      - 'scripts/kio_history.py'
       - '.github/workflows/earnings-us.yml'
 
 permissions:
@@ -25,11 +26,12 @@ jobs:
           python-version: '3.12'
       - run: pip install requests
       - run: python scripts/fetch_earnings_us.py
+      - run: python scripts/kio_history.py
       - name: commit if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/earnings_us.json
+          git add data/earnings_us.json data/kio_events.json
           if git diff --cached --quiet; then
             echo "変更なし"
             exit 0
