@@ -118,6 +118,13 @@
   .voy-evd{ display:inline-block; font-size:12px; font-weight:bold; color:#2c1f5c; background:#ffd76b; border-radius:6px; padding:0 6px; margin-right:5px; }
   .voy-src{ font-size:12px; color:#9db4ff; margin:0 0 0 14px; line-height:1.5; }
   .voy-src a{ color:#9ff5c5; text-decoration:underline; }
+  /* 2026-10-15 キング指示：「これから」をまとめて白背景の四角い枠で囲んで目立たせる(白地なので文字は濃い色) */
+  .voy-soon{ background:#fff; border-radius:8px; padding:6px 12px 4px; margin:10px 0; }
+  .voy-soon .voy-sub{ color:#2c1f5c; font-weight:bold; margin-top:2px; }
+  .voy-soon .voy-line{ color:#14142b; }
+  .voy-soon .voy-src{ color:#4a5578; }
+  .voy-soon .voy-src a{ color:#0b6b3a; }
+  .voy-soon .voy-evd{ border:1px solid #a9741f; }
   .voy-banner-row{ display:flex; gap:6px; overflow-x:auto; padding:2px 0 4px; -webkit-overflow-scrolling:touch; }
   .voy-banner{ flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:1px; min-width:74px; padding:6px 10px; border-radius:10px; cursor:pointer; background:rgba(255,215,107,0.14); border:2px solid #ffd76b; color:#fff; font-family:inherit; }
   .voy-banner .vb-code{ font-size:18.5px; font-weight:bold; color:#ffd76b; letter-spacing:1px; }
@@ -2987,7 +2994,7 @@
   //  event_date が無い項目は、日付つきの項目がある日だけ「日付なし」にまとめる(推測で日付を付けない)。
   function voyageEventsHTML(list, today){
     const md = d => fmtMD(d);   // 2026-10-15 キング指示：曜日をつける(10/28→10/28(水))
-    const one = (k, showDate) => `<div class="voy-ev"><div class="voy-line">・${showDate && k.eventDate ? `<span class="voy-evd">${md(k.eventDate)}</span>` : ''}${k.kind ? '【' + skyEsc(k.kind) + '】' : ''}${skyEsc(k.text)}</div>${voyageSrcHTML(k)}</div>`;
+    const one = (k, showDate) => `<div class="voy-ev"><div class="voy-line">${showDate && k.eventDate ? `<span class="voy-evd">${md(k.eventDate)}</span>` : '・'}${k.kind ? '【' + skyEsc(k.kind) + '】' : ''}${skyEsc(k.text)}</div>${voyageSrcHTML(k)}</div>`;
     if (!list.some(k => k.eventDate)) return list.map(k => one(k, false)).join('');
     const todayL = list.filter(k => k.eventDate === today);
     const futureL = list.filter(k => k.eventDate > today).sort((a, b) => a.eventDate < b.eventDate ? -1 : 1);
@@ -2995,7 +3002,7 @@
     const noneL = list.filter(k => !k.eventDate);
     // 2026-10-15 キング指示：「これから」と「昨日までの材料」を文字の大きさで見分ける。今日・これからは大きめ、昨日までは小さめで少し控えめな色
     let h = `<div class="voy-big"><div class="voy-sub">📅 今日</div>` + (todayL.length ? todayL.map(k => one(k, false)).join('') : `<div class="voy-line">今日の日付の予定は、ブリーフにありません。</div>`) + `</div>`;
-    if (futureL.length) h += `<div class="voy-big"><div class="voy-sub">🔜 これから</div>` + futureL.map(k => one(k, true)).join('') + `</div>`;
+    if (futureL.length) h += `<div class="voy-big voy-soon"><div class="voy-sub">🔜 これから</div>` + futureL.map(k => one(k, true)).join('') + `</div>`;
     if (pastL.length) h += `<div class="voy-past"><div class="voy-sub">🕘 昨日までの材料</div>` + pastL.map(k => one(k, true)).join('') + `</div>`;
     if (noneL.length) h += `<div class="voy-sub">日付なし</div>` + noneL.map(k => one(k, false)).join('');
     return h;
@@ -3271,10 +3278,11 @@
   // MORN_TOP_N=50 はキングが数字を見て指摘した値(仮置き。決定ではない)。変えるならこの1か所だけ。
   const MORN_TOP_N = 50;
   const MORN_FB = 'https://king-the-quest-live-default-rtdb.asia-southeast1.firebasedatabase.app';
+  // 2026-10-15 キング指示：9:10の枠は出さない(9:05だけ)。PCのkabuは今までどおり a=9:05 / b=9:10 を保存するが、アプリは a だけ読む。
   const MORN_SLOTS = [
-    { key:'a', label:'9:05の答え', at:545 },
-    { key:'b', label:'9:10の答え', at:550 }
+    { key:'a', label:'9:05の答え', at:545 }
   ];
+  let mornOpen = true;   // 2026-10-15 キング指示：折りたためる。最初は開いておく(画面を開き直すたびに開いた状態に戻る)
   let mornTimer = null, mornDailyCache = null, mornState = { snaps:{}, at:0, loading:false, err:null, day:'' };
   async function mornPool(items, fn, n){
     let i = 0; const out = new Array(items.length);
@@ -3372,6 +3380,8 @@
     const wrap = document.getElementById('mornPanel'); if (!wrap) return;
     wrap.style.display = mornVisible() ? '' : 'none';
     wrap.querySelectorAll('.morn-body').forEach(n => n.remove());
+    const tt = wrap.querySelector('.pw-title'); if (tt) tt.textContent = '🌅 朝の答え ' + (mornOpen ? '▼' : '▶');
+    if (!mornOpen) return;
     const body = document.createElement('div'); body.className = 'morn-body';
     const j = battleJst();
     const line = (txt, css) => { const d = document.createElement('div'); d.style.cssText = css; d.textContent = txt; return d; };
@@ -3410,7 +3420,9 @@
   }
   function buildMornPanel(){
     const wrap = document.createElement('div'); wrap.className = 'pw'; wrap.id = 'mornPanel';
-    const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = '🌅 朝の答え'; wrap.appendChild(t);
+    const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = '🌅 朝の答え ' + (mornOpen ? '▼' : '▶'); t.style.cursor = 'pointer';
+    t.addEventListener('click', () => { mornOpen = !mornOpen; mornFill(); });
+    wrap.appendChild(t);
     if (!mornTimer) { mornTimer = setInterval(mornTick, 10000); setTimeout(mornTick, 1500); }
     setTimeout(mornFill, 0);
     return wrap;
@@ -5330,13 +5342,13 @@ ${keywordLine}${bpBlock}${conditionBlock}
     // ===== 📣 速報枠(回復の呪文の真下・速報があるときだけ表示。キング指示 2026-10-05) =====
     { const fp = buildFlashPanel(); if (fp) root.appendChild(fp); }
     root.appendChild(buildBattlePanel());
-    root.appendChild(buildMornPanel());
 
     // ===== 🌊 今日の航路(旧「朝の海況チェック」ボタン式を自動表示に置き換え 2026-10-01) =====
     root.appendChild(buildVoyagePanel());
     // 🧭「いま売買した？」(buildFeedbackQuickPanel)は非掲載(キング指示 2026-10-09)。関数と記録は残してあり、この1行を戻せば再び出る:
     // root.appendChild(buildFeedbackQuickPanel());
     root.appendChild(buildRankingPanel());
+    root.appendChild(buildMornPanel());   // 🌅 朝の答え(2026-10-15 キング指示：売買代金ランキングの後ろ・折りたためる)
     root.appendChild(buildQuizPanel());   // 🗝️ 武器をかくにん(時のへやから勇者のいえへ移動 2026-10-09・毎日5問)
 
     // gold mine (AI-assisted stock watch scanner)
@@ -13249,7 +13261,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-15c';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-15d';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
