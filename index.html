@@ -109,6 +109,12 @@
   .vw-wind{ font-size:16px; font-weight:bold; margin-top:2px; }
   .vw-wind.head{ color:#ffb4b4; } .vw-wind.calm{ color:#cfe0ff; } .vw-wind.tail{ color:#9ff5c5; }
   .voy-ev{ margin:2px 0 6px; }
+  .voy-big .voy-line{ font-size:17px; line-height:1.65; }
+  .voy-big .voy-evd{ font-size:14px; }
+  .voy-big .voy-src{ font-size:13px; margin-left:16px; }
+  .voy-past .voy-line{ font-size:13px; color:#aab8d4; }
+  .voy-past .voy-evd{ font-size:11px; }
+  .voy-past .voy-src{ font-size:11px; }
   .voy-evd{ display:inline-block; font-size:12px; font-weight:bold; color:#2c1f5c; background:#ffd76b; border-radius:6px; padding:0 6px; margin-right:5px; }
   .voy-src{ font-size:12px; color:#9db4ff; margin:0 0 0 14px; line-height:1.5; }
   .voy-src a{ color:#9ff5c5; text-decoration:underline; }
@@ -386,6 +392,28 @@
   .endtown-flag{ position:absolute; z-index:2; width:7.81%; aspect-ratio:1; pointer-events:none; }
   .endtown-banner{ position:absolute; z-index:2; width:6.65%; aspect-ratio:112/196; pointer-events:none; }
   .endtown-banner.big{ width:8%; }
+  /* ケッサン暦(2026-10-15 縦の暦に作り替え・キング指示 2026-10-14)：左に日付、右に時間順の予定。2週ずつ横にスクロール。今日の行は点滅 */
+  .kcr-chips{ display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 8px; }
+  .kcr-chip{ font-size:12px; color:#c8d0f0; background:rgba(255,255,255,0.05); border:1px solid rgba(157,180,255,0.3); border-radius:14px; padding:3px 10px; cursor:pointer; font-family:inherit; }
+  .kcr-chip.on{ color:#2c1f5c; background:#ffd76b; border-color:#ffd76b; font-weight:bold; }
+  .kcr-scroll{ display:flex; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; gap:10px; scrollbar-width:thin; }
+  .kcr-page{ flex:0 0 100%; min-width:0; scroll-snap-align:start; box-sizing:border-box; }
+  .kcr-row{ display:flex; gap:8px; padding:6px 6px 7px; margin:0 0 4px; border-radius:8px; border:1px solid rgba(157,180,255,0.2); background:rgba(255,255,255,0.03); cursor:pointer; }
+  .kcr-row.past{ opacity:0.5; }
+  .kcr-row.hol{ background-image:repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0 4px, transparent 4px 8px); }
+  .kcr-row.sel{ border-color:#ffd76b; box-shadow:0 0 0 2px #ffd76b; }
+  .kcr-row.today{ border-color:#7ec8ff; animation:kcrBlink 1.6s ease-in-out infinite; }
+  @keyframes kcrBlink{ 0%,100%{ background-color:rgba(126,200,255,0.10); box-shadow:0 0 0 1px #7ec8ff inset; } 50%{ background-color:rgba(126,200,255,0.34); box-shadow:0 0 0 2px #bfe8ff inset, 0 0 10px rgba(126,200,255,0.55); } }
+  @media (prefers-reduced-motion: reduce){ .kcr-row.today{ animation:none; background-color:rgba(126,200,255,0.22); box-shadow:0 0 0 2px #7ec8ff inset; } }
+  .kcr-d{ flex:0 0 74px; font-size:14px; font-weight:bold; color:#fff; line-height:1.35; }
+  .kcr-d small{ display:block; font-size:11px; font-weight:normal; color:#8a93b8; }
+  .kcr-d .kcr-now{ display:block; font-size:11px; color:#7ec8ff; font-weight:bold; }
+  .kcr-ev{ flex:1; min-width:0; }
+  .kcr-i{ margin:0 0 6px; }
+  .kcr-t{ font-size:12px; font-weight:bold; line-height:1.4; }
+  .kcr-n{ font-size:14px; font-weight:bold; color:#fff; line-height:1.45; }
+  .kcr-m{ font-size:11px; color:#8a93b8; line-height:1.45; }
+  .kcr-none{ font-size:12px; color:#6f7aa0; }
   /* ケッサン暦(2026-10-12 キング承認)：月〜金の5列×2〜3週 */
   .kcal{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px; }
   .kcal-c{ min-height:58px; padding:3px 2px 4px; border-radius:6px; border:1px solid rgba(157,180,255,0.22); background:rgba(255,255,255,0.03); color:#c8d0f0; font-size:10px; line-height:1.4; cursor:pointer; text-align:center; overflow:hidden; word-break:break-all; }
@@ -2953,16 +2981,17 @@
   //  「今日」「これから」「昨日までの材料」に分ける。event_date が1件も無い日(旧形式)は、従来どおり1本のリスト。
   //  event_date が無い項目は、日付つきの項目がある日だけ「日付なし」にまとめる(推測で日付を付けない)。
   function voyageEventsHTML(list, today){
-    const md = d => `${Number(d.slice(5,7))}/${Number(d.slice(8,10))}`;
+    const md = d => fmtMD(d);   // 2026-10-15 キング指示：曜日をつける(10/28→10/28(水))
     const one = (k, showDate) => `<div class="voy-ev"><div class="voy-line">・${showDate && k.eventDate ? `<span class="voy-evd">${md(k.eventDate)}</span>` : ''}${k.kind ? '【' + skyEsc(k.kind) + '】' : ''}${skyEsc(k.text)}</div>${voyageSrcHTML(k)}</div>`;
     if (!list.some(k => k.eventDate)) return list.map(k => one(k, false)).join('');
     const todayL = list.filter(k => k.eventDate === today);
     const futureL = list.filter(k => k.eventDate > today).sort((a, b) => a.eventDate < b.eventDate ? -1 : 1);
     const pastL = list.filter(k => k.eventDate && k.eventDate < today).sort((a, b) => a.eventDate < b.eventDate ? 1 : -1);
     const noneL = list.filter(k => !k.eventDate);
-    let h = `<div class="voy-sub">📅 今日</div>` + (todayL.length ? todayL.map(k => one(k, false)).join('') : `<div class="voy-line">今日の日付の予定は、ブリーフにありません。</div>`);
-    if (futureL.length) h += `<div class="voy-sub">🔜 これから</div>` + futureL.map(k => one(k, true)).join('');
-    if (pastL.length) h += `<div class="voy-sub">🕘 昨日までの材料</div>` + pastL.map(k => one(k, true)).join('');
+    // 2026-10-15 キング指示：「これから」と「昨日までの材料」を文字の大きさで見分ける。今日・これからは大きめ、昨日までは小さめで少し控えめな色
+    let h = `<div class="voy-big"><div class="voy-sub">📅 今日</div>` + (todayL.length ? todayL.map(k => one(k, false)).join('') : `<div class="voy-line">今日の日付の予定は、ブリーフにありません。</div>`) + `</div>`;
+    if (futureL.length) h += `<div class="voy-big"><div class="voy-sub">🔜 これから</div>` + futureL.map(k => one(k, true)).join('') + `</div>`;
+    if (pastL.length) h += `<div class="voy-past"><div class="voy-sub">🕘 昨日までの材料</div>` + pastL.map(k => one(k, true)).join('') + `</div>`;
     if (noneL.length) h += `<div class="voy-sub">日付なし</div>` + noneL.map(k => one(k, false)).join('');
     return h;
   }
@@ -10278,6 +10307,20 @@ ${keywordLine}${bpBlock}${conditionBlock}
 
   let world2UI = { mode:'good', open:{}, back:{}, view:'date', sel:'', selUser:false };
   const W2_TIME = { 'time-pre-market':'寄り前', 'time-after-hours':'引け後', 'time-not-supplied':'時刻未定' };
+  // 2026-10-15 キング指示(10/14)：初心者には米国の英字ティッカーが意味のない英字に見えるので、会社名(日本語)を出す。ティッカーは出さない。
+  // 会社名は各社の一般的な日本語表記(銘柄選びではなく表示名のみ)。ここに無い記号は、データに入っている英語の会社名をそのまま出す。
+  const W2_US_JA = { AAPL:'アップル', ADI:'アナログ・デバイセズ', AMAT:'アプライド・マテリアルズ', AMD:'AMD', AMZN:'アマゾン', ANET:'アリスタ・ネットワークス', ARM:'アーム・ホールディングス', ASML:'ASML', AVGO:'ブロードコム',
+    BAC:'バンク・オブ・アメリカ', C:'シティグループ', CAT:'キャタピラー', CEG:'コンステレーション・エナジー', CIEN:'シエナ', COHR:'コヒレント', COP:'コノコフィリップス', CSCO:'シスコシステムズ', CVX:'シェブロン', DE:'ディア', DELL:'デル・テクノロジーズ',
+    ETN:'イートン', F:'フォード', FN:'ファブリネット', GEV:'GEベルノバ', GLW:'コーニング', GM:'ゼネラル・モーターズ', GOOGL:'アルファベット(グーグル)', GS:'ゴールドマン・サックス', INTC:'インテル', JPM:'JPモルガン・チェース', KLAC:'KLA', LITE:'ルメンタム',
+    LRCX:'ラム・リサーチ', MCHP:'マイクロチップ・テクノロジー', META:'メタ・プラットフォームズ', MRVL:'マーベル・テクノロジー', MS:'モルガン・スタンレー', MSFT:'マイクロソフト', MU:'マイクロン・テクノロジー', NVDA:'エヌビディア', NXPI:'NXPセミコンダクターズ',
+    ON:'オン・セミコンダクター', ORCL:'オラクル', QCOM:'クアルコム', SLB:'SLB', SMCI:'スーパー・マイクロ・コンピューター', SNDK:'サンディスク', STX:'シーゲイト', TER:'テラダイン', TSLA:'テスラ', TSM:'TSMC', TXN:'テキサス・インスツルメンツ',
+    VRT:'バーティブ', VST:'ビストラ', WDC:'ウエスタンデジタル', WFC:'ウェルズ・ファーゴ', XOM:'エクソンモービル' };
+  const W2_CHAIN_SHORT = { mem:'メモリー', semi:'AI半導体', dc:'AIデータセンター', parts:'電子部品・車載半導体', optic:'光通信', power:'AI電力', bank:'米国の銀行', oil:'原油・石油', mach:'建機・景気敏感', auto:'自動車・EV' };
+  function w2UsName(sym, usDoc){
+    if (W2_US_JA[sym]) return W2_US_JA[sym];
+    const it = ((usDoc && usDoc.items) || []).find(x => x.symbol === sym);
+    return (it && it.name ? String(it.name).trim() : sym);
+  }
   function jpNextEarn(jp, code, today){
     const arr = (jp && jp.byCode[code]) || [];
     const up = arr.filter(x => x.date && x.date >= today).sort((a, b) => a.date < b.date ? -1 : 1);
@@ -10343,17 +10386,27 @@ ${keywordLine}${bpBlock}${conditionBlock}
     if (!e || e.undecided || e.past || !e.date) return null;
     return { date:e.date, nd:bdUntil(ctx.today, e.date), item:e.item };
   }
-  function w2Events(ctx, usDoc){
+  function w2Events(ctx, usDoc, withPast){   // withPast=true：過ぎた日の予定も残す(ケッサン暦用。2026-10-15)
     const ev = {};
+    const keep = d => !!withPast || d >= ctx.today;
     const get = d => ev[d] || (ev[d] = { trig:{}, r1:[], earn:[], win:[], out:[], news:[] });
     W2_CHAINS.forEach(ch => {
-      const items = ((usDoc && usDoc.items) || []).filter(x => ch.trig.includes(x.symbol) && x.date >= ctx.today).map(x => ({ symbol:x.symbol, date:x.date, time:x.time, eps:x.eps_fc }));
-      (ch.krEst || []).forEach(k => k.ds.filter(d => d >= ctx.today).forEach(d => items.push({ symbol:k.n + '(推定)', date:d, est:true })));
+      const items = ((usDoc && usDoc.items) || []).filter(x => ch.trig.includes(x.symbol) && keep(x.date)).map(x => ({ symbol:x.symbol, date:x.date, time:x.time, eps:x.eps_fc }));
+      (ch.krEst || []).forEach(k => k.ds.filter(d => keep(d)).forEach(d => items.push({ symbol:k.n + '(推定)', date:d, est:true })));
       const dates = [];
       items.forEach(x => { const g = get(x.date); (g.trig[ch.id] = g.trig[ch.id] || []).push(x); if (!dates.includes(x.date)) dates.push(x.date); });
       dates.forEach(d => { get(nextTradingDayAfter(d, 1)).r1.push({ ch, from:d }); });
     });
     w2AllCodes().forEach(code => {
+      if (withPast) {   // 過ぎた決算も含め、日付のある決算を全部載せる(4週間より前は載せない)
+        const lim = skyAddDays(ctx.today, -28);
+        ((ctx.jp && ctx.jp.byCode[code]) || []).filter(x => x.date && x.date >= lim).forEach(x => {
+          get(x.date).earn.push(code);
+          get(prevTradingDay(x.date, EARN_WINDOW_BD)).win.push(code);
+          get(prevTradingDay(x.date, 1)).out.push(code);
+        });
+        return;
+      }
       const e = w2EarnOf(ctx, code); if (!e) return;
       get(e.date).earn.push(code);
       const w = prevTradingDay(e.date, EARN_WINDOW_BD); if (w >= ctx.today) get(w).win.push(code);
@@ -10362,7 +10415,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     // 📰 速報(シートのevents列)から拾った予定。公式日程ではない(速報の確度をそのまま持つ)。同じ日・種別・名称は1件にまとめる(2026-10-12)
     const seenN = {};
     ((ctx.wn) || []).forEach(it => (it.evs || []).forEach(x => {
-      if (x.date < ctx.today) return;
+      if (!keep(x.date)) return;
       const k = x.date + '|' + x.kind + '|' + x.label; if (seenN[k]) return; seenN[k] = 1;
       get(x.date).news.push({ date:x.date, kind:x.kind, label:x.label, grade:it.grade, source:it.source, url:it.url, published:it.published });
     }));
@@ -10387,53 +10440,93 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const dates = Object.keys(evs).sort();
     // 1行目：次の起爆剤
     const nt = dates.find(d => d >= today && Object.keys(evs[d].trig).length);
-    let l1 = '⚡ 次の起爆剤：日付待ち';
+    let l1 = '次の起爆剤(米国の決算)：日付待ち';
     if (nt) {
       const e = evs[nt]; const ids = W2_CHAINS.filter(ch => e.trig[ch.id]);
       const tm = []; ids.forEach(ch => e.trig[ch.id].forEach(x => { const l = x.est ? '' : W2_TIME[x.time]; if (l && !tm.includes(l)) tm.push(l); }));
       const nd = bdUntil(today, nt);
-      l1 = `⚡ 次の起爆剤：米国 <b style="color:#ffd76b;">${fmtMD(nt)}</b> ${tm.map(escapeHtml).join('・')} ${ids.map(ch => ch.icon + e.trig[ch.id].length).join(' ')}　<b style="color:#ffd76b; white-space:nowrap;">${nd === 0 ? '本日' : 'あと' + nd + '営業日'}</b>`;
+      l1 = `次の起爆剤(米国の決算)：<b style="color:#ffd76b;">${fmtMD(nt)}</b> ${tm.map(escapeHtml).join('・')} ${ids.map(ch => escapeHtml(W2_CHAIN_SHORT[ch.id] || ch.title) + e.trig[ch.id].length + '社').join('・')}　<b style="color:#ffd76b; white-space:nowrap;">${nd === 0 ? '本日' : 'あと' + nd + '営業日'}</b>`;
     }
     // 2行目：決算窓
     let inWin = 0, near = 0;
     w2AllCodes().forEach(c => { const e = w2EarnOf(ctx, c); if (!e) return; if (e.nd >= 0 && e.nd <= EARN_WINDOW_BD) inWin++; if (e.nd >= 0 && e.nd <= W2_NEAR_BD) near++; });
     const no = dates.find(d => d >= today && evs[d].out.length);
-    const l2 = `🪟 決算窓の中 <b style="color:#bfe8a8;">${inWin}</b>銘柄　⚠ 直前ゾーン <b style="color:#ff9d6b;">${near}</b>銘柄` + (no ? `　▮ 次の回避ライン <b style="color:#ff9d6b;">${fmtMD(no)}引け</b> ${evs[no].out.length}銘柄` : '');
+    const l2 = `決算窓の中 <b style="color:#bfe8a8;">${inWin}</b>銘柄　直前ゾーン <b style="color:#ff9d6b;">${near}</b>銘柄` + (no ? `　次のまたぎ回避ライン <b style="color:#ff9d6b;">${fmtMD(no)}引け</b> ${evs[no].out.length}銘柄` : '');
     const sm = document.createElement('div'); sm.style.cssText = 'font-size:12px; color:#c8d0f0; line-height:1.9; margin-bottom:8px;';
     // 📰 暦の枠(2〜3週)の外の予定も見えるよう、これから先の速報の予定を日付順に最大3件(2026-10-12)
     const nl = []; dates.forEach(d => { if (d >= today) evs[d].news.forEach(x => nl.push({ d, x })); });
-    const l3 = nl.length ? `📰 次の速報の予定 ${nl.slice(0, 3).map(o => `<b style="color:#c8a8ff;">${fmtMD(o.d)}</b> ${escapeHtml(o.x.label)}`).join('　')}${nl.length > 3 ? ' ほか' + (nl.length - 3) + '件' : ''} <span style="color:#8a93b8;">(記事から拾った日付・公式日程ではない)</span>` : '';
+    const l3 = nl.length ? `次の速報の予定 ${nl.slice(0, 3).map(o => `<b style="color:#c8a8ff;">${fmtMD(o.d)}</b> ${escapeHtml(o.x.label)}`).join('　')}${nl.length > 3 ? ' ほか' + (nl.length - 3) + '件' : ''} <span style="color:#8a93b8;">(記事から拾った日付・公式日程ではない)</span>` : '';
     sm.innerHTML = l1 + '<br>' + l2 + (l3 ? '<br>' + l3 : ''); wrap.appendChild(sm);
-    // 暦
-    const maxEarn = Math.max(1, ...grid.map(d => (evs[d] ? evs[d].earn.length : 0)));
-    const g = document.createElement('div'); g.className = 'kcal';
-    grid.forEach(d => {
-      const e = evs[d] || null, isT = skyIsTradingDay(d);
-      const c = document.createElement('div');
-      c.className = 'kcal-c' + (d < today ? ' past' : '') + (d === today ? ' today' : '') + (isT ? '' : ' hol') + (d === world2UI.sel ? ' sel' : '');
-      c.dataset.d = d;
-      const dt = new Date(d + 'T00:00:00');
-      let h = `<div class="kcal-d">${dt.getMonth() + 1}/${dt.getDate()}<small>${W_WD[dt.getDay()]}</small></div>`;
-      if (!isT) h += '<div style="color:#8a93b8;">休</div>';
-      if (e && d >= today) {
-        const tr = W2_CHAINS.filter(ch => e.trig[ch.id]).map(ch => ch.icon + e.trig[ch.id].length);
-        if (tr.length) h += `<div style="color:#ffb37a;">⚡${tr.join(' ')}</div>`;
-        const r1 = []; e.r1.forEach(x => { if (!r1.includes(x.ch.icon)) r1.push(x.ch.icon); });
-        if (r1.length) h += `<div style="color:#7ec8ff;">🌅${r1.join('')}</div>`;
-        if (e.earn.length) h += `<div style="color:#ffd76b; font-weight:bold;">📋${e.earn.length}</div>`;
-        if (e.win.length) h += `<div style="color:#bfe8a8;">🪟${e.win.length}</div>`;
-        if (e.out.length) h += `<div style="color:#ff9d6b;">▮${e.out.length}</div>`;
-        if (e.news.length) h += `<div style="color:#c8a8ff;">📰${e.news.length}</div>`;
-        if (e.earn.length) c.style.backgroundColor = `rgba(255,215,107,${(0.06 + 0.34 * e.earn.length / maxEarn).toFixed(2)})`;
-      }
-      c.innerHTML = h;
-      c.onclick = () => { playSelect(); pick(d); };
-      cells.push(c); g.appendChild(c);
+    // ===== 縦の暦(2026-10-15・キング指示 2026-10-14)：左に日付、右に時間順の予定。2週ずつ横にスクロール。今日の行は点滅。過ぎた日も残す =====
+    const mon0 = (() => { const dw = new Date(today + 'T00:00:00').getDay(); return dw === 0 ? skyAddDays(today, 1) : dw === 6 ? skyAddDays(today, 2) : skyAddDays(today, 1 - dw); })();   // 今週の月曜(土日は次の月曜)
+    const dayDiff = (a, b) => Math.round((new Date(a + 'T00:00:00') - new Date(b + 'T00:00:00')) / 86400000);
+    const allD = Object.keys(evs).filter(d => w2HasEv(evs[d]) && (evs[d].earn.length || Object.keys(evs[d].trig).length || evs[d].r1.length || evs[d].news.length)).sort();   // ページの範囲は「決算・起爆剤・寄り・速報」がある日で決める(監視スタートだけの日は範囲に使わない)
+    let kMin = 0, kMax = 0;
+    if (allD.length) { kMin = Math.min(0, Math.floor(dayDiff(allD[0], mon0) / 14)); kMax = Math.max(0, Math.floor(dayDiff(allD[allD.length - 1], mon0) / 14)); }
+    kMin = Math.max(kMin, -3); kMax = Math.min(kMax, 5);   // 多すぎる場合の上限(過去6週・先10週)
+    const maxEarn = Math.max(1, ...allD.map(d => evs[d].earn.length));
+    const namesOf = codes => codes.slice().sort().map(c => nameFor(c) || c).join('・');
+    const TAGC = { jp:'#7ec8ff', earn:'#ffd76b', win:'#bfe8a8', out:'#ff9d6b', us:'#ffb37a', news:'#c8a8ff' };
+    const dayItems = (d, e) => {
+      const it = [];
+      const add = (ord, color, tag, title, names, memo) => it.push({ ord, html: `<div class="kcr-i"><div class="kcr-t" style="color:${color};">【${escapeHtml(tag)}】${escapeHtml(title)}</div>` + (names ? `<div class="kcr-n">${escapeHtml(names)}</div>` : '') + (memo ? `<div class="kcr-m">${escapeHtml(memo)}</div>` : '') + '</div>' });
+      const seen = {};
+      e.r1.forEach(x => { const k = x.ch.id + x.from; if (seen[k]) return; seen[k] = 1; add(900, TAGC.jp, '日本の寄り 9:00', `${W2_CHAIN_SHORT[x.ch.id] || x.ch.title}の関連株×${x.ch.w1.length}銘柄`, namesOf(x.ch.w1), `${fmtMD(x.from)}の米国決算を受けて動くかもしれない銘柄`); });
+      if (e.win.length) add(1000, TAGC.win, '監視スタート', `決算の${EARN_WINDOW_BD}営業日前に入った銘柄×${e.win.length}銘柄`, namesOf(e.win));
+      if (e.earn.length) add(1100, TAGC.earn, '日本の決算', `この日が決算の銘柄×${e.earn.length}銘柄`, namesOf(e.earn), '発表時刻は東証の一覧にありません');
+      if (e.out.length) add(1530, TAGC.out, 'またぎ回避 15:30の引けまで', `翌営業日が決算の銘柄×${e.out.length}銘柄`, namesOf(e.out));
+      W2_CHAINS.filter(ch => e.trig[ch.id]).forEach(ch => {
+        const by = {};
+        e.trig[ch.id].forEach(x => { const t = x.est ? 'est' : (x.time || 'time-not-supplied'); (by[t] = by[t] || []).push(x); });
+        ['time-pre-market', 'time-after-hours', 'time-not-supplied', 'est'].forEach((t, ti) => {
+          if (!by[t]) return;
+          const nm = by[t].map(x => x.est ? String(x.symbol) : w2UsName(x.symbol, usDoc)).join('・');
+          const tag = t === 'est' ? '韓国・推定' : 'アメリカ・' + W2_TIME[t];
+          add(2000 + ti * 100, TAGC.us, tag, `${W2_CHAIN_SHORT[ch.id] || ch.title}×${by[t].length}社`, nm, t === 'est' ? '日付は推定です(公式の発表日ではありません)' : '米国の日付の発表');
+        });
+      });
+      e.news.forEach(x => add(2500, TAGC.news, '速報の予定', `${x.kind} ${x.label}`, '', '記事から拾った予定(公式日程ではありません)'));
+      it.sort((a, b) => a.ord - b.ord);
+      return it.map(x => x.html).join('');
+    };
+    const pages = [];
+    for (let k = kMin; k <= kMax; k++) {
+      const start = skyAddDays(mon0, 14 * k);
+      const days = []; for (let w = 0; w < 2; w++) for (let i = 0; i < 5; i++) days.push(skyAddDays(start, w * 7 + i));
+      pages.push({ k, days, label: `${fmtMD(days[0]).replace(/\(.\)/, '')}〜${fmtMD(days[9]).replace(/\(.\)/, '')}` });
+    }
+    let curK = (typeof world2UI.page === 'number' && world2UI.page >= kMin && world2UI.page <= kMax) ? world2UI.page : 0;
+    const chips = document.createElement('div'); chips.className = 'kcr-chips';
+    const scroller = document.createElement('div'); scroller.className = 'kcr-scroll';
+    const chipEls = [];
+    pages.forEach((pg, idx) => {
+      const chip = document.createElement('button'); chip.className = 'kcr-chip' + (pg.k === curK ? ' on' : ''); chip.textContent = pg.label + (pg.k === 0 ? '（今週から）' : '');
+      chip.onclick = () => { playSelect(); scroller.scrollTo({ left: idx * (scroller.clientWidth + 10), behavior: 'smooth' }); };
+      chips.appendChild(chip); chipEls.push(chip);
+      const page = document.createElement('div'); page.className = 'kcr-page';
+      pg.days.forEach(d => {
+        const e = evs[d] || null, isT = skyIsTradingDay(d), dt = new Date(d + 'T00:00:00');
+        const row = document.createElement('div');
+        row.className = 'kcr-row' + (d < today ? ' past' : '') + (d === today ? ' today' : '') + (isT ? '' : ' hol') + (d === world2UI.sel ? ' sel' : '');
+        row.dataset.d = d;
+        const body = (e && w2HasEv(e) || (e && e.news.length)) ? dayItems(d, e) : `<div class="kcr-none">${isT ? '予定なし' : '東証休場' + (SKY_JPX_HOLIDAYS[d] ? '(' + escapeHtml(SKY_JPX_HOLIDAYS[d]) + ')' : '')}</div>`;
+        row.innerHTML = `<div class="kcr-d">${dt.getMonth() + 1}/${dt.getDate()}<small>(${W_WD[dt.getDay()]})</small>${d === today ? '<span class="kcr-now">今日</span>' : ''}</div><div class="kcr-ev">${body}</div>`;
+        if (e && e.earn.length) row.firstChild.style.boxShadow = `inset 3px 0 0 rgba(255,215,107,${(0.25 + 0.75 * e.earn.length / maxEarn).toFixed(2)})`;
+        row.onclick = () => { playSelect(); pick(d); };
+        cells.push(row); page.appendChild(row);
+      });
+      scroller.appendChild(page);
     });
-    wrap.appendChild(g);
-    const lg = document.createElement('div'); lg.style.cssText = 'font-size:10px; color:#8a93b8; line-height:1.7; margin-top:6px;';
-    lg.innerHTML = '⚡起爆剤(米国の日付)　🌅日本の寄り(巻き添え1)　📋その日が決算の銘柄数(濃いほど多い)　🪟その日から決算窓に入る銘柄数　▮その日の引けがまたぎ回避ライン(決算日の前営業日)　📰速報の記事から拾った予定(公式日程ではない)。日付をタップすると下に中身が出ます。';
-    wrap.appendChild(lg);
+    let scTimer = null;
+    scroller.addEventListener('scroll', () => {
+      clearTimeout(scTimer);
+      scTimer = setTimeout(() => {
+        const idx = Math.max(0, Math.min(pages.length - 1, Math.round(scroller.scrollLeft / ((scroller.clientWidth || 1) + 10))));
+        world2UI.page = pages[idx].k; chipEls.forEach((c, i) => c.classList.toggle('on', i === idx));
+      }, 80);
+    }, { passive: true });
+    wrap.appendChild(chips); wrap.appendChild(scroller);
+    setTimeout(() => { const idx = pages.findIndex(pg => pg.k === curK); if (idx > 0 && scroller.clientWidth) scroller.scrollLeft = idx * (scroller.clientWidth + 10); }, 0);
     const nts = [ddNote('earnings_jp.json', '日本の決算日'), ddNote('earnings_us.json', '米国の決算日')].filter(Boolean);
     if (nts.length) { const d = document.createElement('div'); d.style.cssText = 'font-size:11px; color:#ffb86b; margin-top:6px;'; d.textContent = nts.join(' ／ '); wrap.appendChild(d); }
     // 表示の切り替え
@@ -10469,6 +10562,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
         return `<div style="font-size:12px; color:#c8d0f0; padding:3px 0; line-height:1.6;"><span class="kchip"><b>${escapeHtml(x.kind)}</b></span> <b style="color:#fff;">${escapeHtml(x.label)}</b> <span style="color:#8a93b8;">確度${escapeHtml(x.grade || '?')}・出典 ${escapeHtml(x.source || '不明')}(公開 ${escapeHtml(x.published || '不明')})</span>${link}</div>`;
       }).join(''));
     }
+    if (d < ctx.today) { any = true; h += '<div style="font-size:12px; color:#8a93b8;">過ぎた日です。この日の予定は、上の暦の行に残してあります。</div>'; }
     if (!any) h += '<div style="font-size:12px; color:#8a93b8;">この日の予定はありません。</div>';
     const b = document.createElement('div'); b.innerHTML = h; wrap.appendChild(b);
     return wrap;
@@ -10522,9 +10616,9 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const jp = jpDoc ? { byCode: (() => { const m = {}; jpDoc.items.forEach(x => { (m[x.code] = m[x.code] || []).push(x); }); return m; })() } : null;
     const ctx = { today, jp, nv, jm: jiwaMap(), wn: worldNews.items };
     // 🗓️ ケッサン暦(2026-10-12 キング承認)：上に暦、下は「日付別」(標準)か「連鎖別」
-    const evs = w2Events(ctx, usDoc);
+    const evs = w2Events(ctx, usDoc, true);   // 過ぎた日も残す(2026-10-15)
     const grid = w2CalGrid(today);
-    if (!world2UI.selUser || !world2UI.sel || world2UI.sel < today) world2UI.sel = w2DefaultSel(evs, today, grid);   // 自分で選ぶまでは、データ読み込み後も直近の予定日を自動で選ぶ
+    if (!world2UI.selUser || !world2UI.sel) world2UI.sel = w2DefaultSel(evs, today, grid);   // 自分で選ぶまでは、データ読み込み後も直近の予定日を自動で選ぶ
     const calCells = [];
     const detailHost = document.createElement('div');
     const pickDay = d => {
@@ -12979,7 +13073,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-14h';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-15a';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
