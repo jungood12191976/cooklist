@@ -424,6 +424,28 @@
   .kcr-t{ font-size:12px; font-weight:bold; line-height:1.4; }
   .kcr-n{ font-size:14px; font-weight:bold; color:#fff; line-height:1.45; }
   .kcr-m{ font-size:11px; color:#8a93b8; line-height:1.45; }
+  /* ⚔️ 今日の作戦(2026-10-15) */
+  .w2b-blk{ border-radius:8px; padding:9px 10px 10px; margin:0 0 10px; }
+  .w2b-last{ background:#221b38; border:1px solid #4a3f7a; }
+  .w2b-now{ background:linear-gradient(180deg,#3a2410,#1f1a2e); border:2px solid #ff9d4d; }
+  .w2b-h{ display:flex; align-items:center; gap:8px; font-size:18px; font-weight:bold; color:#fff; margin-bottom:6px; }
+  .w2b-dot{ width:14px; height:14px; border-radius:50%; background:#ff5a4f; flex:none; animation:w2bDot 1.2s ease-in-out infinite; }
+  .w2b-dot.blue{ background:#5ab4ff; animation-name:w2bDotB; }
+  @keyframes w2bDot{ 0%,100%{ box-shadow:0 0 0 0 rgba(255,90,79,0.0); opacity:0.55; } 50%{ box-shadow:0 0 0 5px rgba(255,90,79,0.35), 0 0 12px #ff5a4f; opacity:1; } }
+  @keyframes w2bDotB{ 0%,100%{ box-shadow:0 0 0 0 rgba(90,180,255,0.0); opacity:0.55; } 50%{ box-shadow:0 0 0 5px rgba(90,180,255,0.35), 0 0 12px #5ab4ff; opacity:1; } }
+  @media (prefers-reduced-motion: reduce){ .w2b-dot{ animation:none; } }
+  .w2b-when{ font-size:13px; color:#ffcf8a; font-weight:bold; margin:8px 0 2px; }
+  .w2b-grp{ font-size:17px; font-weight:bold; color:#ffe7a8; margin:2px 0 0; }
+  .w2b-cos{ font-size:15px; font-weight:bold; color:#fff; margin:1px 0 4px 2px; line-height:1.5; }
+  .w2b-res{ font-size:14px; color:#d6dcf5; margin:2px 0 2px 4px; }
+  .w2b-res b{ color:#fff; }
+  .w2b-rel-h{ font-size:11px; color:#9db4ff; margin:8px 0 1px; }
+  .w2b-rel{ font-size:12px; color:#c8d0f0; margin:1px 0 1px 6px; }
+  .w2b-jp{ font-size:13px; color:#bfe2ff; margin-top:6px; line-height:1.5; }
+  .w2b-jp b{ color:#fff; }
+  .w2b-warn{ font-size:13px; color:#ff9da6; margin-top:6px; font-weight:bold; }
+  .w2b-ok{ color:#ffd76b; font-weight:bold; font-size:16px; } .w2b-ng{ color:#ff8a8a; font-weight:bold; font-size:16px; }
+  .w2b-up{ color:#8fe3a0; font-weight:bold; } .w2b-dn{ color:#ff8a8a; font-weight:bold; } .w2b-q{ color:#8a93b8; font-size:12px; }
   .kcr-none{ font-size:12px; color:#6f7aa0; }
   /* ケッサン暦(2026-10-12 キング承認)：月〜金の5列×2〜3週 */
   .kcal{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px; }
@@ -10430,10 +10452,10 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const keep = d => !!withPast || d >= ctx.today;
     const get = d => ev[d] || (ev[d] = { trig:{}, r1:[], earn:[], win:[], out:[], news:[] });
     W2_CHAINS.forEach(ch => {
-      const items = ((usDoc && usDoc.items) || []).filter(x => ch.trig.includes(x.symbol) && keep(x.date)).map(x => ({ symbol:x.symbol, date:x.date, time:x.time, eps:x.eps_fc }));
+      const items = ((usDoc && usDoc.items) || []).filter(x => ch.trig.includes(x.symbol) && keep(x.date)).map(x => ({ symbol:x.symbol, date:x.date, time:x.time, eps:x.eps_fc, ly:x.est === 'lastyear', lastYear:x.last_year || '', dup:!!x.dup }));
       (ch.krEst || []).forEach(k => k.ds.filter(d => keep(d)).forEach(d => items.push({ symbol:k.n + '(推定)', date:d, est:true })));
       const dates = [];
-      items.forEach(x => { const g = get(x.date); (g.trig[ch.id] = g.trig[ch.id] || []).push(x); if (!dates.includes(x.date)) dates.push(x.date); });
+      items.forEach(x => { const g = get(x.date); (g.trig[ch.id] = g.trig[ch.id] || []).push(x); if (!x.ly && !dates.includes(x.date)) dates.push(x.date); });   // 去年の日付の仮置きからは「日本の寄り」を作らない
       dates.forEach(d => { get(nextTradingDayAfter(d, 1)).r1.push({ ch, from:d }); });
     });
     w2AllCodes().forEach(code => {
@@ -10472,6 +10494,109 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const f = grid.find(d => d >= today && w2HasEv(evs[d]));
     return f || grid.find(d => d >= today) || today;
   }
+  // ===== ⚔️ 今日の作戦(2026-10-15 キング承認・第2案)：暦の上。【昨夜の戦い結果】→【本日の戦い】。左の丸が点滅 =====
+  // ◎＝実績EPSが予想を上回った ✕＝下回った ＝＝同じ(キング承認 2026-10-15)。実績EPSは Nasdaq の更新が1〜2日おくれるので、出るまで「集計待ち」。
+  // 終値は「反応した日」の前日比：寄り前の発表＝発表日、引け後＝翌日、時刻未定＝発表日と翌日の両方。事実だけで、原因は書かない。
+  const W2B_REL_DAYS = 14;   // 関連の決算として出す日数(発表結果の表示と同じ14日)
+  function w2bMark(x){
+    if (typeof x.eps_act !== 'number' || x.eps_cons === '' || x.eps_cons == null || !isFinite(parseFloat(x.eps_cons))) return '<span class="w2b-q">集計待ち</span>';
+    const a = x.eps_act, c = parseFloat(x.eps_cons);
+    return a > c ? '<span class="w2b-ok">◎</span>' : a < c ? '<span class="w2b-ng">✕</span>' : '<span class="w2b-q">＝</span>';
+  }
+  function w2bArrow(v, withPct){
+    if (v == null) return '<span class="w2b-q">待ち</span>';
+    const up = v >= 0;
+    return `<span class="${up ? 'w2b-up' : 'w2b-dn'}">${up ? '🔼' : '⬇️'}${withPct ? (up ? '+' : '') + v.toFixed(2) + '%' : ''}</span>`;
+  }
+  function w2bClose(x, cl, withPct){   // 反応した日の終値の前日比(HTML)
+    if (!cl) return '<span class="w2b-q">株価なし</span>';
+    const i = cl.dates.indexOf(x.date);
+    if (i < 1) return '<span class="w2b-q">待ち</span>';
+    const A = w2Pct(cl, i, i - 1), N = (i + 1 < cl.dates.length) ? w2Pct(cl, i + 1, i) : null;
+    if (x.time === 'time-pre-market') return w2bArrow(A, withPct);
+    if (x.time === 'time-after-hours') return w2bArrow(N, withPct);
+    return `当日${w2bArrow(A, withPct)} 翌日${w2bArrow(N, withPct)}`;
+  }
+  function w2bChainOf(sym){ return W2_CHAINS.find(ch => ch.trig.includes(sym)) || null; }
+  function buildW2Battle(ctx, usDoc, evs){
+    const today = ctx.today;
+    const items = ((usDoc && usDoc.items) || []).filter(x => !x.est && w2bChainOf(x.symbol));
+    const wrap = document.createElement('div'); wrap.className = 'pw';
+    const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = `⚔️ 今日の作戦　${fmtMD(today)}`; wrap.appendChild(t);
+    if (!usDoc) { const n = document.createElement('div'); n.className = 'kcr-none'; n.textContent = '米国の決算日を読み込み中…'; wrap.appendChild(n); return wrap; }
+    const fills = [];   // 株価が届いたら埋める [{ el, x, pct }]
+    const slot = (x, pct) => { const id = 'w2b' + Math.random().toString(36).slice(2, 9); fills.push({ id, x, pct }); return `<span id="${id}" class="w2b-q">…</span>`; };
+    const grpHtml = (country, ch, list) => `<div class="w2b-grp">【${country}】${escapeHtml(W2_CHAIN_SHORT[ch.id] || ch.title)} ×${list.length}社</div><div class="w2b-cos">${list.map(x => escapeHtml(x.est ? x.symbol : w2UsName(x.symbol, usDoc))).join('　')}</div>`;
+    const byChain = list => { const m = []; list.forEach(x => { const ch = w2bChainOf(x.symbol); let g = m.find(o => o.ch === ch); if (!g) m.push(g = { ch, list:[] }); g.list.push(x); }); return m; };
+    const w1Names = chs => { const a = []; chs.forEach(ch => ch.w1.forEach(c => { const n = (typeof STOCK_NAMES_JA !== 'undefined' && STOCK_NAMES_JA[c]) || nameFor(c) || c; if (!a.includes(n)) a.push(n); })); return a.join('・'); };
+    let h = '';
+    // 【昨夜の戦い結果】直前の米国の発表日(今日より前で一番新しい日・5日以内)
+    const past = items.filter(x => x.date < today && x.date >= skyAddDays(today, -5)).map(x => x.date).sort();
+    const lastD = past.length ? past[past.length - 1] : '';
+    h += '<div class="w2b-blk w2b-last"><div class="w2b-h"><span class="w2b-dot blue"></span>昨夜の戦い結果</div>';
+    if (lastD) {
+      const lst = items.filter(x => x.date === lastD);
+      h += `<div class="w2b-when">${fmtMD(lastD)} アメリカの発表</div>`;
+      const gs = byChain(lst);
+      gs.forEach(g => {
+        h += `<div class="w2b-grp">【アメリカ】${escapeHtml(W2_CHAIN_SHORT[g.ch.id] || g.ch.title)} ×${g.list.length}社</div>`;
+        g.list.forEach(x => { h += `<div class="w2b-res"><b>${escapeHtml(w2UsName(x.symbol, usDoc))}</b>　<span style="white-space:nowrap;">決算${w2bMark(x)}　終値${slot(x, true)}</span></div>`; });
+      });
+      if (skyIsTradingDay(today)) h += `<div class="w2b-jp">→ 今朝の寄りで見る：<b>${escapeHtml(w1Names(gs.map(g => g.ch)))}</b></div>`;
+    } else h += '<div class="kcr-none">ここ数日、連鎖の米国の決算はありませんでした。</div>';
+    h += '</div>';
+    // 【本日の戦い】韓国(推定) → 日本の決算 → 米国(今夜＝寄り前 → 時刻未定 → 明日の早朝＝引け後)
+    const e = evs[today] || null;
+    h += '<div class="w2b-blk w2b-now"><div class="w2b-h"><span class="w2b-dot"></span>本日の戦い</div>';
+    let any = false; const todayChs = [];
+    if (e) {
+      W2_CHAINS.forEach(ch => { const kr = (e.trig[ch.id] || []).filter(x => x.est); if (kr.length) { any = true; todayChs.push(ch); h += `<div class="w2b-when">☀ 今日（日付は推定）</div>` + grpHtml('韓国', ch, kr); } });
+      if (e.earn.length) { any = true; h += `<div class="w2b-when">☀ 今日（時刻は東証の一覧にありません）</div><div class="w2b-grp">【日本】決算 ×${e.earn.length}社</div><div class="w2b-cos">${escapeHtml(e.earn.slice().sort().map(c => (typeof STOCK_NAMES_JA !== 'undefined' && STOCK_NAMES_JA[c]) || nameFor(c) || c).join('　'))}</div>`; }
+    }
+    const tl = items.filter(x => x.date === today);
+    [['time-pre-market', '🌙 今夜（アメリカの寄り前の発表）'], ['time-not-supplied', '🌙 今夜〜明日の朝（時刻未定）'], ['time-after-hours', '🌙 明日の早朝（アメリカの引け後の発表）']].forEach(([tm, lab]) => {
+      const l = tl.filter(x => (x.time || 'time-not-supplied') === tm); if (!l.length) return;
+      any = true; h += `<div class="w2b-when">${lab}</div>`;
+      byChain(l).forEach(g => { if (!todayChs.includes(g.ch)) todayChs.push(g.ch); h += grpHtml('アメリカ', g.ch, g.list); });
+    });
+    if (e && e.out.length) { any = true; h += `<div class="w2b-warn">⚠ 明日が決算：${escapeHtml(e.out.slice().sort().map(c => (typeof STOCK_NAMES_JA !== 'undefined' && STOCK_NAMES_JA[c]) || nameFor(c) || c).join('・'))} → 15:30の引けで持ち越すか判断</div>`; }
+    if (!any) {
+      const nx = items.filter(x => x.date > today).sort((a, b) => a.date < b.date ? -1 : 1)[0];
+      h += `<div class="kcr-none" style="font-size:14px;">今日は連鎖の大きな決算なし。${nx ? '次は ' + fmtMD(nx.date) + ' ' + escapeHtml(w2UsName(nx.symbol, usDoc)) : ''}</div>`;
+    }
+    // 関連の決算(日付をまたいで忘れがちなので、今日の連鎖の直近14日の結果を小さく)
+    if (todayChs.length) {
+      const rel = items.filter(x => x.date < today && x.date >= skyAddDays(today, -W2B_REL_DAYS) && todayChs.some(ch => ch.trig.includes(x.symbol))).sort((a, b) => a.date < b.date ? 1 : -1);
+      if (rel.length) {
+        h += '<div class="w2b-rel-h">関連の決算（この' + W2B_REL_DAYS + '日）</div>';
+        rel.forEach(x => { h += `<div class="w2b-rel">${fmtMD(x.date)} ${escapeHtml(w2UsName(x.symbol, usDoc))}　決算${w2bMark(x)}　終値${slot(x, false)}</div>`; });
+      }
+      const usChs = todayChs.filter(ch => tl.some(x => ch.trig.includes(x.symbol)));
+      if (usChs.length) h += `<div class="w2b-jp">→ 明日の寄りで見る：<b>${escapeHtml(w1Names(usChs))}</b></div>`;
+    }
+    h += '</div>';
+    const body = document.createElement('div'); body.innerHTML = h; wrap.appendChild(body);
+    // 株価(米国の日足)を銘柄ごとに1回だけ取り、届いたら埋める
+    const syms = []; fills.forEach(f => { if (!syms.includes(f.x.symbol)) syms.push(f.x.symbol); });
+    syms.forEach(sym => w2UsCloses(sym).then(cl => fills.filter(f => f.x.symbol === sym).forEach(f => { const el = body.querySelector('#' + f.id); if (el) el.outerHTML = w2bClose(f.x, cl, f.pct); })));
+    return wrap;
+  }
+  // 決算相場の期間(2026-10-15 キング承認：最後の決算の翌週に暦を隠す)。連鎖の日本株の決算日と米国の起爆剤の日付を、間が14日以内なら同じ相場とつなげる
+  const W2_SEASON_GAP = 14, W2_SEASON_PRE = 14, W2_SEASON_POST = 7;
+  function w2Season(ctx, usDoc){
+    const ds = [], dsAll = [];   // 去年の日付の仮置き(est)は「次の決算相場」の目安にだけ使い、今の相場の終わりの判定には使わない
+    ((usDoc && usDoc.items) || []).forEach(x => { if (w2bChainOf(x.symbol)) (x.est ? dsAll : ds).push(x.date); });
+    w2AllCodes().forEach(c => ((ctx.jp && ctx.jp.byCode[c]) || []).forEach(x => { if (x.date) ds.push(x.date); }));
+    const u = Array.from(new Set(ds)).sort(); if (!u.length) return null;
+    const clus = arr => { const cl = []; arr.forEach(d => { const c = cl[cl.length - 1]; if (c && dayGap(c.end, d) <= W2_SEASON_GAP) c.end = d; else cl.push({ start:d, end:d }); }); return cl; };
+    const cl = clus(u), clAll = clus(Array.from(new Set(u.concat(dsAll))).sort());
+    const t = ctx.today;
+    const cur = cl.find(c => t >= skyAddDays(c.start, -W2_SEASON_PRE) && t <= skyAddDays(c.end, W2_SEASON_POST));
+    const next = clAll.find(c => c.start > t);
+    const prev = cl.filter(c => c.end < t).pop();
+    return { cur, next, prev };
+  }
+  function dayGap(a, b){ return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000); }
   function buildW2CalPanel(ctx, usDoc, evs, grid, cells, pick){
     const wrap = document.createElement('div'); wrap.className = 'pw';
     const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = '🗓️ ケッサン暦'; wrap.appendChild(t);
@@ -10517,12 +10642,16 @@ ${keywordLine}${bpBlock}${conditionBlock}
       if (e.out.length) add(1530, TAGC.out, 'またぎ回避 15:30の引けまで', `翌営業日が決算の銘柄×${e.out.length}銘柄`, namesOf(e.out));
       W2_CHAINS.filter(ch => e.trig[ch.id]).forEach(ch => {
         const by = {};
-        e.trig[ch.id].forEach(x => { const t = x.est ? 'est' : (x.time || 'time-not-supplied'); (by[t] = by[t] || []).push(x); });
-        ['time-pre-market', 'time-after-hours', 'time-not-supplied', 'est'].forEach((t, ti) => {
+        e.trig[ch.id].forEach(x => { const t = x.est ? 'est' : x.ly ? 'ly' : (x.time || 'time-not-supplied'); (by[t] = by[t] || []).push(x); });
+        // 2026-10-15 キング承認：韓国(推定)を米国より先に。日付が未発表の米国は「去年の日付で仮置き」と明記
+        [['est', 1950], ['time-pre-market', 2000], ['time-after-hours', 2100], ['time-not-supplied', 2200], ['ly', 2300]].forEach(([t, ord]) => {
           if (!by[t]) return;
           const nm = by[t].map(x => x.est ? String(x.symbol) : w2UsName(x.symbol, usDoc)).join('・');
-          const tag = t === 'est' ? '韓国・推定' : 'アメリカ・' + W2_TIME[t];
-          add(2000 + ti * 100, TAGC.us, tag, `${W2_CHAIN_SHORT[ch.id] || ch.title}×${by[t].length}社`, nm, t === 'est' ? '日付は推定です(公式の発表日ではありません)' : '米国の日付の発表');
+          const tag = t === 'est' ? '韓国・推定' : t === 'ly' ? 'アメリカ・日付は未発表' : 'アメリカ・' + W2_TIME[t];
+          const memo = t === 'est' ? '日付は推定です(公式の発表日ではありません)'
+            : t === 'ly' ? '去年の発表日(' + by[t].map(x => x.lastYear).filter(Boolean).join('・') + ')から1年後の同じ曜日に仮置き。発表が出たら入れ替わります'
+            : '米国の日付の発表' + (by[t].some(x => x.dup) ? '。※同じ決算が別の日にも出ています(どちらかは古い情報)' : '');
+          add(ord, t === 'ly' ? '#9aa0c8' : TAGC.us, tag, `${W2_CHAIN_SHORT[ch.id] || ch.title}×${by[t].length}社`, nm, memo);
         });
       });
       e.news.forEach(x => add(2500, TAGC.news, '速報の予定', `${x.kind} ${x.label}`, '', '記事から拾った予定(公式日程ではありません)'));
@@ -10670,6 +10799,16 @@ ${keywordLine}${bpBlock}${conditionBlock}
       calCells.forEach(c => c.classList.toggle('sel', c.dataset.d === d));
       detailHost.replaceChildren(buildW2Day(d, ctx, usDoc, evs));
     };
+    root.appendChild(buildW2Battle(ctx, usDoc, evs));   // ⚔️ 今日の作戦(2026-10-15)：暦より上
+    const season = usDoc && jpDoc ? w2Season(ctx, usDoc) : null;
+    if (season && !season.cur && !world2UI.showOff) {   // 決算相場の外(最後の決算の翌週より後)は暦を隠す(2026-10-15 キング承認)
+      const off = document.createElement('div'); off.className = 'pw';
+      off.innerHTML = `<div class="pw-title">🗓️ ケッサン暦</div><div style="font-size:14px; color:#c8d0f0; line-height:1.7;">🏁 今回の決算相場はおわりました${season.prev ? '（最後の決算 ' + fmtMD(season.prev.end) + '）' : ''}。<br>値動きは ⏳ 時のへやの「📈 決算相場の折れ線」で見られます。${season.next ? '<br>次の決算相場は <b style="color:#ffd76b;">' + fmtMD(season.next.start) + '</b> ごろから。' : ''}</div>`;
+      const ob = document.createElement('button'); ob.className = 'rpg-btn secondary'; ob.style.marginTop = '8px'; ob.textContent = '暦をひらく';
+      ob.onclick = () => { playSelect(); world2UI.showOff = true; render(); };
+      off.appendChild(ob); root.appendChild(off);
+      return;
+    }
     root.appendChild(buildW2CalPanel(ctx, usDoc, evs, grid, calCells, pickDay));
     if (world2UI.view === 'date') { detailHost.appendChild(buildW2Day(world2UI.sel, ctx, usDoc, evs)); root.appendChild(detailHost); }
     if (world2UI.view === 'chain') {
@@ -11903,8 +12042,28 @@ ${keywordLine}${bpBlock}${conditionBlock}
   // 米国の決算は日本の翌営業日に反映されるので、ピンは日本の翌営業日に立てる(ケッサン暦と同じ考え方)。
   const KQ_KIO = (function(){
     'use strict';
-    const SYM = '285A.T', CODE = '285A', PROXY = 'https://king-stock-proxy.jungood1219.workers.dev/?url=';
+    // 2026-10-15 キング承認：キオクシアだけ→連鎖(W2_CHAINS)に入っている日本株49銘柄から選べるように。選んだ銘柄は端末に覚える
+    const PROXY = 'https://king-stock-proxy.jungood1219.workers.dev/?url=';
+    const LS_KEY = 'ktq:earnchart:code';
+    let CODE = (() => { try { const v = lsGet(LS_KEY); return (typeof v === 'string' && v) ? v : '285A'; } catch(e){ return '285A'; } })();
+    let SYM = CODE + '.T';
+    const cache = {};   // code → { rows, at }
     const st = { status:'idle', rows:null, err:'', at:0, anim:0 };
+    function codes(){ const a = []; W2_CHAINS.forEach(ch => ch.w1.concat(ch.w2).forEach(c => { if (!a.includes(c)) a.push(c); })); return a; }
+    function nm(c){ return (typeof STOCK_NAMES_JA !== 'undefined' && STOCK_NAMES_JA[c]) || nameFor(c) || c; }
+    // その銘柄に関係する米国の起爆剤：巻き添え1(w1)に入っている連鎖。無ければ巻き添え2(w2)の連鎖。
+    // キオクシアは最初に承認された形(メモリー連鎖だけ)のまま
+    function trigsFor(c){
+      if (c === '285A') return (W2_CHAINS.find(ch => ch.id === 'mem') || { trig:[] }).trig.slice();
+      let chs = W2_CHAINS.filter(ch => ch.w1.includes(c)); if (!chs.length) chs = W2_CHAINS.filter(ch => ch.w2.includes(c));
+      const t = []; chs.forEach(ch => ch.trig.forEach(x => { if (!t.includes(x)) t.push(x); })); return t;
+    }
+    function setCode(c){
+      if (c === CODE) return;
+      CODE = c; SYM = c + '.T'; try { lsSet(LS_KEY, c); } catch(e){}
+      const hit = cache[c]; st.rows = hit ? hit.rows : null; st.at = hit ? hit.at : 0; st.status = hit ? 'ok' : 'idle'; st.err = '';
+      repaint();
+    }
     const yen = v => Math.round(v).toLocaleString('ja-JP');
     const sgn = (v, dp) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(dp);
     const dayNum = k => Math.floor(Date.parse(k + 'T00:00:00Z') / 86400000);
@@ -11912,21 +12071,21 @@ ${keywordLine}${bpBlock}${conditionBlock}
     function rawItems(){
       const m = {}, put = o => { m[o.kind + '|' + o.key + '|' + o.date] = o; };
       const hist = ddoc('kio_events.json'), jp = ddoc('earnings_jp.json'), us = ddoc('earnings_us.json');
-      const mem = (W2_CHAINS.find(c => c.id === 'mem') || { trig:[] }).trig;
-      ((hist && hist.items) || []).forEach(put);
+      const mem = trigsFor(CODE);
+      ((hist && hist.items) || []).filter(x => (x.kind === 'jp' && x.key === CODE) || (x.kind === 'us' && mem.includes(x.key))).forEach(put);
       ((jp && jp.items) || []).filter(x => x.code === CODE && x.date).forEach(x => put({ kind:'jp', key:CODE, date:x.date, fq:x.kind || '' }));
-      ((us && us.items) || []).filter(x => mem.includes(x.symbol) && x.date).forEach(x => put({ kind:'us', key:x.symbol, date:x.date, name:x.name, eps_fc:x.eps_fc, eps_cons:x.eps_cons, eps_act:x.eps_act, surprise:x.surprise }));
+      ((us && us.items) || []).filter(x => mem.includes(x.symbol) && x.date && !x.est).forEach(x => put({ kind:'us', key:x.symbol, date:x.date, name:x.name, eps_fc:x.eps_fc, eps_cons:x.eps_cons, eps_act:x.eps_act, surprise:x.surprise }));
       return Object.keys(m).map(k => m[k]);
     }
     function memEvents(){
       const us = ddoc('earnings_us.json') || { items:[] };
       return rawItems().map(x => {
-        if (x.kind === 'jp') return { day:x.date, tag:'決算', txt:'キオクシア自身の決算発表日(' + (x.fq || '') + ')', src:'JPX公式(確認レベルA)' };
-        const nm = w2UsName(x.key, { items:(us.items || []).concat([{ symbol:x.key, name:x.name }]) });
-        let t = nm + 'の決算(米' + fmtMD(x.date) + ')';
+        if (x.kind === 'jp') return { day:x.date, tag:'決算', txt:nm(CODE) + '自身の決算発表日(' + (x.fq || '') + ')', src:'JPX公式(確認レベルA)' };
+        const usNm = w2UsName(x.key, { items:(us.items || []).concat([{ symbol:x.key, name:x.name }]) });
+        let t = usNm + 'の決算(米' + fmtMD(x.date) + ')';
         if (x.eps_act != null && x.eps_cons) t += ' 予想' + x.eps_cons + '→実績' + x.eps_act + 'ドル' + (x.surprise ? '(予想比' + sgn(Number(x.surprise), 2) + '%)' : '');
         else if (x.eps_fc) t += ' 予想' + String(x.eps_fc).replace('$', '') + 'ドル';
-        return { day:nextTradingDayAfter(x.date, 1), tag:nm.length > 6 ? nm.slice(0, 6) : nm, txt:t, src:'Nasdaq(確認レベルB)' };
+        return { day:nextTradingDayAfter(x.date, 1), tag:usNm.length > 6 ? usNm.slice(0, 6) : usNm, txt:t, src:'Nasdaq(確認レベルB)' };
       });
     }
     function docsReady(){ return ['earnings_jp.json', 'earnings_us.json', 'kio_events.json'].every(n => { const d = dataDocs[n]; return d && (d.status === 'ok' || d.status === 'error'); }); }
@@ -11934,6 +12093,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       if (st.status === 'loading' || !docsReady()) return;
       if (st.rows && Date.now() - st.at < 10 * 60 * 1000) return;
       st.status = 'loading';
+      const want = CODE;
       const evs = memEvents().map(e => e.day).sort();
       const todayK = todayDateKey();
       let from = evs.length ? evs[0] : todayK;
@@ -11949,8 +12109,9 @@ ${keywordLine}${bpBlock}${conditionBlock}
         const off = r.meta.gmtoffset || 32400, rows = [];
         r.timestamp.forEach((t, i) => { const c = q.close[i]; if (c == null || !(c > 0)) return; const d = new Date((t + off) * 1000).toISOString().slice(0, 10); if (rows.length && rows[rows.length - 1].d === d) rows.pop(); rows.push({ d, c }); });
         if (rows.length < 10) throw new Error('データが少なすぎます(' + rows.length + '本)');
-        st.rows = rows; st.status = 'ok'; st.at = Date.now(); st.err = '';
-      }).catch(e => { st.status = 'error'; st.err = String((e && e.message) || e); }).then(repaint);
+        if (want !== CODE) return;   // 読み込み中に別の銘柄に切り替えた
+        st.rows = rows; st.status = 'ok'; st.at = Date.now(); st.err = ''; cache[want] = { rows, at:st.at };
+      }).catch(e => { if (want !== CODE) return; st.status = 'error'; st.err = String((e && e.message) || e); }).then(() => { if (want === CODE) repaint(); });
     }
     function repaint(){ const w = document.getElementById('kioWrap'); if (w) fill(w); }
     // 日付ごとの出来事をまとめる。同じ日の出来事は1つのピンに重ねる
@@ -11975,7 +12136,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     function fill(wrap){
       const body = wrap.querySelector('.kio-body'); if (!body) return;
       if (st.status === 'idle' && docsReady()) { load(); return; }
-      if (st.status === 'loading' || st.status === 'idle') { body.innerHTML = '<div class="pb-note">キオクシアの株価と決算を読み込み中…</div>'; return; }
+      if (st.status === 'loading' || st.status === 'idle') { body.innerHTML = '<div class="pb-note">' + skyEsc(nm(CODE)) + 'の株価と決算を読み込み中…</div>'; return; }
       if (st.status === 'error') { body.innerHTML = '<div class="pb-note">読めませんでした(' + skyEsc(st.err) + ')</div>'; return; }
       const rows = st.rows, P = pins(rows);
       const W = 360, H = 230, L = 40, R = 10, T = 26, B = 22;
@@ -12001,7 +12162,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
         svg += '<g class="kio-pin" data-x="' + x.toFixed(1) + '" style="opacity:0"><line x1="' + x.toFixed(1) + '" x2="' + x.toFixed(1) + '" y1="' + y.toFixed(1) + '" y2="' + (up ? ly + 3 : ly - 9).toFixed(1) + '" stroke="' + kcol[main.k] + '" stroke-dasharray="2 2"/><circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="4" fill="#fff" stroke="' + kcol[main.k] + '" stroke-width="2"/><text x="' + x.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + anc + '" font-size="10" font-weight="bold" fill="' + kcol[main.k] + '">' + (n + 1) + ' ' + skyEsc(label) + '</text></g>';
       });
       svg += '</svg>';
-      let html = '<div class="pb-note">キオクシア(285A)の終値の折れ線に、決算などの「その日にあったこと」を事実だけで重ねました。なぜ動いたかは書いていません。</div>' + svg;
+      let html = '<div class="pb-note">' + skyEsc(nm(CODE)) + '(' + CODE + ')の終値の折れ線に、決算などの「その日にあったこと」を事実だけで重ねました。なぜ動いたかは書いていません。</div>' + svg;
       html += '<div style="display:flex;gap:8px;align-items:center;margin:8px 0;"><button id="kioReplay" style="padding:5px 12px;font-size:12px;background:#ffd76b;color:#2c1f5c;border:2px solid #a9741f;border-radius:4px;font-weight:bold;cursor:pointer;">▶ もういちど</button><span class="pb-note" style="margin:0;">' + fmtMD(rows[0].d) + ' 〜 ' + fmtMD(rows[rows.length - 1].d) + ' の終値</span></div>';
       html += '<div class="kio-list">';
       P.days.forEach((g, n) => {
@@ -12036,7 +12197,14 @@ ${keywordLine}${bpBlock}${conditionBlock}
     function build(){
       ensureDataDocs(['earnings_jp.json', 'earnings_us.json', 'kio_events.json']);
       const wrap = document.createElement('div'); wrap.className = 'pw pb-wrap'; wrap.id = 'kioWrap';
-      const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = '📈 キオクシアの決算相場'; wrap.appendChild(t);
+      const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = '📈 決算相場の折れ線'; wrap.appendChild(t);
+      // 銘柄えらび(連鎖の日本株49銘柄)
+      const sel = document.createElement('select'); sel.className = 'rpg-date-input';
+      sel.style.cssText = 'width:100%; font-size:15px; font-weight:bold; padding:6px 8px; margin:0 0 8px; color:#111; background:#fff; border-radius:6px;';
+      codes().map(c => ({ c, n:nm(c) })).sort((a, b) => a.c === '285A' ? -1 : b.c === '285A' ? 1 : a.c < b.c ? -1 : 1)
+        .forEach(o => { const op = document.createElement('option'); op.value = o.c; op.textContent = o.n + '（' + o.c + '）'; if (o.c === CODE) op.selected = true; sel.appendChild(op); });
+      sel.onchange = () => { playSelect(); setCode(sel.value); };
+      wrap.appendChild(sel);
       const b = document.createElement('div'); b.className = 'kio-body'; wrap.appendChild(b);
       fill(wrap);
       return wrap;
@@ -13265,7 +13433,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-15e';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-15f';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;

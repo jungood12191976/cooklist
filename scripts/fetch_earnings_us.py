@@ -86,9 +86,36 @@ def main():
             if row.get('symbol') in SYMS:
                 items.append({'symbol': row['symbol'], 'name': row.get('name', ''), 'date': d.isoformat(),
                               'time': row.get('time', ''), 'fq': row.get('fiscalQuarterEnding', ''),
-                              'eps_fc': row.get('epsForecast', '')})
+                              'eps_fc': row.get('epsForecast', ''), 'last_year': row.get('lastYearRptDt', '')})
     if n_days < 40 or n_fail > 15:
         sys.exit('取得できた日が少なすぎるため書き込みません: days=%d fail=%d' % (n_days, n_fail))
+    # 2026-10-15: 同じ銘柄・同じ四半期が2つの日付に出ることがある(実例: META 10/21と11/04)。どちらが正しいかAPIから分からないので両方に印
+    cnt = {}
+    for it in items:
+        cnt[(it['symbol'], it['fq'])] = cnt.get((it['symbol'], it['fq']), 0) + 1
+    for it in items:
+        if cnt[(it['symbol'], it['fq'])] > 1:
+            it['dup'] = True
+    # 2026-10-15 キング承認: まだ日付が出ていない起爆剤は「去年の発表日」で仮置き(earnings-surpriseの約1年前の行＋364日=同じ曜日)。
+    # 発表日が出たら、カレンダーの行に置き換わる(仮置きはカレンダーに無い銘柄だけ作る)
+    have = {it['symbol'] for it in items if it['date'] >= today.isoformat()}
+    for sym in SYMS:
+        if sym in have:
+            continue
+        j = get('https://api.nasdaq.com/api/company/' + sym + '/earnings-surprise')
+        time.sleep(0.5)
+        rows = (((j or {}).get('data') or {}).get('earningsSurpriseTable') or {}).get('rows') or []
+        for r in rows:
+            try:
+                m_, d_, y_ = [int(v) for v in str(r.get('dateReported', '')).split('/')]
+                ly = datetime.date(y_, m_, d_)
+            except ValueError:
+                continue
+            est = ly + datetime.timedelta(days=364)
+            if today < est <= today + datetime.timedelta(days=AHEAD + 45):
+                items.append({'symbol': sym, 'name': '', 'date': est.isoformat(), 'time': 'time-not-supplied', 'fq': '',
+                              'eps_fc': '', 'last_year': ly.strftime('%m/%d/%Y'), 'est': 'lastyear'})
+                break
     # 発表前に埋まっていた時刻は残す(発表後は time-not-supplied に戻るため)
     for it in items:
         o = old_by.get((it['symbol'], it['date']))
@@ -97,7 +124,7 @@ def main():
     # 発表日を過ぎた分は実績EPSを取る(取れなければ前回の値を残す)
     for it in items:
         o = old_by.get((it['symbol'], it['date'])) or {}
-        if it['date'] <= today.isoformat():
+        if it['date'] <= today.isoformat() and not it.get('est'):
             a = fetch_actual(it['symbol'], it['date'])
             if a is None:
                 a = {k: o[k] for k in ('eps_act', 'eps_cons', 'surprise') if k in o}
