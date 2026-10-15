@@ -8,7 +8,7 @@
 ## 2. プロジェクト概要
 - アプリ名：KING THE QUEST（キング・ザ・クエスト）
 - 個人用アプリ。販売目的ではない。
-- 本体：単一HTML `index.html`（画像・音声をbase64埋め込み）
+- 本体：`index.html` ＋ 画像・音声は `assets/`（2026-10-15cから別ファイル。ファイル名は中身のハッシュ。画像のPNGは無劣化WebPに変換済み。`data:` で埋め込まない）
 - 公開：GitHub Pages
 - デプロイ：`main`へpush → GitHub Pages
 - バージョン：`APP_BUILD`を画面下部に表示
