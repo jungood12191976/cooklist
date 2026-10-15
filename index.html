@@ -8773,7 +8773,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const pinned = lettersLoadPinned();
     const visible = all.filter(it => !hidden.has(keyOf(it)));
     const pinCount = visible.filter(it => pinned.has(keyOf(it))).length;
-    const shown = visible.filter(it => pinned.has(keyOf(it))).concat(visible.filter(it => !pinned.has(keyOf(it)))); // 📌付きを先頭へ(中の順番は元のまま)
+    const shown = visible.filter(it => !pinned.has(keyOf(it))).concat(visible.filter(it => pinned.has(keyOf(it)))); // 📌付きを最後へ(2026-10-15 キング指示。中の順番は元のまま)
 
     const sub = document.createElement('div'); sub.className = 'sky-date-sub';
     sub.textContent = '届いた手紙 ' + shown.length + '通' + (pinCount ? '（📌のこした手紙 ' + pinCount + '通）' : '');
@@ -13445,7 +13445,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-15g';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-15h';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
