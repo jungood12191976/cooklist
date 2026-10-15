@@ -8166,6 +8166,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   setInterval(() => {
     const vis = document.visibilityState === 'visible';
     if (screen === 'sky' && vis) {
+      applySkyCharVisibility();
       if (liveInWindow()) {
         // 画面から離れていた後は、チャートの抜けを埋めるため履歴を読み直す
         if (!skyLive.histAt || Date.now() - skyLive.lastVisibleAt > 20000) fetchSkyHist();
@@ -8394,6 +8395,17 @@ ${keywordLine}${bpBlock}${conditionBlock}
     });
     return panel;
   }
+  // 天空の城のキャラ(トランプ・勇者・ガーディアン)は、東証が開いている時間(前場・昼休み・後場=9:00〜15:30)だけ表示する
+  function skyCharsVisible(){
+    const st = getTseMarketStatus();
+    return st.session === 'am' || st.session === 'lunch' || st.session === 'pm';
+  }
+  function applySkyCharVisibility(scene){
+    const el = scene || document.querySelector('.sky-scene');
+    if (!el) return;
+    const show = skyCharsVisible();
+    el.querySelectorAll('.sky-trump, .sky-front-row').forEach(n => { n.style.display = show ? '' : 'none'; });
+  }
   function renderSkyCastle(root){
     const bar = document.createElement('div'); bar.className='rpg-topbar';
     bar.appendChild(buildScreenNavBar('sky'));
@@ -8426,18 +8438,17 @@ ${keywordLine}${bpBlock}${conditionBlock}
       scene.appendChild(cloud);
     }
 
-    // 東証休みの日は、トランプ・勇者・ガーディアンを出さない（お城と雲だけの静かな景色にする）
-    if (skyIsTradingDay(todayDateKey())) {
-      const trump = document.createElement('img'); trump.src = SKY_TRUMP; trump.className = 'sky-trump'; trump.alt = 'トランプ';
-      scene.appendChild(trump);
-
-      const frontRow = document.createElement('div'); frontRow.className = 'sky-front-row';
-      const hero = document.createElement('img'); hero.src = SKY_HERO_BACK; hero.className = 'sky-hero-back'; hero.alt = '勇者';
-      const guardian = document.createElement('img'); guardian.src = SKY_GUARDIAN_BACK; guardian.className = 'sky-guardian-back'; guardian.alt = 'ガーディアン';
-      frontRow.appendChild(hero);
-      frontRow.appendChild(guardian);
-      scene.appendChild(frontRow);
-    }
+    // 東証が開いている時間(営業日の9:00〜15:30、昼休みを含む)だけ、トランプ・勇者・ガーディアンを出す。
+    // それ以外(休場日・朝・夜)は、お城と雲だけの静かな景色にする(2026-10-15 キング承認 A案)。
+    const trump = document.createElement('img'); trump.src = SKY_TRUMP; trump.className = 'sky-trump'; trump.alt = 'トランプ';
+    scene.appendChild(trump);
+    const frontRow = document.createElement('div'); frontRow.className = 'sky-front-row';
+    const hero = document.createElement('img'); hero.src = SKY_HERO_BACK; hero.className = 'sky-hero-back'; hero.alt = '勇者';
+    const guardian = document.createElement('img'); guardian.src = SKY_GUARDIAN_BACK; guardian.className = 'sky-guardian-back'; guardian.alt = 'ガーディアン';
+    frontRow.appendChild(hero);
+    frontRow.appendChild(guardian);
+    scene.appendChild(frontRow);
+    applySkyCharVisibility(scene);
 
     root.appendChild(scene);
 
