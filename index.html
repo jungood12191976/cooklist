@@ -10812,6 +10812,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     };
     root.appendChild(buildW2Battle(ctx, usDoc, evs));   // ⚔️ 今日の作戦(2026-10-15)：暦より上
     const season = usDoc && jpDoc ? w2Season(ctx, usDoc) : null;
+    if (season && !season.cur) frontRow.style.display = 'none';   // 決算相場の外は、勇者とガーディアンを町に出さない(2026-10-15 キング指示)
     if (season && !season.cur && !world2UI.showOff) {   // 決算相場の外(最後の決算の翌週より後)は暦を隠す(2026-10-15 キング承認)
       const off = document.createElement('div'); off.className = 'pw';
       off.innerHTML = `<div class="pw-title">🗓️ ケッサン暦</div><div style="font-size:14px; color:#c8d0f0; line-height:1.7;">🏁 今回の決算相場はおわりました${season.prev ? '（最後の決算 ' + fmtMD(season.prev.end) + '）' : ''}。<br>値動きは ⏳ 時のへやの「📈 決算相場の折れ線」で見られます。${season.next ? '<br>次の決算相場は <b style="color:#ffd76b;">' + fmtMD(season.next.start) + '</b> ごろから。' : ''}</div>`;
@@ -13444,7 +13445,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-15f';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-15g';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
