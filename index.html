@@ -354,6 +354,10 @@
   .sg-lab{ font-size:13px; font-weight:bold; color:#ffe9a8; margin-bottom:6px; }
   .sg-ask{ display:block; width:100%; margin-top:10px; padding:11px 10px; font-size:15px; font-weight:bold; font-family:inherit; color:#1a1440; background:linear-gradient(#ffe9a8,#e3b94e); border:2px solid #fff3c8; border-radius:10px; box-shadow:0 3px 0 rgba(0,0,0,.35); cursor:pointer; }
   .sg-ask:disabled{ opacity:.55; cursor:default; }
+  .sg-sub{ display:flex; align-items:center; gap:6px; }
+  .sg-sub-txt{ flex:1; min-width:0; }
+  .sg-mark{ flex:none; width:34px; height:34px; font-size:16px; line-height:1; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.25); border-radius:8px; opacity:.6; }
+  .sg-mark.on{ opacity:1; background:rgba(255,233,168,.25); border-color:#ffe9a8; }
   .sg-letter-row{ display:flex; align-items:center; gap:10px; margin-top:10px; }
   .sg-letter{ padding:8px 14px; font-size:13.5px; font-family:inherit; color:#e9eeff; background:rgba(120,150,255,.16); border:1.5px solid rgba(157,180,255,.5); border-radius:10px; }
   .sg-letter:disabled{ opacity:.55; }
@@ -8845,6 +8849,11 @@ ${keywordLine}${bpBlock}${conditionBlock}
     }, 60000);
   }
 
+  // 📌ピン留め／🗑️消した質問の印(この端末だけ) {qid:'pin'|'del'}
+  const SAGE_MARK_KEY = 'ktq_sage_marks_v1';
+  function sageMarksLoad(){ try { return JSON.parse(localStorage.getItem(SAGE_MARK_KEY) || '{}') || {}; } catch(e){ return {}; } }
+  function sageMarksSave(o){ try { localStorage.setItem(SAGE_MARK_KEY, JSON.stringify(o)); } catch(e){} }
+
   // 手紙(画像)：スマホのスクショを小さくして、Geminiに「文字だけ」読み取ってもらい、質問の後ろに足して送る。
   // 画像そのものはどこにも保存せず、クロにも渡らない(クロに渡るのは文字だけ)。2026-10-14 キング承認(名前は「手紙をつける」)
   const SAGE_LETTER_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-3.8-flash']; // 実験(imgtest.html)で一番速く通った順
@@ -8984,11 +8993,27 @@ ${keywordLine}${bpBlock}${conditionBlock}
       root.appendChild(p);
     }
 
-    // 届いた答え(新しい順・最大10件)
+    // 届いた答え(📌ピン留めは先頭に残す／🗑️で消した質問は表示しない／ピン以外は新しい順に最大10件)
+    // 消す・ピンは、この端末だけの印(シートの記録は消さない)。2026-10-15 キング指示
     const marks = ['①', '②', '③'];
-    (sageState.rows || []).filter(r => r.status === '完了' || r.status === '失敗').slice().reverse().slice(0, 10).forEach(r => {
-      const sub = document.createElement('div'); sub.className = 'sky-date-sub'; sub.style.margin = '16px 0 4px';
-      sub.textContent = '「' + (r.q.length > 40 ? r.q.slice(0, 40) + '…' : r.q) + '」への答え' + (r.answeredAt ? '（' + r.answeredAt + '）' : '');
+    const sgm = sageMarksLoad();
+    const doneRows = (sageState.rows || []).filter(r => r.status === '完了' || r.status === '失敗').slice().reverse().filter(r => sgm[r.qid] !== 'del');
+    const shownRows = doneRows.filter(r => sgm[r.qid] === 'pin').concat(doneRows.filter(r => sgm[r.qid] !== 'pin').slice(0, 10));
+    shownRows.forEach(r => {
+      const pinned = sgm[r.qid] === 'pin';
+      const sub = document.createElement('div'); sub.className = 'sky-date-sub sg-sub'; sub.style.margin = '16px 0 4px';
+      const subTxt = document.createElement('span'); subTxt.className = 'sg-sub-txt';
+      subTxt.textContent = '「' + (r.q.length > 40 ? r.q.slice(0, 40) + '…' : r.q) + '」への答え' + (r.answeredAt ? '（' + r.answeredAt + '）' : '');
+      sub.appendChild(subTxt);
+      const pinB = document.createElement('button'); pinB.className = 'sg-mark' + (pinned ? ' on' : ''); pinB.textContent = '📌';
+      pinB.setAttribute('aria-label', pinned ? 'ピン留めをはずす' : 'ピン留めする');
+      pinB.addEventListener('click', () => { const m = sageMarksLoad(); if (pinned) delete m[r.qid]; else m[r.qid] = 'pin'; sageMarksSave(m); render(); });
+      sub.appendChild(pinB);
+      if (!pinned) { // ピン留め中は消せない(まちがい防止。先にピンをはずす)
+        const delB = document.createElement('button'); delB.className = 'sg-mark'; delB.textContent = '🗑️'; delB.setAttribute('aria-label', 'この質問を消す');
+        delB.addEventListener('click', () => { const m = sageMarksLoad(); m[r.qid] = 'del'; sageMarksSave(m); render(); });
+        sub.appendChild(delB);
+      }
       root.appendChild(sub);
       if (!r.ans || r.ans.error) {
         const p = document.createElement('div'); p.className = 'sky-panel';
@@ -13073,7 +13098,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-15a';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-15b';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
