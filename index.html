@@ -407,7 +407,7 @@
   .kcr-chips{ display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 8px; }
   .kcr-chip{ font-size:12px; color:#c8d0f0; background:rgba(255,255,255,0.05); border:1px solid rgba(157,180,255,0.3); border-radius:14px; padding:3px 10px; cursor:pointer; font-family:inherit; }
   .kcr-chip.on{ color:#2c1f5c; background:#ffd76b; border-color:#ffd76b; font-weight:bold; }
-  .kcr-scroll{ display:flex; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; gap:10px; scrollbar-width:thin; }
+  .kcr-scroll{ display:flex; align-items:flex-start; overflow-x:auto; overflow-y:hidden; transition:height .2s ease; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; gap:10px; scrollbar-width:thin; }
   .kcr-page{ flex:0 0 100%; min-width:0; scroll-snap-align:start; box-sizing:border-box; }
   .kcr-row{ display:flex; gap:8px; padding:6px 6px 7px; margin:0 0 4px; border-radius:8px; border:1px solid rgba(157,180,255,0.2); background:rgba(255,255,255,0.03); cursor:pointer; }
   .kcr-row.past{ opacity:0.5; }
@@ -10504,7 +10504,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
     if (allD.length) { kMin = Math.min(0, Math.floor(dayDiff(allD[0], mon0) / 14)); kMax = Math.max(0, Math.floor(dayDiff(allD[allD.length - 1], mon0) / 14)); }
     kMin = Math.max(kMin, -3); kMax = Math.min(kMax, 5);   // 多すぎる場合の上限(過去6週・先10週)
     const maxEarn = Math.max(1, ...allD.map(d => evs[d].earn.length));
-    const namesOf = codes => codes.slice().sort().map(c => nameFor(c) || c).join('・');
+    // 2026-10-15 修正：ランキング由来の名前は途中で切れている(例「三井住友フィナンシャルグ」)ので、暦では固定の短い名前を先に使う
+    const namesOf = codes => codes.slice().sort().map(c => (typeof STOCK_NAMES_JA !== 'undefined' && STOCK_NAMES_JA[c]) || nameFor(c) || c).join('・');
     const TAGC = { jp:'#7ec8ff', earn:'#ffd76b', win:'#bfe8a8', out:'#ff9d6b', us:'#ffb37a', news:'#c8a8ff' };
     const dayItems = (d, e) => {
       const it = [];
@@ -10556,16 +10557,19 @@ ${keywordLine}${bpBlock}${conditionBlock}
       });
       scroller.appendChild(page);
     });
+    // 2026-10-15 修正：一番長いページの高さに全ページがそろって、下に大きな空白が出ていた。表示中のページの高さに合わせる
+    const fitH = idx => { const pg = scroller.children[idx]; if (pg && pg.offsetHeight) scroller.style.height = pg.offsetHeight + 'px'; };
     let scTimer = null;
     scroller.addEventListener('scroll', () => {
       clearTimeout(scTimer);
       scTimer = setTimeout(() => {
         const idx = Math.max(0, Math.min(pages.length - 1, Math.round(scroller.scrollLeft / ((scroller.clientWidth || 1) + 10))));
         world2UI.page = pages[idx].k; chipEls.forEach((c, i) => c.classList.toggle('on', i === idx));
+        fitH(idx);
       }, 80);
     }, { passive: true });
     wrap.appendChild(chips); wrap.appendChild(scroller);
-    setTimeout(() => { const idx = pages.findIndex(pg => pg.k === curK); if (idx > 0 && scroller.clientWidth) scroller.scrollLeft = idx * (scroller.clientWidth + 10); }, 0);
+    setTimeout(() => { const idx = pages.findIndex(pg => pg.k === curK); if (idx > 0 && scroller.clientWidth) scroller.scrollLeft = idx * (scroller.clientWidth + 10); fitH(Math.max(0, idx)); }, 0);
     const nts = [ddNote('earnings_jp.json', '日本の決算日'), ddNote('earnings_us.json', '米国の決算日')].filter(Boolean);
     if (nts.length) { const d = document.createElement('div'); d.style.cssText = 'font-size:11px; color:#ffb86b; margin-top:6px;'; d.textContent = nts.join(' ／ '); wrap.appendChild(d); }
     // 表示の切り替え
@@ -13261,7 +13265,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-15d';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-15e';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
