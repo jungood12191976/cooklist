@@ -9806,6 +9806,20 @@ ${keywordLine}${bpBlock}${conditionBlock}
     else if (aP >= NEWS_CFG.fadeMinPrev && aL <= aP * NEWS_CFG.fadeRatio) key = 'fade';
     return { key, aL, aP, peak, above, today: counts[counts.length - 1], yday: done[done.length - 1] };
   }
+  // 株価の向き(キング承認 2026-10-16・ウワサの港「📈株価↑×記事」用)：
+  // 「上向き」＝直近5営業日の騰落率がプラス ＋ 終値が25日線の上(両方そろったとき)。それ以外は「下向き」。どちらかのデータが無ければ「判定できない」。
+  // 5営業日騰落＝px(終値)の最新と、その5営業日前の比較。25日線との差(vs25)は日経225スキャン結果(ktq:jiwa)から読む(pxは17営業日分しかなく25日線は作れない)。
+  function newsTrend(it, jmItem){
+    const px = it.px || {};
+    const ds = Object.keys(px).filter(d => px[d] && px[d][0] > 0).sort();
+    let ret5 = null;
+    if (ds.length >= 6) ret5 = (px[ds[ds.length - 1]][0] / px[ds[ds.length - 6]][0] - 1) * 100;
+    const vs25 = (jmItem && jmItem.vs25 != null) ? jmItem.vs25 : null;
+    let state = 'unknown';
+    if (ret5 != null && vs25 != null) state = (ret5 > 0 && vs25 > 0) ? 'up' : 'down';
+    return { state, ret5, vs25 };
+  }
+  function newsPctText(p){ return p == null ? '—' : (p >= 0 ? '+' : '') + p.toFixed(1) + '%'; }
   function newsSparkSvg(counts, dates, opts){
     const o = opts || {}; const W = 300, H = o.h || 56, pad = 4;
     const n = counts.length, mx = Math.max(3, ...counts);
@@ -9879,7 +9893,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const jm = jiwaMap();
     const rows = Object.keys(nv.items).map(code => {
       const it = nv.items[code]; const c = newsClassify(it.counts, newsMarketRatio(nv));
-      return { code, name: it.name || nameFor(code), it, c };
+      return { code, name: it.name || nameFor(code), it, c, tr: newsTrend(it, jm && jm[code]) };
     });
     const intro = document.createElement('div'); intro.style.cssText = 'font-size:12px; color:#c8d0f0; line-height:1.7; margin-bottom:6px;';
     intro.innerHTML = '線が右上がり＝その銘柄の記事が日々増えている／右下がり＝減っている。点線の最後の点は<b>今日(途中経過)</b>。' +
@@ -9888,7 +9902,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     wrap.appendChild(intro);
     // 並べ替え・検索(絞り込みはしない。全銘柄が出る。検索は探すためだけ)
     const ctl = document.createElement('div'); ctl.style.cssText = 'display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; align-items:center;';
-    const sorts = [['rank','🔥注目順'], ['rise','📈増加幅'], ['today','今日の件数'], ['code','コード順']];
+    const sorts = [['trend','📈株価↑×記事'], ['rank','🔥注目順'], ['rise','📈増加幅'], ['today','今日の件数'], ['code','コード順']];
     sorts.forEach(([k, lab]) => {
       const b = document.createElement('button'); b.className = 'rpg-settings-link' + (world3UI.sort === k ? ' active' : ''); b.textContent = lab;
       b.onclick = () => { playSelect(); world3UI.sort = k; render(); }; ctl.appendChild(b);
@@ -9911,6 +9925,27 @@ ${keywordLine}${bpBlock}${conditionBlock}
       const q = world3UI.q.trim().toLowerCase();
       if (q) arr = arr.filter(r => r.code.toLowerCase().includes(q) || String(r.name).toLowerCase().includes(q));
       const rise = r => r.c.aL - r.c.aP;
+      if (world3UI.sort === 'trend') {
+        // 上＝株価上向き(🔥積み上がりを先頭に、その中は直近7日の平均件数が多い順) → 別枠＝株価下向きで🔥積み上がり中 → 残りの下向き → 判定できない
+        const byNews = (a, b) => ((b.c.key === 'build') - (a.c.key === 'build')) || (b.c.aL - a.c.aL);
+        const groups = [
+          { t:'📈 株価↑ × 記事', s:'終値が上向き(5営業日プラス＋25日線の上)。🔥積み上がり→直近7日の平均件数が多い順', a: arr.filter(r => r.tr.state === 'up') },
+          { t:'📉 株価↓ × 記事多い', s:'🔥積み上がり中なのに株価は下向き(話題はあるが、株価はまだ付いてきていない)', a: arr.filter(r => r.tr.state === 'down' && r.c.key === 'build') },
+          { t:'その他の下向き', s:'株価が下向きで、🔥積み上がり中ではない銘柄', a: arr.filter(r => r.tr.state === 'down' && r.c.key !== 'build') },
+          { t:'判定できない', s:'25日線の値がありません(日経225のスキャン後に判定されます)', a: arr.filter(r => r.tr.state === 'unknown') }
+        ];
+        count.textContent = `${arr.length} / ${rows.length}銘柄を表示`;
+        list.innerHTML = '';
+        groups.forEach(g => {
+          if (!g.a.length) return;
+          g.a.sort(byNews);
+          const h = document.createElement('div'); h.style.cssText = 'margin:12px 0 2px; padding:6px 8px; background:rgba(157,180,255,0.10); border-left:3px solid #ffd76b; border-radius:3px;';
+          h.innerHTML = `<div style="font-size:14px; color:#fff; font-weight:bold;">${g.t} <span style="font-size:12px; color:#ffd76b;">${g.a.length}銘柄</span></div><div style="font-size:11px; color:#9db4ff; line-height:1.5;">${g.s}</div>`;
+          list.appendChild(h);
+          g.a.forEach(r => list.appendChild(buildNewsRow(r, nv, jm)));
+        });
+        return;
+      }
       if (world3UI.sort === 'rank') arr.sort((a, b) => (NEWS_LABELS[b.c.key].rank - NEWS_LABELS[a.c.key].rank) || (rise(b) - rise(a)));
       else if (world3UI.sort === 'rise') arr.sort((a, b) => rise(b) - rise(a));
       else if (world3UI.sort === 'today') arr.sort((a, b) => b.c.today - a.c.today);
@@ -9925,6 +9960,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const when = nv.fetched_at ? nv.fetched_at.replace('T', ' ').slice(0, 16) : '不明';
     foot.innerHTML = `出典：${escapeHtml(nv.source)}／取得 ${escapeHtml(when)}(JST)／確認レベル ${escapeHtml(nv.grade)}<br>` +
       `記事数は「注目度の代用」で、期待値そのものではありません(悪いニュースが多い日も棒は伸びる)。転載記事も数えます。` +
+      `「📈株価↑×記事」の株価の向き＝直近5営業日の終値の騰落がプラス＋終値が25日線の上(両方)。25日線との差は日経225スキャン${jm && jm.__asOf ? '(' + escapeHtml(jm.__asOf) + 'の終値)' : ''}の値です。` +
       `「記事が増えると株価が上がる」かどうかは未検証です。ラベルの基準は仮の目安です(直近7日の平均が「平常の1.5倍×市場全体の増え方」以上で、その水準を超えた日が4日以上＝🔥、など)。` +
       `検索は社名で行うため、同名の別の話題が混ざることがあります。`;
     wrap.appendChild(foot);
@@ -9943,7 +9979,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
       newsSparkSvg(r.it.counts, dts, { color: L.color, px: r.it.px, h: r.it.px ? 90 : 56 }) +
       `<div style="display:flex; justify-content:space-between; font-size:10px; color:#6f78a0;"><span>${fmtMD(dts[0])}</span>${r.it.px ? `<span><span style="color:${L.color};">━記事数</span> <span style="color:#e8605a;">━終値</span> <span style="color:#8a93b8;">▮出来高</span></span>` : ''}<span>${fmtMD(dts[dts.length-1])}</span></div>` +
       `<div style="font-size:12px; color:#c8d0f0; margin-top:2px;">直近7日 平均${r.c.aL.toFixed(1)}件/日 ／ それ以前 ${r.c.aP.toFixed(1)}件/日 ／ 昨日 ${r.c.yday}件・今日(途中) ${r.c.today}件 ／ 最多 ${peakV}件(${fmtMD(peakD)})${r.it.capped ? ' ／ ⚠上限到達あり' : ''}</div>` +
-      `<div style="font-size:12px; margin-top:1px;">${jiwa}</div>`;
+      `<div style="font-size:12px; margin-top:1px;">${jiwa}</div>` +
+      ((world3UI.sort === 'trend' && r.tr) ? `<div style="font-size:12px; margin-top:1px; color:#c8d0f0;">株価: 5営業日 ${newsPctText(r.tr.ret5)} ／ 25日線との差 ${newsPctText(r.tr.vs25)}</div>` : '');
     return row;
   }
 
@@ -13445,7 +13482,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-15h';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-16a';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
