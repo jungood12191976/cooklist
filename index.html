@@ -270,6 +270,15 @@
   .lt-ex summary{ cursor:pointer; font-size:13px; color:#9fd0ff; font-weight:bold; }
   .lt-ex-line{ font-size:14.5px; color:#d6e2ff; line-height:1.75; margin:6px 0; }
   .lt-ex-hyp{ font-size:17px; font-weight:bold; line-height:1.7; color:#ffe9a8; border-left:3px solid #d9b44a; padding-left:8px; }
+  /* 📰 世界の速報カード(2026-10-17 キング承認：手紙と同じ形・大きな文字・出典の文字は出さない) */
+  .nw-card{ padding:12px 0; border-top:1px solid rgba(157,180,255,0.25); line-height:1.6; }
+  .nw-meta{ font-size:12.5px; color:#9db4ff; letter-spacing:.3px; margin-bottom:4px; }
+  .nw-head{ font-size:17px; font-weight:bold; color:#fff; line-height:1.55; margin-bottom:6px; }
+  .nw-num{ font-size:14.5px; color:#ffd76b; line-height:1.6; margin:4px 0; }
+  .nw-kw{ font-size:13px; color:#9db4ff; line-height:1.6; margin:4px 0; }
+  .nw-note{ font-size:14px; color:#c8a8ff; line-height:1.7; margin:6px 0; }
+  .nw-pri{ font-size:12px; line-height:1.6; margin-top:6px; }
+  .nw-pri a{ color:#9db4ff; }
   .lt-dd{ margin:8px 0 2px; border:1px dashed #d9a84a; border-radius:8px; padding:6px 10px; background:rgba(190,140,40,.10); }
   .lt-dd summary{ cursor:pointer; font-size:13px; color:#ffd98a; font-weight:bold; }
   .lt-dd-line{ font-size:14.5px; color:#ece6d4; line-height:1.75; margin:6px 0; }
@@ -8790,6 +8799,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const h1 = document.createElement('div'); h1.className = 'rpg-h1'; h1.textContent = '✉️ ひみつの手紙'; root.appendChild(h1);
     root.appendChild(buildLettersScene()); // 手紙が宙を舞う部屋＋2人の後ろ姿(他の場面と同じ大きさ)
     if (soundOn) startStageBGM('tegami'); // 曲は「手紙の広場」(再描画では鳴らし直さない)
+    fetchWorldNews(false);
+    root.appendChild(buildWorldNewsPanel()); // 世界の速報(2026-10-17 キング指示：手紙の上)
 
     if (lettersState.status === 'idle' || (lettersState.status === 'ok' && Date.now() - lettersState.fetchedAt > 3*60*1000)) fetchLetters();
 
@@ -9458,7 +9469,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     if (worldState.status !== 'loading' && !worldIsFresh()) fetchWorldSignals(false);
     fetchWorldNews(false);
     root.appendChild(buildWorldSignalPanel());
-    root.appendChild(buildWorldNewsPanel());
+    // 世界の速報は2026-10-17にキング指示で「ひみつの手紙」画面の上へ移した(renderSecretLetters)
   }
   // ===== 🧪 実験室(世界の入口)：過去の日足から「じわじわ成立の日」を再計算し、その後の値動きを数える(キング指示 2026-10-05) =====
   // 日足(1年)だけで、過去の各日の成立/不成立を computeGoldMineSignals で再計算できるので、記録がたまるのを待たずに今すぐ検証できる。
@@ -9683,7 +9694,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
       const g = (r, k) => ix[k] == null ? '' : String(r[ix[k]] == null ? '' : r[ix[k]]).trim();
       const items = rows.slice(1).map((r, i) => ({
         i, date: g(r,'date'), kind: g(r,'kind'), head: g(r,'headline_ja'), numbers: g(r,'numbers'), keywords: g(r,'keywords'),
-        note: g(r,'link_note'), source: g(r,'source'), published: g(r,'published'), url: g(r,'url'), grade: g(r,'grade'), body: g(r,'body_read'), primary: g(r,'primary'), evs: parseWorldEvents(g(r,'events'))
+        note: g(r,'link_note'), source: g(r,'source'), published: g(r,'published'), url: g(r,'url'), grade: g(r,'grade'), body: g(r,'body_read'), primary: g(r,'primary'), evs: parseWorldEvents(g(r,'events')),
+        explain: g(r,'explain_ja').split('\n').map(x => x.trim()).filter(Boolean), daytrade: g(r,'daytrade_ja').split('\n').map(x => x.trim()).filter(Boolean) // 2026-10-17〜 シートO列(かんたん解説)・P列(デイトレとの関係)。列が無い/空の古い行は何も出さず従来表示
       })).filter(it => /^\d{4}-\d{2}-\d{2}$/.test(it.date) && it.head);
       items.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.i - b.i)); // 新しい日が上。同じ日はシートの並び順のまま
       worldNews.items = items; worldNews.error = null;
@@ -9691,7 +9703,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       worldNews.error = (e && e.name === 'AbortError') ? '時間切れ' : String((e && e.message) || e);
     }
     worldNews.status = worldNews.items ? 'ok' : 'error';
-    if (screen === 'world' || screen === 'world2') render();
+    if (screen === 'world' || screen === 'world2' || screen === 'letters') render();
   }
   function buildWorldNewsPanel(){
     const wrap = document.createElement('div'); wrap.className = 'pw';
@@ -9704,19 +9716,23 @@ ${keywordLine}${bpBlock}${conditionBlock}
     } else {
       const list = worldNews.showAll ? worldNews.items : worldNews.items.slice(0, 8);
       list.forEach(it => {
-        const card = document.createElement('div'); card.style.cssText = 'padding:8px 0; border-top:1px solid rgba(157,180,255,0.18); line-height:1.6;';
-        const meta = document.createElement('div'); meta.style.cssText = 'font-size:11px; color:#8a93b8;';
-        meta.textContent = `${it.date}　${it.kind}　確度${it.grade || '?'}`; card.appendChild(meta);
-        const h = document.createElement('div'); h.style.cssText = 'font-size:14px; color:#fff;'; h.textContent = it.head; card.appendChild(h);
-        if (it.numbers) { const d = document.createElement('div'); d.style.cssText = 'font-size:12px; color:#ffd76b;'; d.textContent = '数値：' + it.numbers; card.appendChild(d); }
-        if (it.keywords) { const d = document.createElement('div'); d.style.cssText = 'font-size:12px; color:#9db4ff;'; d.textContent = 'キーワード：' + it.keywords; card.appendChild(d); }
-        if (it.note) { const d = document.createElement('div'); d.style.cssText = 'font-size:12px; color:#c8a8ff;'; d.textContent = it.note; card.appendChild(d); } // 「仮説：…」で始まる行。事実ではないので色を分ける
-        const src = document.createElement('div'); src.style.cssText = 'font-size:11px; color:#8a93b8;';
-        src.appendChild(document.createTextNode(`出典 ${it.source}（公開 ${it.published || '不明'}）・${it.body === '本文' ? '本文まで読んだ' : '見出しのみ'}　`));
-        if (/^https?:\/\//i.test(it.url)) { const a = document.createElement('a'); a.href = it.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.style.color = '#9db4ff'; a.textContent = '元記事を開く'; src.appendChild(a); }
-        card.appendChild(src);
-        // 一次情報（シートM列 primary）：「名称｜URL｜確認日｜一次側の最新日付と値」か「なし」。空・なしは【1次情報なし】
-        const pr = document.createElement('div'); pr.style.cssText = 'font-size:11px;';
+        const card = document.createElement('div'); card.className = 'nw-card';
+        const meta = document.createElement('div'); meta.className = 'nw-meta';
+        meta.textContent = `${fmtMD(it.date)}　${it.kind}　確度${it.grade || '?'}・${it.body === '本文' ? '本文まで読んだ' : '見出しのみ'}`; card.appendChild(meta); // 出典名・公開日は出さない(元記事を開けばわかる)
+        const h = document.createElement('div'); h.className = 'nw-head'; h.textContent = it.head; card.appendChild(h);
+        if (it.numbers) { const d = document.createElement('div'); d.className = 'nw-num'; d.textContent = '数値：' + it.numbers; card.appendChild(d); }
+        const hasEx = it.explain && it.explain.length, hasDt = it.daytrade && it.daytrade.length;
+        if (hasDt) { // デイトレとの関係(クロの仮説)。💡の行は仮説なので大きく色を変える
+          it.daytrade.forEach(l => { const d = document.createElement('div'); d.className = 'lt-ex-line' + (l.indexOf('💡') === 0 ? ' lt-ex-hyp' : ''); d.textContent = l; card.appendChild(d); });
+        } else if (it.note) { const d = document.createElement('div'); d.className = 'nw-note'; d.textContent = it.note; card.appendChild(d); } // 古い行：「仮説：…」で始まる行。事実ではないので色を分ける
+        if (hasEx) { // 🔰 かんたん解説(手紙と同じ。ふだんは閉じる)
+          const ex = document.createElement('details'); ex.className = 'lt-ex';
+          const sm = document.createElement('summary'); sm.textContent = '🔰 かんたん解説'; ex.appendChild(sm);
+          it.explain.forEach(l => { const d = document.createElement('div'); d.className = 'lt-ex-line' + (l.indexOf('💡') === 0 ? ' lt-ex-hyp' : ''); d.textContent = l; ex.appendChild(d); });
+          card.appendChild(ex);
+        } else if (it.keywords) { const d = document.createElement('div'); d.className = 'nw-kw'; d.textContent = 'キーワード：' + it.keywords; card.appendChild(d); }
+        // 一次情報（シートM列 primary）：「名称｜URL｜確認日｜一次側の最新日付と値」か「なし」。空・なしは【1次情報なし】(キング指示 2026-10-17：このまま残す)
+        const pr = document.createElement('div'); pr.className = 'nw-pri';
         const pp = (it.primary || '').split('｜').map(x => x.trim());
         if (!it.primary || /^なし/.test(it.primary)) {
           if (it.grade === 'A') { pr.style.color = '#8a93b8'; pr.textContent = '一次情報：出典そのものが一次'; }
@@ -9724,9 +9740,14 @@ ${keywordLine}${bpBlock}${conditionBlock}
         } else {
           pr.style.color = '#7be0a0';
           pr.appendChild(document.createTextNode(`一次情報：${pp[0] || ''}${pp[2] ? '（確認 ' + pp[2] + '）' : ''} ${pp[3] || ''}　`));
-          if (/^https?:\/\//i.test(pp[1] || '')) { const a = document.createElement('a'); a.href = pp[1]; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.style.color = '#9db4ff'; a.textContent = '一次情報を開く'; pr.appendChild(a); }
+          if (/^https?:\/\//i.test(pp[1] || '')) { const a = document.createElement('a'); a.href = pp[1]; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = '一次情報を開く'; pr.appendChild(a); }
         }
         card.appendChild(pr);
+        if (/^https?:\/\//i.test(it.url)) { // 元記事リンク(javascript:等は出さない)
+          const btns = document.createElement('div'); btns.className = 'lt-btns';
+          const a = document.createElement('a'); a.className = 'rpg-settings-link'; a.textContent = '📰 元記事を開く'; a.href = it.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.style.textDecoration = 'none';
+          btns.appendChild(a); card.appendChild(btns);
+        }
         wrap.appendChild(card);
       });
       if (worldNews.items.length > 8) {
@@ -13513,7 +13534,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-17b';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-17c';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
