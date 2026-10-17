@@ -9601,28 +9601,21 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const one = ok.filter(x => !x.sig.jiwajiwa && nCond(x) === 2); // 3条件のうち2つ満たす＝あと1条件(キング確定の3条件をそのまま数えただけ)
     const first = ok[0];
 
-    // ---- 今夜の要点(取得済みの結果から機械的に並べるだけ。通信は増えない) ----
-    const sum = document.createElement('div'); sum.style.cssText = 'background:rgba(255,215,107,0.08); border:1px solid rgba(255,215,107,0.35); padding:8px 10px; margin-bottom:8px; font-size:12.5px; line-height:1.8; color:#e6ebff;';
-    const fmtPct = p => (p >= 0 ? '+' : '') + p.toFixed(2) + '%';
-    const chipLine = (label, arr, withPct) => {
-      const d = document.createElement('div');
-      const b = document.createElement('b'); b.style.color = '#ffd76b'; b.textContent = label; d.appendChild(b);
-      d.appendChild(document.createTextNode(' ' + (arr.length ? arr.map(x => `${x.sym}${withPct && x.sig.changePct != null ? '(' + fmtPct(x.sig.changePct) + ')' : ''}`).join('　') : 'なし')));
-      sum.appendChild(d);
+    // ---- 今夜の要点(2026-10-17キング指示：見出し＋大きな数字2つだけ。細かい中身は下の一覧に出る。取得済みの結果から機械的に出すだけで通信は増えない) ----
+    const sum = document.createElement('div'); sum.style.cssText = 'background:rgba(255,215,107,0.08); border:1px solid rgba(255,215,107,0.35); padding:12px 12px 8px; margin-bottom:8px; color:#e6ebff;';
+    const WD_JP = ['日','月','火','水','木','金','土'];
+    const asOfTxt = !first ? '不明' : (/^\d{4}-\d{2}-\d{2}$/.test(first.asOf) ? `${first.asOf}（${WD_JP[new Date(first.asOf + 'T00:00:00Z').getUTCDay()]}）` : first.asOf);
+    const head = document.createElement('div'); head.style.cssText = 'font-size:17px; font-weight:bold; line-height:1.5; color:#ffd76b; margin-bottom:6px;'; head.textContent = `📜 今夜の要点（米国 ${asOfTxt} の引けまで）`; sum.appendChild(head);
+    const bigLine = (label, n, numColor) => {
+      const d = document.createElement('div'); d.style.cssText = 'display:flex; align-items:baseline; justify-content:space-between; gap:8px; padding:2px 0;';
+      const l = document.createElement('span'); l.style.cssText = 'font-size:17px; font-weight:bold; color:#ffd76b;'; l.textContent = label; d.appendChild(l);
+      const r = document.createElement('span'); r.style.whiteSpace = 'nowrap';
+      const num = document.createElement('span'); num.style.cssText = 'font-size:56px; font-weight:bold; line-height:1.1; color:' + numColor + ';'; num.textContent = String(n); r.appendChild(num);
+      const u = document.createElement('span'); u.style.cssText = 'font-size:17px; font-weight:bold; color:#c8d0f0; margin-left:2px;'; u.textContent = 'か所'; r.appendChild(u);
+      d.appendChild(r); sum.appendChild(d);
     };
-    const head = document.createElement('div'); head.style.cssText = 'font-size:12px; color:#ffd76b; margin-bottom:2px;'; head.textContent = `📜 今夜の要点（米国 ${first ? first.asOf : '不明'} の引けまで）`; sum.appendChild(head);
-    chipLine(`🟢 じわじわ成立 ${full.length}か所`, full, true);
-    chipLine(`⚪ あと1条件 ${one.length}か所`, one, true);
-    const withChg = ok.filter(x => x.sig.changePct != null).slice().sort((a, b) => b.sig.changePct - a.sig.changePct);
-    chipLine('📈 前日比 上位5', withChg.slice(0, 5), true);
-    chipLine('📉 前日比 下位5', withChg.slice(-5).reverse(), true);
-    const diff = worldDiff();
-    if (diff) {
-      chipLine(`🆕 前回(${diff.asOf})から新しく成立`, diff.added, false);
-      chipLine('⬇️ 前回から成立が外れた', diff.dropped, false);
-    } else {
-      const d = document.createElement('div'); d.style.color = '#8a93b8'; d.textContent = '🆕 前回からの変化：米国の取引日が変わると、ここに出ます（まだ前の日の記録がありません）。'; sum.appendChild(d);
-    }
+    bigLine('🟢 じわじわ成立', full.length, '#ffd76b');
+    bigLine('⚪ あと1条件', one.length, '#ffffff');
     const ng = worldState.items.length - ok.length;
     if (ng > 0) { const d = document.createElement('div'); d.style.color = '#ff9c9c'; d.textContent = `⚠️ 取得できなかった ${ng}か所（下の「ほかのか所」に理由つきで出ます）`; sum.appendChild(d); }
     wrap.appendChild(sum);
@@ -13520,7 +13513,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-17a';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-17b';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
