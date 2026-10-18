@@ -246,6 +246,7 @@
   .lv-nm{ font-size:15px; font-weight:bold; color:#fff; }
   .lv-copy{ font-family:inherit; font-size:12px; color:#ffe9a8; background:rgba(255,215,107,.14); border:1px dashed #d9b44a; border-radius:6px; padding:1px 6px; margin-left:6px; cursor:pointer; }
   .lv-copy.ok{ background:#3a6b3f; color:#fff; border-style:solid; }
+  .gm-copy{ margin-left:0; margin-right:6px; }
   .lv-cd{ font-size:10px; color:#8fa0c8; margin-left:4px; font-weight:normal; }
   .lv-px{ font-size:13px; color:#b9c4e6; font-variant-numeric:tabular-nums; white-space:nowrap; }
   .lv-l2{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
@@ -5496,7 +5497,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
         </div>`;
         const tagsHtml = ap.tags.map(t => `<div class="gm-feature-tag">● <b>${t.label}</b>：${t.detail}</div>`).join('');
         const overheatHtml = `<div class="gm-overheat-row${overheat.warn ? ' warn' : ''}">${overheat.text}</div>`;
-        card.innerHTML = `${themeTag}<div class="gm-feature-code">${labelFor(ap.code)}</div>${stateHtml}${tagsHtml}${overheatHtml}`;
+        card.innerHTML = `${themeTag}<div class="gm-feature-code">${labelFor(ap.code, true)}</div>${stateHtml}${tagsHtml}${overheatHtml}`;
         featWrap.appendChild(card);
       });
       const cav = document.createElement('div'); cav.className = 'gm-feature-caveat';
@@ -5549,7 +5550,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
           `当日出来高：${ob.volume!=null ? Math.round(ob.volume).toLocaleString()+'株' : '不明'}`,
           `推定現在売買代金：${ob.turnoverEst!=null ? (ob.turnoverEst/1e8).toFixed(1)+'億円(概算)' : '不明'}`
         ];
-        card.innerHTML = `<div class="gm-dt-code">${labelFor(ob.code)}</div>` + rows.map(r => `<div class="gm-dt-row">${r}</div>`).join('');
+        card.innerHTML = `<div class="gm-dt-code">${labelFor(ob.code, true)}</div>` + rows.map(r => `<div class="gm-dt-row">${r}</div>`).join('');
         dtWrap.appendChild(card);
       });
       const dtEnv = document.createElement('div'); dtEnv.className = 'gm-dt-row';
@@ -5697,7 +5698,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
             ? 'background:linear-gradient(135deg, rgba(255,215,107,0.18), rgba(255,255,255,0.06)); border:1px solid #ffd76b; border-radius:10px; padding:10px 12px; margin-bottom:10px;'
             : 'background:rgba(255,255,255,0.06); border-radius:10px; padding:10px 12px; margin-bottom:8px;';
           const tagsHtml = hit.tags.map(tag => `<div style="font-size:12px; margin-bottom:3px;">${tag.bull?'🟢':'🔴'} <b>${tag.label}</b>：${tag.detail}</div>`).join('');
-          card.innerHTML = `${isTop ? '<div style="font-size:12px; color:#ffd76b; font-weight:bold; margin-bottom:4px;">👑 本日のイチオシ</div>' : ''}<div style="font-weight:bold; margin-bottom:6px; font-size:${isTop?'17px':'14px'};">${labelFor(hit.code)}</div>
+          card.innerHTML = `${isTop ? '<div style="font-size:12px; color:#ffd76b; font-weight:bold; margin-bottom:4px;">👑 本日のイチオシ</div>' : ''}<div style="font-weight:bold; margin-bottom:6px; font-size:${isTop?'17px':'14px'};">${labelFor(hit.code, true)}</div>
             ${tagsHtml}
             <div style="font-size:11px; color:#9db4ff; margin-top:4px;">データ取得: ${hit.asOf}(${hit.src})</div>`;
           const ctxBtnWrap = document.createElement('div'); ctxBtnWrap.style.marginTop='6px';
@@ -5869,7 +5870,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
           row.innerHTML =
             `<div style="font-size:10.5px;color:#9db4ff;margin-bottom:2px;">` +
             `<span style="color:${it.cls.color};font-weight:bold;">[${it.cls.layer}]</span> ` +
-            `${when}　${it.code || ''} ${it.name || ''}</div>` +
+            `${when}　${gmCopyBtn(it.code) || (it.code || '')} ${it.name || ''}</div>` +
             `<div style="font-size:12.5px;line-height:1.5;">${it.title}</div>`;
           gWrap.appendChild(row);
         });
@@ -13523,9 +13524,27 @@ ${note}
     return dyn;
   }
   // コードに会社名がわかっていれば添える
-  function labelFor(code){
+  // 2026-10-19 キング指示：金の鉱山の銘柄コードをタップでコピー(証券会社アプリの検索欄に貼る用)。見た目は勇者のライブ表の📋ボタンと同じ。
+  function gmCopyBtn(code){
+    const c = String(code == null ? '' : code).replace(/[^0-9A-Za-z]/g, '');
+    return c ? `<button type="button" class="lv-copy gm-copy" data-gm-copy="${c}" aria-label="銘柄コード${c}をコピー">${c} 📋</button>` : '';
+  }
+  document.addEventListener('click', async (ev) => {
+    const b = ev.target && ev.target.closest ? ev.target.closest('[data-gm-copy]') : null;
+    if (!b) return;
+    ev.stopPropagation();
+    const code = b.dataset.gmCopy;
+    const ok = await voyageCopyText(code);
+    b.classList.toggle('ok', !!ok);
+    b.textContent = ok ? code + ' ✓' : code + ' 長押しでコピー';
+    if (ok) setTimeout(() => { b.classList.remove('ok'); b.textContent = code + ' 📋'; }, 1500);
+    else { try { const r = document.createRange(); r.selectNodeContents(b); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch(e){} }
+  });
+  // コードに会社名がわかっていれば添える(copy=trueのときはコードをコピーボタンにする)
+  function labelFor(code, copy){
     const n = nameFor(code);
-    return n ? `${code} <span style="font-weight:normal; font-size:0.78em; color:#9db4ff;">${n}</span>` : String(code);
+    const head = copy ? (gmCopyBtn(code) || String(code)) : String(code);
+    return n ? `${head} <span style="font-weight:normal; font-size:0.78em; color:#9db4ff;">${n}</span>` : head;
   }
 
   function activeUniverse(){
@@ -13534,7 +13553,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-17c';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-19a';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
