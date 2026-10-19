@@ -423,6 +423,12 @@
   .kcr-row.past{ opacity:0.5; }
   .kcr-row.hol{ background-image:repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0 4px, transparent 4px 8px); }
   .kcr-row.sel{ border-color:#ffd76b; box-shadow:0 0 0 2px #ffd76b; }
+  /* 選んだ日(黄色い枠)だけ文字を大きく(2026-10-19 キング指示) */
+  .kcr-row.sel .kcr-d{ flex-basis:84px; font-size:19px; }
+  .kcr-row.sel .kcr-d small{ font-size:14px; }
+  .kcr-row.sel .kcr-t{ font-size:16px; }
+  .kcr-row.sel .kcr-n{ font-size:20px; }
+  .kcr-row.sel .kcr-m{ font-size:13px; }
   .kcr-row.today{ border-color:#7ec8ff; animation:kcrBlink 1.6s ease-in-out infinite; }
   @keyframes kcrBlink{ 0%,100%{ background-color:rgba(126,200,255,0.10); box-shadow:0 0 0 1px #7ec8ff inset; } 50%{ background-color:rgba(126,200,255,0.34); box-shadow:0 0 0 2px #bfe8ff inset, 0 0 10px rgba(126,200,255,0.55); } }
   @media (prefers-reduced-motion: reduce){ .kcr-row.today{ animation:none; background-color:rgba(126,200,255,0.22); box-shadow:0 0 0 2px #7ec8ff inset; } }
@@ -13553,7 +13559,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-19b';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-19a';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
