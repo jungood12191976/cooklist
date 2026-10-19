@@ -9730,7 +9730,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
         if (it.numbers) { const d = document.createElement('div'); d.className = 'nw-num'; d.textContent = '数値：' + it.numbers; card.appendChild(d); }
         const hasEx = it.explain && it.explain.length, hasDt = it.daytrade && it.daytrade.length;
         if (hasDt) { // デイトレとの関係(クロの仮説)。💡の行は仮説なので大きく色を変える
-          it.daytrade.forEach(l => { const d = document.createElement('div'); d.className = 'lt-ex-line' + (l.indexOf('💡') === 0 ? ' lt-ex-hyp' : ''); d.textContent = l; card.appendChild(d); });
+          it.daytrade.forEach(l => { const d = document.createElement('div'); d.className = 'lt-ex-line' + (l.indexOf('💡') === 0 ? ' lt-ex-hyp' : ''); d.textContent = l.replace(/^💡\s*見方\s*[(（]仮説[)）]\s*[:：]\s*/, '💡 仮説→ '); card.appendChild(d); }); // 2026-10-19 キング指示：「見方(仮説)：」→「仮説→」
         } else if (it.note) { const d = document.createElement('div'); d.className = 'nw-note'; d.textContent = it.note; card.appendChild(d); } // 古い行：「仮説：…」で始まる行。事実ではないので色を分ける
         if (hasEx) { // 🔰 かんたん解説(手紙と同じ。ふだんは閉じる)
           const ex = document.createElement('details'); ex.className = 'lt-ex';
@@ -13559,7 +13559,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-19d';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-19e';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
