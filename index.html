@@ -555,7 +555,7 @@
   .rpg-cycle-dot.blue{ background:#4da3ff; box-shadow:0 0 6px rgba(77,163,255,0.7); }
   .rpg-cycle-dot.red{ background:#ff2d2d; box-shadow:0 0 8px rgba(255,45,45,0.9); animation:rpgCycBlink 1s ease-in-out infinite; }
   @keyframes rpgCycBlink{ 0%,100%{ opacity:1; } 50%{ opacity:0.12; } }
-  .rpg-cycle-warn{ font-size:13px; font-weight:bold; color:#ff7a7a; line-height:1.7; margin:2px 0 4px; }
+  .rpg-cycle-warn{ font-size:16px; font-weight:bold; color:#ff7a7a; line-height:1.7; margin:2px 0 4px; }
   .rpg-cycle-chk{ display:flex; flex-wrap:wrap; gap:4px 14px; margin:2px 0 6px; }
   .rpg-cycle-chk label{ font-size:13px; color:#fff; display:flex; align-items:center; gap:5px; cursor:pointer; }
   .rpg-cycle-chk input{ width:18px; height:18px; }
@@ -4800,12 +4800,12 @@ ${keywordLine}${bpBlock}${conditionBlock}
 
       if (isAlert) {
         const warn = document.createElement('div'); warn.className='rpg-cycle-warn';
-        warn.textContent = '21日目から便秘になりやすい時期！ ビタミンB6・メラトニン・早く寝ること！';
+        warn.textContent = '21日目から便秘になりやすい時期！';
         cycWrap.appendChild(warn);
       }
       const chkWrap = document.createElement('div'); chkWrap.className='rpg-cycle-chk';
       if (!dayData.cycChk) dayData.cycChk = {};
-      [['b6','ビタミンB6'], ['mel','メラトニン'], ['sleep22','22時に寝る']].forEach(([k, label]) => {
+      [['b6','ビタミンB6'], ['mel','メラトニン'], ['sleep22','22時に寝る'], ['glysoy','グリシン豆乳'], ['dha1','DHA1粒追加']].forEach(([k, label]) => {
         const lb = document.createElement('label');
         const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!dayData.cycChk[k];
         cb.addEventListener('change', () => { dayData.cycChk[k] = cb.checked; saveDay(); });
@@ -13553,7 +13553,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-19a';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-19b';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
