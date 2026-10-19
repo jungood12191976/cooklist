@@ -9918,7 +9918,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   }
 
   // ---------- 🌍 世界の入口3：注目度(ニュース記事数)の折れ線 ----------
-  let world3UI = { sort:'rank', q:'', label:'all' };
+  let world3UI = { sort:'trend', q:'', label:'all' };  // 2026-10-19 キング指示：最初は「📈株価↑×記事」から表示
   function renderWorldNews3(root){
     const bar = document.createElement('div'); bar.className = 'rpg-topbar';
     bar.appendChild(buildScreenNavBar('world3')); root.appendChild(bar);
@@ -13559,7 +13559,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-19c';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-19d';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
