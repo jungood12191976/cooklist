@@ -9610,10 +9610,10 @@ ${keywordLine}${bpBlock}${conditionBlock}
   // 勇者のいえ用の1行(市場の温度＋いちばん熱い業種3つ)
   function buildSectorHubLine(){
     const c = sectorTempCalc(sectorTemp.days);
-    const d = document.createElement('div'); d.className = 'pw'; d.style.padding = '8px 12px';
+    const d = document.createElement('div'); d.className = 'pw'; d.style.padding = '14px 12px 8px';   // 2026-10-21 キング指示：今日の航路と同じ、左上の黄色いタブ
     if (!c) { d.style.display = 'none'; return d; }
     const top = c.list.slice(0, 3).map(x => `${x.n}<b style="font-size:20px; margin-left:2px; color:hsl(${sectorHue(x.t)},85%,68%);">${Math.round(x.t)}</b>`).join('・'); // 2026-10-20 キング指示で熱い業種の文字を大きく
-    d.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;"><span style="font-size:14px; font-weight:bold; color:#ffd76b;">🌡️ 市場の温度（${sectorMd(c.last.date)}）</span><span style="white-space:nowrap;"><b style="font-size:24px; color:hsl(${sectorHue(c.market)},85%,65%);">${Math.round(c.market)}</b><span style="font-size:12px; color:#c8d0f0;">/100</span></span></div>${sectorBar(c.market, 8)}<div class="sector-hot-line" style="font-size:16px; font-weight:bold; color:#ffffff; margin-top:6px; line-height:1.6; white-space:nowrap; overflow:hidden;"><span style="font-weight:normal; color:#c8d0f0;">熱い業種：</span>${top}</div><div style="font-size:11px; color:#8a93b8;">（全33業種は🌍世界の入口）</div>`;
+    d.innerHTML = `<div class="pw-title">🌡️ 市場の温度（${sectorMd(c.last.date)}）</div><div style="display:flex; justify-content:flex-end; align-items:baseline; gap:8px;"><span style="white-space:nowrap;"><b style="font-size:24px; color:hsl(${sectorHue(c.market)},85%,65%);">${Math.round(c.market)}</b><span style="font-size:12px; color:#c8d0f0;">/100</span></span></div>${sectorBar(c.market, 8)}<div class="sector-hot-line" style="font-size:16px; font-weight:bold; color:#ffffff; margin-top:6px; line-height:1.6; white-space:nowrap; overflow:hidden;"><span style="font-weight:normal; color:#c8d0f0;">熱い業種：</span>${top}</div><div style="font-size:11px; color:#8a93b8;">（全33業種は🌍世界の入口）</div>`;
     // 2026-10-20 キング指示：炎のマークを消し、1列に収める(はみ出すときは文字を少しずつ小さくする・最小10px)
     requestAnimationFrame(() => {
       const el = d.querySelector('.sector-hot-line'); if (!el) return;
@@ -13751,7 +13751,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-21b';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-21c';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
