@@ -765,3 +765,10 @@ corsproxyは廃止。stooqは除外。
 - `kabu_live.ps1`の朝の削除を `/live/<合言葉>` 丸ごと → now・h・snap だけに変更(secを消さないため)。
 - 検証：ヘッドレスChromiumでシート4日分を読ませ、勇者のいえの1行(市場64・海運業97・サービス業87・陸運業74)と別計算(Python)が一致。kabuの模擬データ(短い業種名)を足した場合も33業種が対応し5日分で表示。kabuの実際の業種名は未確認(初回15:35の実行で確認する)。
 - 未着手：売買代金日次タブも同じ理由で0行のまま(朝の予備には未対応)。
+
+## 2026-10-21e ウワサの港 上位5＋Polymarket温度計／勇者のいえ「ウワサの港より」
+- Polymarket: `scripts/fetch_polymarket.py` + `.github/workflows/polymarket.yml`(毎時10分) → `data/polymarket.json`(公開API gamma /events、取引量上位500件をテーマ別に振り分け)。確率は予測市場の値段で事実ではない。アプリは読むだけ。
+- ウワサの港: 上部に「📈株価↑×記事 上位5」(折りたたみ・`buildTop5Box`)、その下に「Polymarketの温度計」(折りたたみ・`buildPolymarketBox`)。開閉は`world3UI.topOpen/pmOpen`。
+- 勇者のいえ: Lv.の黄色枠は元どおりLv.Nのみ。今日の作戦の前に黄色枠「ウワサの港より」(`buildUwasaPickBox`)。見出しを押すとウワサの港へ。中身は`newsTopUp3()`(上位3つ・無ければ非表示)。
+- 確認(ヘッドレス・テスト用に25日線+1.0を仮置き): 上位5=6532,7453,8001,6178,9602(Pythonの計算と一致)、温度計66行、JSエラーなし。
+- 未着手: ラジオ(Prof G Markets)。キングのUSB文字起こしツールを確認してから(音声取得はこちらの環境では403)。

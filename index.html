@@ -5315,7 +5315,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
         mainSprite = `<img class="rpg-hero-img${bounceClass}" id="rpgHero" src="${startSrc}" alt="勇者" style="position:relative; z-index:1;">`;
       }
       scene.innerHTML = `${buildWeatherFx()}${buildMercuryFx()}${buildRewardIcons()}
-        <div class="rpg-scene-level" id="rpgSceneLevel">Lv.${quests.filter(q=>q.done).length}${(() => { const t3 = newsTopUp3(); return t3 ? `<span class="rpg-uwasa">　ウワサによると${t3.map(escapeHtml).join('、')}がおすすめ！</span>` : ''; })()}</div>
+        <div class="rpg-scene-level" id="rpgSceneLevel">Lv.${quests.filter(q=>q.done).length}</div>
         ${kazeCap}
         ${buildMiniStatus()}
         <img class="rpg-enemy-img${battleEngaged ? ' engaged' : ''}" id="rpgEnemy" src="${todaysEnemy.img}" alt="${todaysEnemy.name}" title="${todaysEnemy.name}">
@@ -5325,11 +5325,6 @@ ${keywordLine}${bpBlock}${conditionBlock}
       `;
     }
     root.appendChild(scene);
-    // 2026-10-20 黄色い枠(Lv.)：ウワサのおすすめが1行に収まらないときは、文字を少しずつ小さくする(最小9px)
-    requestAnimationFrame(() => {
-      const lv = document.getElementById('rpgSceneLevel'); if (!lv || !lv.querySelector('.rpg-uwasa')) return;
-      let fs = 13; while (fs > 9 && lv.scrollWidth > lv.clientWidth + 1) { fs -= 0.5; lv.style.fontSize = fs + 'px'; }
-    });
     fetchSectorTemp(false);
     // 🌡️ 市場の温度は回復の呪文の下へ移動(2026-10-21 キング指示)
     const enemyImg = document.getElementById('rpgEnemy');
@@ -5433,6 +5428,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
 
     // ===== 🌊 今日の航路(旧「朝の海況チェック」ボタン式を自動表示に置き換え 2026-10-01) =====
     root.appendChild(buildVoyagePanel());
+    { const ub = buildUwasaPickBox(); if (ub) root.appendChild(ub); }   // 「ウワサの港より」(2026-10-21 キング指示：今日の作戦の前・黄色枠)
     root.appendChild(buildW2BattleHub());   // ⚔️ 今日の作戦(ケッサンの町から移動 2026-10-20 キング指示)
     // 🧭「いま売買した？」(buildFeedbackQuickPanel)は非掲載(キング指示 2026-10-09)。関数と記録は残してあり、この1行を戻せば再び出る:
     // root.appendChild(buildFeedbackQuickPanel());
@@ -10086,7 +10082,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   }
 
   // ---------- 🌍 世界の入口3：注目度(ニュース記事数)の折れ線 ----------
-  let world3UI = { sort:'trend', q:'', label:'all' };  // 2026-10-19 キング指示：最初は「📈株価↑×記事」から表示
+  let world3UI = { sort:'trend', q:'', label:'all', topOpen:true, pmOpen:true };  // 2026-10-19 キング指示：最初は「📈株価↑×記事」から表示。topOpen/pmOpen＝上位5個・温度計の折りたたみ(開いたまま)
   function renderWorldNews3(root){
     const bar = document.createElement('div'); bar.className = 'rpg-topbar';
     bar.appendChild(buildScreenNavBar('world3')); root.appendChild(bar);
@@ -10104,9 +10100,13 @@ ${keywordLine}${bpBlock}${conditionBlock}
     });
     scene.appendChild(frontRow); root.appendChild(scene);
     if (soundOn) startStageBGM('uwasa'); // 曲は「あやしい酒場」(再描画では鳴らし直さない)
-    ensureDataDocs(['news_volume.json', 'earnings_jp.json']);
+    ensureDataDocs(['news_volume.json', 'earnings_jp.json', 'polymarket.json']);
     const wrap = document.createElement('div'); wrap.className = 'pw';
     const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = '📈 注目度の折れ線（ニュース記事数・30日）'; wrap.appendChild(t);
+    // 2026-10-21 キング指示：上に「株価↑×記事の上位5個」(いつも出す・折りたためる)と、その下にPolymarketの温度計(折りたためる)
+    const topBox = document.createElement('div'); wrap.appendChild(topBox);
+    const pmBox = document.createElement('div'); wrap.appendChild(pmBox);
+    buildPolymarketBox(pmBox);
     root.appendChild(wrap);
     const nv = ddoc('news_volume.json');
     const say = (txt, css) => { const d = document.createElement('div'); d.style.cssText = css || 'font-size:13px; color:#9db4ff; line-height:1.7;'; d.textContent = txt; wrap.appendChild(d); };
@@ -10122,6 +10122,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       const it = nv.items[code]; const c = newsClassify(it.counts, newsMarketRatio(nv));
       return { code, name: it.name || nameFor(code), it, c, tr: newsTrend(it, jm && jm[code]) };
     });
+    buildTop5Box(topBox, rows, nv, jm);
     const intro = document.createElement('div'); intro.style.cssText = 'font-size:12px; color:#c8d0f0; line-height:1.7; margin-bottom:6px;';
     intro.innerHTML = '線が右上がり＝その銘柄の記事が日々増えている／右下がり＝減っている。点線の最後の点は<b>今日(途中経過)</b>。' +
       '「+1だけで消える」＝⚡単発、「次の日も、3日後も出る」＝🔥積み上がり。' +
@@ -10191,6 +10192,78 @@ ${keywordLine}${bpBlock}${conditionBlock}
       `「記事が増えると株価が上がる」かどうかは未検証です。ラベルの基準は仮の目安です(直近7日の平均が「平常の1.5倍×市場全体の増え方」以上で、その水準を超えた日が4日以上＝🔥、など)。` +
       `検索は社名で行うため、同名の別の話題が混ざることがあります。`;
     wrap.appendChild(foot);
+  }
+  // 2026-10-21 キング指示：「📈株価↑×記事」の上位5個を、並べ替えやタブに関係なくいつも一番上に出す(折りたためる。開閉は world3UI.topOpen に覚える)。
+  // 並び順は港の画面・勇者のいえの上位3つと同じ(🔥積み上がり→直近7日の平均件数が多い順)。株価↑が0件なら、その旨を出す。
+  function buildTop5Box(box, rows, nv, jm){
+    const up = rows.filter(r => r.tr.state === 'up').sort((a, b) => ((b.c.key === 'build') - (a.c.key === 'build')) || (b.c.aL - a.c.aL));
+    const d = document.createElement('details'); d.open = world3UI.topOpen !== false;
+    d.style.cssText = 'margin:0 0 10px; padding:2px 8px 4px; background:rgba(255,215,107,0.07); border:1px solid rgba(255,215,107,0.35); border-radius:4px;';
+    d.addEventListener('toggle', () => { world3UI.topOpen = d.open; });
+    const s = document.createElement('summary'); s.style.cssText = 'cursor:pointer; font-size:14px; color:#ffd76b; font-weight:bold; padding:6px 0;';
+    s.textContent = `⭐ 株価↑×記事 上位${Math.min(5, up.length)}（いつも出ています）`;
+    d.appendChild(s);
+    if (!up.length) {
+      const m = document.createElement('div'); m.style.cssText = 'font-size:12px; color:#8a93b8; line-height:1.6; padding:4px 0 6px;';
+      m.textContent = jm ? '株価が上向き(5営業日プラス＋25日線の上)の銘柄が、いまはありません。' : '25日線の値がありません(日経225のスキャン後に判定されます)。';
+      d.appendChild(m);
+    } else {
+      up.slice(0, 5).forEach(r => d.appendChild(buildNewsRow(r, nv, jm)));
+    }
+    box.appendChild(d);
+  }
+  // 2026-10-21 キング指示：Polymarket(予測市場)の温度計。data/polymarket.json(GitHub Actionsが毎時更新・scripts/fetch_polymarket.py)を読むだけ。
+  // 棒＝「Yes」の値段(＝市場が見ている確率)、右の矢印＝24時間の変化(ポイント)。良い/悪いの色分け・しきい値は付けない(キング未定義)。
+  // 同じ市場が複数のテーマに出ても、最初のテーマだけに出す。テーマの振り分けはキーワードでの機械的なもの(使いながら消す)。
+  function pmChgHtml(d){
+    if (d == null) return '<span style="color:#6f78a0;">—</span>';
+    const p = d * 100;
+    if (Math.abs(p) < 0.05) return '<span style="color:#8a93b8;">±0.0pt</span>';
+    return `<span style="color:#c8d0f0;">${p > 0 ? '▲+' : '▼'}${p.toFixed(1)}pt</span>`;
+  }
+  function buildPolymarketBox(box){
+    const pm = ddoc('polymarket.json');
+    const d = document.createElement('details'); d.open = world3UI.pmOpen !== false;
+    d.style.cssText = 'margin:0 0 10px; padding:2px 8px 6px; background:rgba(157,180,255,0.06); border:1px solid rgba(157,180,255,0.30); border-radius:4px;';
+    d.addEventListener('toggle', () => { world3UI.pmOpen = d.open; });
+    const s = document.createElement('summary'); s.style.cssText = 'cursor:pointer; font-size:14px; color:#9db4ff; font-weight:bold; padding:6px 0;';
+    s.textContent = '🌡️ Polymarketの温度計（予測市場・株に関係するテーマ）';
+    d.appendChild(s);
+    box.appendChild(d);
+    const say = (txt) => { const m = document.createElement('div'); m.style.cssText = 'font-size:12px; color:#8a93b8; line-height:1.6; padding:4px 0;'; m.textContent = txt; d.appendChild(m); };
+    if (!pm || !Array.isArray(pm.themes)) { say(ddNote('polymarket.json', 'Polymarketのデータ') || 'Polymarketのデータがまだありません。毎時、自動で更新されます。'); return; }
+    const seen = new Set();
+    pm.themes.forEach(th => {
+      const evs = (th.events || []).filter(ev => { if (seen.has(ev.slug)) return false; seen.add(ev.slug); return true; });
+      const h = document.createElement('div'); h.style.cssText = 'margin:10px 0 2px; padding:3px 6px; background:rgba(157,180,255,0.10); border-left:3px solid #9db4ff; border-radius:3px; font-size:13px; color:#fff; font-weight:bold;';
+      h.textContent = th.label; d.appendChild(h);
+      if (!evs.length) { say('取引量の多い500件の中に、このテーマの市場は見つかりませんでした。'); return; }
+      evs.forEach(ev => {
+        const box2 = document.createElement('div'); box2.style.cssText = 'padding:6px 0; border-top:1px solid rgba(157,180,255,0.15);';
+        const end = ev.end ? fmtMD(String(ev.end).slice(0, 10)) : '';
+        box2.innerHTML = `<div style="display:flex; justify-content:space-between; gap:8px; align-items:baseline;"><div style="font-size:12px; color:#fff;">${escapeHtml(ev.title)}</div><div style="font-size:10px; color:#6f78a0; white-space:nowrap;">${end ? '〜' + escapeHtml(end) : ''}</div></div>`;
+        (ev.markets || []).forEach(m => {
+          const pct = Math.max(0, Math.min(100, (m.yes || 0) * 100));
+          const row = document.createElement('div'); row.style.cssText = 'display:flex; align-items:center; gap:6px; margin:3px 0;';
+          row.innerHTML =
+            `<div style="flex:0 0 36%; min-width:0; font-size:11px; color:#c8d0f0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(m.q || '')}">${escapeHtml(m.label || m.q || '')}</div>` +
+            `<div style="flex:1; height:10px; background:rgba(157,180,255,0.15); border-radius:5px; overflow:hidden;"><div style="width:${pct.toFixed(1)}%; height:100%; background:#ffd76b;"></div></div>` +
+            `<div style="flex:0 0 46px; text-align:right; font-size:12px; color:#fff;">${pct.toFixed(1)}%</div>` +
+            `<div style="flex:0 0 66px; text-align:right; font-size:11px;">${pmChgHtml(m.d1)}</div>`;
+          box2.appendChild(row);
+        });
+        const a = document.createElement('a'); a.href = ev.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+        a.style.cssText = 'font-size:10px; color:#6f78a0;'; a.textContent = 'Polymarketで見る ↗'; box2.appendChild(a);
+        d.appendChild(box2);
+      });
+    });
+    const foot = document.createElement('div'); foot.style.cssText = 'font-size:11px; color:#8a93b8; line-height:1.6; margin-top:8px;';
+    const when = pm.fetched_at ? String(pm.fetched_at).replace('T', ' ').slice(0, 16) : '不明';
+    const ageH = pm.fetched_at ? (Date.now() - new Date(pm.fetched_at).getTime()) / 3600000 : null;
+    foot.innerHTML = `出典：${escapeHtml(pm.source)}／取得 ${escapeHtml(when)}(JST)／確認レベル ${escapeHtml(pm.grade)}` +
+      (ageH != null && ageH > 3 ? `<br><span style="color:#e8605a;">⚠ 更新から${Math.floor(ageH)}時間以上たっています(自動更新が止まっている可能性)</span>` : '') +
+      `<br>棒＝「Yes」の値段(市場が見ている確率)、右＝24時間の変化(ポイント)。${escapeHtml(pm.note || '')}タイトルは英語のままです。`;
+    d.appendChild(foot);
   }
   // 2026-10-20 キング指示：ウワサの港「📈株価↑×記事」の上位3つ(並び順は港の画面と同じ＝🔥積み上がり→直近7日の平均件数が多い順)。勇者のいえの黄色い枠用。
   // データが読めていない／株価↑が0件のときは null(＝枠はLv.だけ)。
@@ -10871,6 +10944,21 @@ ${keywordLine}${bpBlock}${conditionBlock}
     return wrap;
   }
   // ⚔️ 今日の作戦を勇者のいえで出す(2026-10-20 キング指示：ケッサンの町から移動。「今日の航路」の下)
+  // 2026-10-21 キング指示：勇者のいえ「ウワサの港より」黄色枠。見出しを押すとウワサの港へ。中身は newsTopUp3()(📈株価↑×記事の上位3つ)。無ければ出さない。
+  function buildUwasaPickBox(){
+    const t3 = newsTopUp3(); if (!t3) return null;
+    const box = document.createElement('div');
+    box.style.cssText = 'background:#ffd76b; color:#2c1f5c; border:2px solid #a9741f; padding:6px 10px; margin:8px 0; font-weight:bold; font-size:13px;';
+    const h = document.createElement('button');
+    h.textContent = 'ウワサの港より ▶';
+    h.style.cssText = 'display:block; background:none; border:none; padding:0 0 3px; margin:0; font:inherit; font-size:12px; color:#7a4a00; text-decoration:underline; cursor:pointer; text-align:left;';
+    h.addEventListener('click', () => { playSelect(); screen = 'world3'; render(); });
+    const t = document.createElement('div');
+    t.textContent = t3.join('、') + 'がおすすめです';
+    box.appendChild(h); box.appendChild(t);
+    return box;
+  }
+
   function buildW2BattleHub(){
     ensureDataDocs(['earnings_jp.json', 'earnings_us.json', 'news_volume.json']);
     fetchWorldNews(false);
@@ -13751,7 +13839,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-21c';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-21e';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
