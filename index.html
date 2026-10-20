@@ -5330,7 +5330,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       let fs = 13; while (fs > 9 && lv.scrollWidth > lv.clientWidth + 1) { fs -= 0.5; lv.style.fontSize = fs + 'px'; }
     });
     fetchSectorTemp(false);
-    root.appendChild(buildSectorHubLine());   // 🌡️ 市場の温度(2026-10-20 キング承認：勇者のいえは1行だけ)
+    // 🌡️ 市場の温度は回復の呪文の下へ移動(2026-10-21 キング指示)
     const enemyImg = document.getElementById('rpgEnemy');
     if (enemyImg) {
       enemyImg.addEventListener('click', () => {
@@ -5424,6 +5424,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const sos = document.createElement('button'); sos.className='rpg-sos-btn'; sos.textContent='回復の呪文';
     sos.addEventListener('click', () => { playOpen(); openHelpModal(); });
     root.appendChild(sos);
+    root.appendChild(buildSectorHubLine());   // 🌡️ 市場の温度(2026-10-20 キング承認：勇者のいえは1行だけ／2026-10-21 回復の呪文の下へ移動)
 
     // ===== 📣 速報枠(回復の呪文の真下・速報があるときだけ表示。キング指示 2026-10-05) =====
     { const fp = buildFlashPanel(); if (fp) root.appendChild(fp); }
@@ -13749,7 +13750,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-20h';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-21a';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
