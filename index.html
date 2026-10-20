@@ -603,7 +603,7 @@
   }
   @keyframes rewardpop{ 0%{ opacity:0; transform: scale(0) rotate(-20deg);} 70%{ transform: scale(1.15) rotate(6deg);} 100%{ opacity:1; transform: scale(1) rotate(0deg);} }
   .rpg-scene-level{
-    position:absolute; top: 4px; left: 4px; z-index: 3;
+    position:absolute; top: 4px; left: 4px; z-index: 3; max-width: calc(100% - 8px); box-sizing: border-box; white-space: nowrap; overflow: hidden;
     background:#ffd76b; color:#2c1f5c; font-weight:bold; font-size: 13px;
     padding: 4px 10px; border: 2px solid #a9741f;
   }
@@ -5314,7 +5314,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
         mainSprite = `<img class="rpg-hero-img${bounceClass}" id="rpgHero" src="${startSrc}" alt="勇者" style="position:relative; z-index:1;">`;
       }
       scene.innerHTML = `${buildWeatherFx()}${buildMercuryFx()}${buildRewardIcons()}
-        <div class="rpg-scene-level">Lv.${quests.filter(q=>q.done).length}</div>
+        <div class="rpg-scene-level" id="rpgSceneLevel">Lv.${quests.filter(q=>q.done).length}${(() => { const t3 = newsTopUp3(); return t3 ? `<span class="rpg-uwasa">　ウワサによると${t3.map(escapeHtml).join('、')}がおすすめ！</span>` : ''; })()}</div>
         ${kazeCap}
         ${buildMiniStatus()}
         <img class="rpg-enemy-img${battleEngaged ? ' engaged' : ''}" id="rpgEnemy" src="${todaysEnemy.img}" alt="${todaysEnemy.name}" title="${todaysEnemy.name}">
@@ -5324,6 +5324,11 @@ ${keywordLine}${bpBlock}${conditionBlock}
       `;
     }
     root.appendChild(scene);
+    // 2026-10-20 黄色い枠(Lv.)：ウワサのおすすめが1行に収まらないときは、文字を少しずつ小さくする(最小9px)
+    requestAnimationFrame(() => {
+      const lv = document.getElementById('rpgSceneLevel'); if (!lv || !lv.querySelector('.rpg-uwasa')) return;
+      let fs = 13; while (fs > 9 && lv.scrollWidth > lv.clientWidth + 1) { fs -= 0.5; lv.style.fontSize = fs + 'px'; }
+    });
     fetchSectorTemp(false);
     root.appendChild(buildSectorHubLine());   // 🌡️ 市場の温度(2026-10-20 キング承認：勇者のいえは1行だけ)
     const enemyImg = document.getElementById('rpgEnemy');
@@ -5426,11 +5431,13 @@ ${keywordLine}${bpBlock}${conditionBlock}
 
     // ===== 🌊 今日の航路(旧「朝の海況チェック」ボタン式を自動表示に置き換え 2026-10-01) =====
     root.appendChild(buildVoyagePanel());
+    root.appendChild(buildW2BattleHub());   // ⚔️ 今日の作戦(ケッサンの町から移動 2026-10-20 キング指示)
     // 🧭「いま売買した？」(buildFeedbackQuickPanel)は非掲載(キング指示 2026-10-09)。関数と記録は残してあり、この1行を戻せば再び出る:
     // root.appendChild(buildFeedbackQuickPanel());
     root.appendChild(buildRankingPanel());
     root.appendChild(buildMornPanel());   // 🌅 朝の答え(2026-10-15 キング指示：売買代金ランキングの後ろ・折りたためる)
-    root.appendChild(buildQuizPanel());   // 🗝️ 武器をかくにん(時のへやから勇者のいえへ移動 2026-10-09・毎日5問)
+    // 🗝️ 武器をかくにんは非掲載(2026-10-20 キング指示：やらないので削除。関数と問題は残してあり、この1行を戻せば再び出る)
+    // root.appendChild(buildQuizPanel());
 
     // gold mine (AI-assisted stock watch scanner)
     const gWrap = document.createElement('div'); gWrap.className='pw'; gWrap.id='goldMinePanel';
@@ -9844,7 +9851,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       worldNews.error = (e && e.name === 'AbortError') ? '時間切れ' : String((e && e.message) || e);
     }
     worldNews.status = worldNews.items ? 'ok' : 'error';
-    if (screen === 'world' || screen === 'world2' || screen === 'letters') render();
+    if (screen === 'world' || screen === 'world2' || screen === 'letters' || screen === 'hub') render();
   }
   // 🗑️不要／📌のこす（2026-10-19 キング承認）。この端末だけに保存。印は「日付|種類|見出し」で見分ける。隠した速報の件数や戻す導線は出さない(スッキリ優先)。
   const WN_HIDE_KEY = 'ktq_worldnews_hidden_v1', WN_PIN_KEY = 'ktq_worldnews_pinned_v1';
@@ -9938,7 +9945,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   // 方針(キング): 最初から絞らず、可能性をできる限り全部出し、使いながら不要なものを消していく。
   const DATA_RAW = 'https://raw.githubusercontent.com/jungood12191976/cooklist/main/data/';
   const dataDocs = {};
-  function rerenderIfWorld(){ if (screen === 'world2' || screen === 'world3') render(); }
+  function rerenderIfWorld(){ if (screen === 'world2' || screen === 'world3' || screen === 'hub') render(); }   // 2026-10-20 勇者のいえ(ウワサのおすすめ・今日の作戦)もデータ到着で描き直す
   async function loadDataDoc(name, force){
     const st = dataDocs[name] || (dataDocs[name] = { status:'idle', doc:null, err:null, at:0 });
     if (st.status === 'loading') return;
@@ -10181,6 +10188,17 @@ ${keywordLine}${bpBlock}${conditionBlock}
       `「記事が増えると株価が上がる」かどうかは未検証です。ラベルの基準は仮の目安です(直近7日の平均が「平常の1.5倍×市場全体の増え方」以上で、その水準を超えた日が4日以上＝🔥、など)。` +
       `検索は社名で行うため、同名の別の話題が混ざることがあります。`;
     wrap.appendChild(foot);
+  }
+  // 2026-10-20 キング指示：ウワサの港「📈株価↑×記事」の上位3つ(並び順は港の画面と同じ＝🔥積み上がり→直近7日の平均件数が多い順)。勇者のいえの黄色い枠用。
+  // データが読めていない／株価↑が0件のときは null(＝枠はLv.だけ)。
+  function newsTopUp3(){
+    ensureDataDocs(['news_volume.json']);
+    const nv = ddoc('news_volume.json'); if (!nv || !nv.items) return null;
+    const jm = jiwaMap(); if (!jm) return null;
+    const mr = newsMarketRatio(nv);
+    const rows = Object.keys(nv.items).map(code => { const it = nv.items[code]; return { code, name: it.name || nameFor(code), c: newsClassify(it.counts, mr), tr: newsTrend(it, jm[code]) }; });
+    const up = rows.filter(r => r.tr.state === 'up').sort((a, b) => ((b.c.key === 'build') - (a.c.key === 'build')) || (b.c.aL - a.c.aL));
+    return up.length ? up.slice(0, 3).map(r => String(r.name)) : null;
   }
   function buildNewsRow(r, nv, jm){
     const L = NEWS_LABELS[r.c.key];
@@ -10849,6 +10867,16 @@ ${keywordLine}${bpBlock}${conditionBlock}
     syms.forEach(sym => w2UsCloses(sym).then(cl => fills.filter(f => f.x.symbol === sym).forEach(f => { const el = body.querySelector('#' + f.id); if (el) el.outerHTML = w2bClose(f.x, cl, f.pct); })));
     return wrap;
   }
+  // ⚔️ 今日の作戦を勇者のいえで出す(2026-10-20 キング指示：ケッサンの町から移動。「今日の航路」の下)
+  function buildW2BattleHub(){
+    ensureDataDocs(['earnings_jp.json', 'earnings_us.json', 'news_volume.json']);
+    fetchWorldNews(false);
+    const today = todayDateKey();
+    const jpDoc = ddoc('earnings_jp.json'), usDoc = ddoc('earnings_us.json'), nv = ddoc('news_volume.json');
+    const jp = jpDoc ? { byCode: (() => { const m = {}; jpDoc.items.forEach(x => { (m[x.code] = m[x.code] || []).push(x); }); return m; })() } : null;
+    const ctx = { today, jp, nv, jm: jiwaMap(), wn: worldNews.items };
+    return buildW2Battle(ctx, usDoc, w2Events(ctx, usDoc, true));
+  }
   // 決算相場の期間(2026-10-15 キング承認：最後の決算の翌週に暦を隠す)。連鎖の日本株の決算日と米国の起爆剤の日付を、間が14日以内なら同じ相場とつなげる
   const W2_SEASON_GAP = 14, W2_SEASON_PRE = 14, W2_SEASON_POST = 7;
   function w2Season(ctx, usDoc){
@@ -11067,7 +11095,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       calCells.forEach(c => c.classList.toggle('sel', c.dataset.d === d));
       detailHost.replaceChildren(buildW2Day(d, ctx, usDoc, evs));
     };
-    root.appendChild(buildW2Battle(ctx, usDoc, evs));   // ⚔️ 今日の作戦(2026-10-15)：暦より上
+    // ⚔️ 今日の作戦は勇者のいえへ移動(2026-10-20 キング指示)。関数 buildW2Battle は残してある
     const season = usDoc && jpDoc ? w2Season(ctx, usDoc) : null;
     if (season && !season.cur) frontRow.style.display = 'none';   // 決算相場の外は、勇者とガーディアンを町に出さない(2026-10-15 キング指示)
     if (season && !season.cur && !world2UI.showOff) {   // 決算相場の外(最後の決算の翌週より後)は暦を隠す(2026-10-15 キング承認)
@@ -13720,7 +13748,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-20f';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-20g';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
