@@ -10664,7 +10664,10 @@ ${keywordLine}${bpBlock}${conditionBlock}
     // 【昨夜の戦い結果】直前の米国の発表日(今日より前で一番新しい日・5日以内)
     const past = items.filter(x => x.date < today && x.date >= skyAddDays(today, -5)).map(x => x.date).sort();
     const lastD = past.length ? past[past.length - 1] : '';
-    h += '<div class="w2b-blk w2b-last"><div class="w2b-h"><span class="w2b-dot blue"></span>昨夜の戦い結果</div>';
+    // 「昨夜」と呼べるのは、直前の米国の営業日の発表だけ。それより前(例：5日前)なら「直近」と呼ぶ(2026-10-20 キング指摘)
+    let prevD = skyAddDays(today, -1); for (let i = 0; i < 3 && [0, 6].includes(new Date(prevD + 'T00:00:00Z').getUTCDay()); i++) prevD = skyAddDays(prevD, -1);
+    const isLastNight = lastD === prevD;
+    h += `<div class="w2b-blk w2b-last"><div class="w2b-h"><span class="w2b-dot blue"></span>${isLastNight ? '昨夜' : '直近'}の戦い結果</div>`;
     if (lastD) {
       const lst = items.filter(x => x.date === lastD);
       h += `<div class="w2b-when">${fmtMD(lastD)} アメリカの発表</div>`;
@@ -10673,7 +10676,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
         h += `<div class="w2b-grp">【アメリカ】${escapeHtml(W2_CHAIN_SHORT[g.ch.id] || g.ch.title)} ×${g.list.length}社</div>`;
         g.list.forEach(x => { h += `<div class="w2b-res"><b>${escapeHtml(w2UsName(x.symbol, usDoc))}</b>　<span style="white-space:nowrap;">決算${w2bMark(x)}　終値${slot(x, true)}</span></div>`; });
       });
-      if (skyIsTradingDay(today)) h += `<div class="w2b-jp">→ 今朝の寄りで見る：<b>${escapeHtml(w1Names(gs.map(g => g.ch)))}</b></div>`;
+      if (skyIsTradingDay(today)) h += `<div class="w2b-jp">→ ${isLastNight ? '今朝の寄りで見る' : '連動する日本株'}：<b>${escapeHtml(w1Names(gs.map(g => g.ch)))}</b></div>`;
     } else h += '<div class="kcr-none">ここ数日、連鎖の米国の決算はありませんでした。</div>';
     h += '</div>';
     // 【本日の戦い】韓国(推定) → 日本の決算 → 米国(今夜＝寄り前 → 時刻未定 → 明日の早朝＝引け後)
@@ -13583,7 +13586,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-19f';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-20a';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
