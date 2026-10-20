@@ -1311,6 +1311,7 @@
     if (typeof radioAudioEl !== 'undefined' && radioAudioEl) { radioAudioEl.pause(); radioAudioEl = null; radioPlaying = false; }
     if (typeof pianoAudioEl !== 'undefined' && pianoAudioEl) { pianoAudioEl.pause(); pianoAudioEl = null; pianoPlaying = false; }
     if (typeof violinAudioEl !== 'undefined' && violinAudioEl) { violinAudioEl.pause(); violinAudioEl = null; violinPlaying = false; }
+    kqMusicHalt(); // ほこらの音楽の共通<audio>と通知も止める(別のBGMが始まる時など)
   }
 
   // ---- battle BGM: distinct tense/energetic theme per enemy ----
@@ -1422,6 +1423,88 @@
     { name: '熊蜂の飛行(リムスキー＝コルサコフ／ラフマニノフ編)', src: PIANO_TRACK_4 },
     { name: 'リールの曲', src: PIANO_TRACK_5 }
   ];
+  // ---- ほこらの音楽(ピアノ/バイオリン/ラジカセ)共通: 1つの<audio>を使い回す(2026-10-20) ----
+  // 曲ごとに new Audio() を作ると、画面を下げた/ロックした間の曲の切れ目で止まることがあるため、
+  // 1つの要素の src を差し替えて次の曲へつなぐ。通知(Media Session)に曲名と再生/停止/次の曲を出す。
+  // stopBGM()から呼ばれるため var(初期化前に呼ばれても落ちないように)。
+  var kqMusicEl = null, kqMusicKind = '', kqMusicWanted = false, kqMediaHandlersSet = false;
+  function kqMusicEnsure(){
+    if (kqMusicEl) return kqMusicEl;
+    const el = new Audio();
+    el.preload = 'auto';
+    el.addEventListener('ended', () => { if (kqMusicWanted) kqMusicAdvance(); });
+    kqMusicEl = el;
+    return el;
+  }
+  function kqMediaSessionOn(title){
+    if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: title, artist: 'KING THE QUEST', album: 'ほこら',
+        artwork: [
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }
+        ]
+      });
+      navigator.mediaSession.playbackState = 'playing';
+      if (!kqMediaHandlersSet) {
+        kqMediaHandlersSet = true;
+        navigator.mediaSession.setActionHandler('play', () => {
+          if (!kqMusicEl) return;
+          kqMusicWanted = true;
+          kqMusicEl.play().catch(()=>{});
+          navigator.mediaSession.playbackState = 'playing';
+        });
+        navigator.mediaSession.setActionHandler('pause', () => {
+          if (!kqMusicEl) return;
+          kqMusicWanted = false;
+          kqMusicEl.pause();
+          navigator.mediaSession.playbackState = 'paused';
+        });
+        navigator.mediaSession.setActionHandler('nexttrack', () => { kqMusicAdvance(); });
+        navigator.mediaSession.setActionHandler('stop', () => { stopBGM(); kqMusicRefreshModal(); });
+      }
+    } catch(e){ console.error(e); }
+  }
+  function kqMusicStart(kind, src, vol, title){
+    const el = kqMusicEnsure();
+    kqMusicKind = kind;
+    kqMusicWanted = true;
+    el.volume = vol;
+    el.src = src;
+    const p = el.play();
+    if (p && p.catch) p.catch(()=>{});
+    kqMediaSessionOn(title);
+    return el;
+  }
+  function kqMusicHalt(){
+    kqMusicWanted = false;
+    if (!kqMusicEl) return;
+    kqMusicEl.pause();
+    if ('mediaSession' in navigator) {
+      try { navigator.mediaSession.playbackState = 'none'; navigator.mediaSession.metadata = null; } catch(e){}
+    }
+  }
+  function kqMusicRefreshModal(){
+    if (activeModalId === 'piano') renderPianoModal();
+    else if (activeModalId === 'violin') renderViolinModal();
+    else if (activeModalId === 'radio') renderRadioModal();
+  }
+  // 曲が終わった/「次の曲」が押された: いま鳴らしている種類のまま、ランダムで次の曲へ
+  function kqMusicAdvance(){
+    if (kqMusicKind === 'piano' && pianoPlaying) playPianoTheme(pianoPickRandom());
+    else if (kqMusicKind === 'violin' && violinPlaying) playViolinTheme(violinPickRandom());
+    else if (kqMusicKind === 'radio' && radioPlaying) radioPlay(radioPickRandom());
+    else return;
+    kqMusicRefreshModal();
+  }
+  // 画面に戻ってきた時: OSに止められていたら再開する(曲の切れ目で止まっていたら次の曲へ)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible' || !kqMusicWanted || !kqMusicEl) return;
+    if (kqMusicEl.ended) kqMusicAdvance();
+    else if (kqMusicEl.paused) kqMusicEl.play().catch(()=>{});
+  });
+
   let pianoAudioEl = null, pianoPlaying = false, pianoCurrentIdx = -1;
   const pianoVolume = 0.6;
   function pianoPickRandom(){
@@ -1430,23 +1513,15 @@
     return idx;
   }
   function stopPianoTheme(){
-    if (pianoAudioEl) { pianoAudioEl.pause(); pianoAudioEl = null; }
+    if (pianoAudioEl) { kqMusicHalt(); pianoAudioEl = null; }
     pianoPlaying = false;
   }
   function playPianoTheme(idx){
     stopBGM();
     stopPianoTheme();
     pianoCurrentIdx = idx;
-    const el = new Audio(PIANO_TRACKS[idx].src);
-    el.volume = pianoVolume;
-    el.addEventListener('ended', () => {
-      if (pianoAudioEl !== el) return;
-      playPianoTheme(pianoPickRandom());
-      if (activeModalId === 'piano') renderPianoModal();
-    });
-    pianoAudioEl = el;
+    pianoAudioEl = kqMusicStart('piano', PIANO_TRACKS[idx].src, pianoVolume, PIANO_TRACKS[idx].name);
     pianoPlaying = true;
-    el.play().catch(()=>{});
   }
 
   // ---- バイオリン: ピアノと同じランダム再生 ----
@@ -1464,23 +1539,15 @@
     return idx;
   }
   function stopViolinTheme(){
-    if (violinAudioEl) { violinAudioEl.pause(); violinAudioEl = null; }
+    if (violinAudioEl) { kqMusicHalt(); violinAudioEl = null; }
     violinPlaying = false;
   }
   function playViolinTheme(idx){
     stopBGM();
     stopViolinTheme();
     violinCurrentIdx = idx;
-    const el = new Audio(VIOLIN_TRACKS[idx].src);
-    el.volume = violinVolume;
-    el.addEventListener('ended', () => {
-      if (violinAudioEl !== el) return;
-      playViolinTheme(violinPickRandom());
-      if (activeModalId === 'violin') renderViolinModal();
-    });
-    violinAudioEl = el;
+    violinAudioEl = kqMusicStart('violin', VIOLIN_TRACKS[idx].src, violinVolume, VIOLIN_TRACKS[idx].name);
     violinPlaying = true;
-    el.play().catch(()=>{});
   }
 
   // Metronome tick: a sharp woodblock-like click, tempo controlled by caller's interval.
@@ -7205,21 +7272,15 @@ ${keywordLine}${bpBlock}${conditionBlock}
 
   function radioPlay(idx){
     stopBGM();
-    if (radioAudioEl) { radioAudioEl.pause(); radioAudioEl = null; }
+    if (radioAudioEl) { kqMusicHalt(); radioAudioEl = null; }
     radioCurrentIdx = idx;
     const track = RADIO_TRACKS[idx];
-    radioAudioEl = new Audio(track.src);
-    radioAudioEl.volume = radioVolume;
-    radioAudioEl.addEventListener('ended', () => {
-      radioPlay(radioPickRandom());
-      if (activeModalId === 'radio') renderRadioModal();
-    });
-    radioAudioEl.play().catch(()=>{});
+    radioAudioEl = kqMusicStart('radio', track.src, radioVolume, track.name);
     radioPlaying = true;
   }
 
   function radioStop(){
-    if (radioAudioEl) { radioAudioEl.pause(); radioAudioEl = null; }
+    if (radioAudioEl) { kqMusicHalt(); radioAudioEl = null; }
     radioPlaying = false;
   }
 
@@ -13583,7 +13644,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-19f';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-20a';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
