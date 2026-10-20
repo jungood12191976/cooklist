@@ -3505,7 +3505,7 @@
     }
 
     const wrap = document.createElement('div');
-    wrap.className = 'ocean-entry-panel voyage-panel';
+    wrap.className = 'pw voyage-panel';   // 2026-10-21 キング指示：今日の作戦と同じ黄色い枠＋左上の黄色いタブ(旧: ocean-entry-panel＝青い枠)
     const esc = skyEsc;
     const hh = hasFetched ? new Date(rec.fetchedAt) : null;
     const timeLabel = hh ? `取得 ${String(hh.getHours()).padStart(2,'0')}:${String(hh.getMinutes()).padStart(2,'0')}` : '';
@@ -3611,6 +3611,7 @@
       <label class="voy-check"><input type="checkbox" data-vcheck="${it.id}"${checks[it.id] ? ' checked' : ''}><span>${esc(it.text)}</span></label>`).join('');
 
     wrap.innerHTML = `
+      <div class="pw-title">🌊 今日の航路　${fmtMD(today)}</div>
       <div class="voy-merge">${sec1}</div>
       ${hasNote ? `<div class="voy-note one" id="voyNote" title="タップで全文">👑 <b>${Number(nn.writtenDate.slice(5,7))}/${Number(nn.writtenDate.slice(8,10))}</b>　${esc(nn.text)}</div>` : ''}
       <div class="voy-sec-title">今日の予定</div>${sec2}
@@ -13750,7 +13751,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-21a';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-21b';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
