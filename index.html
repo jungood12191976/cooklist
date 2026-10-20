@@ -5427,7 +5427,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
 
     // ===== 📣 速報枠(回復の呪文の真下・速報があるときだけ表示。キング指示 2026-10-05) =====
     { const fp = buildFlashPanel(); if (fp) root.appendChild(fp); }
-    root.appendChild(buildBattlePanel());
+    // ⚔️ 日本の戦い結果はダンジョンの上へ移動(2026-10-20 キング指示)
 
     // ===== 🌊 今日の航路(旧「朝の海況チェック」ボタン式を自動表示に置き換え 2026-10-01) =====
     root.appendChild(buildVoyagePanel());
@@ -5970,6 +5970,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     mwWrap.appendChild(mwHistoryBtn);
     root.appendChild(mwWrap);
 
+    root.appendChild(buildBattlePanel());   // ⚔️ 日本の戦い結果(2026-10-20 キング指示：ダンジョンの上)
     // dungeon (single, fixed)
     const dWrap = document.createElement('div'); dWrap.className='pw';
     const dTitle = document.createElement('div'); dTitle.className='pw-title'; dTitle.textContent='ダンジョン【金の袋と魔法の言葉】'; dWrap.appendChild(dTitle);
@@ -13748,7 +13749,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-20g';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-20h';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
