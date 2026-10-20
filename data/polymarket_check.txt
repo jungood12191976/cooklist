@@ -1,0 +1,41 @@
+fetched_at=2026-10-21T08:46:15+09:00
+events_fetched=500
+event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cyom,deploying,description,elapsed,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,gameId,icon,id,image,liquidity,liquidityClob,live,markets,negRisk,negRiskAugmented,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
+theme rates: 6 events
+    - Fed Decision in October?
+    - Fed Decision in January?
+    - How many Fed rate cuts in 2026?
+    - Fed Decision in December?
+    - Fed decisions (Sep–Dec)
+    - How many Fed rate hikes in 2026?
+theme oil_iran: 6 events
+    - US-Iran ceasefire continues through...?
+    - What will WTI Crude Oil (WTI) hit in October 2026?
+    - US announces end of Iranian blockade by...?
+    - Israel x Iran ceasefire continues through...?
+    - Who wins the Senate pending oil below $85 before the midterms?
+    - Strait of Hormuz traffic returns to normal by December 31?
+theme trump: 6 events
+    - Fed Decision in October?
+    - US-Iran ceasefire continues through...?
+    - Prime Minister of Israel after the next election?
+    - US announces end of Iranian blockade by...?
+    - Russia x Ukraine ceasefire agreement by...?
+    - NATO x Russia military clash by...?
+theme tariff: 0 events
+theme recession: 0 events
+theme inflation: 3 events
+    - Fed Decision in October?
+    - Fed decisions (Sep–Dec)
+    - How many Fed rate hikes in 2026?
+theme stocks: 2 events
+    - What will S&P 500 (SPY) hit Week of October 19 2026?
+    - What will S&P 500 (SPY) hit in October 2026?
+theme ai_chips: 6 events
+    - Anthropic announces bankruptcy by...?
+    - Will Anthropic’s valuation hit __ by December 31?
+    - Anthropic IPO Closing Market Cap
+    - Anthropic IPO by __?
+    - Next Fable Model (5.2+) released by...?
+    - Which company has best AI model end of 2026?
+theme fx: 0 events
