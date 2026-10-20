@@ -5324,6 +5324,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
       `;
     }
     root.appendChild(scene);
+    fetchSectorTemp(false);
+    root.appendChild(buildSectorHubLine());   // 🌡️ 市場の温度(2026-10-20 キング承認：勇者のいえは1行だけ)
     const enemyImg = document.getElementById('rpgEnemy');
     if (enemyImg) {
       enemyImg.addEventListener('click', () => {
@@ -9479,7 +9481,130 @@ ${keywordLine}${bpBlock}${conditionBlock}
     if (worldState.status !== 'loading' && !worldIsFresh()) fetchWorldSignals(false);
     fetchWorldNews(false);
     root.appendChild(buildWorldSignalPanel());
+    fetchSectorTemp(false);
+    root.appendChild(buildSectorThermoPanel());   // 🌡️ 日本の業種 温度計(2026-10-20 キング承認)
     // 世界の速報は2026-10-17にキング指示で「ひみつの手紙」画面の上へ移した(renderSecretLetters)
+  }
+  // ===== 🌡️ 日本の業種 温度計（2026-10-20 キング承認：「急浮上」などの文字は使わず温度計で見せる） =====
+  // 元データ：①シート「業種日次」(松井証券。20:00タスク＋朝8:13の予備タスクが追記) ②PCの kabu_sector.ps1 が15:35に保存する
+  //   kabuステーションの業種別ランキング(Firebase /live/<合言葉>/sec/d/<日付>)。同じ日はシートを優先。33業種そろった日だけ使う。
+  // 温度＝その日の上昇率の順位を0〜100に直した値(1位=100・33位=0)の、直近5営業日の平均。
+  // 矢印＝その前の最大20営業日の平均との差(温まっている/冷めている)。市場の温度＝最新日に上がった業種の割合。
+  const SECTOR_CSV_URL = 'https://docs.google.com/spreadsheets/d/' + SKY_BRIEF_SHEET_ID + '/export?format=csv&gid=671288201';
+  const SECTOR_RECENT = 5, SECTOR_BASE = 20;
+  // 33業種の名前(松井証券の表記・2026-10-20に実物確認)。kabuの業種名はこれに寄せる。
+  const SECTOR_NAMES33 = ['水産・農林業','鉱業','建設業','食料品','繊維製品','パルプ・紙','化学','医薬品','石油・石炭製品','ゴム製品','ガラス・土石製品','鉄鋼','非鉄金属','金属製品','機械','電気機器','輸送用機器','精密機器','その他製品','電気・ガス業','陸運業','海運業','空運業','倉庫・運輸関連業','情報・通信業','卸売業','小売業','銀行業','証券、商品先物取引業','保険業','その他金融業','不動産業','サービス業'];
+  let sectorTemp = { status:'idle', triedAt:0, error:null, days:null, fbError:null };
+  function sectorNorm(s){ return String(s || '').replace(/^IS\s*/, '').replace(/\s+/g, '').replace(/、/g, '・'); }
+  // kabuの業種名(例「IS 情報・通信」)→松井の名前。先頭からいちばん長く一致するものを選ぶ(2文字以上・同点は採用しない)
+  function sectorMatch(kName){
+    const k = sectorNorm(kName); let best = null, bl = 1, tie = false;
+    SECTOR_NAMES33.forEach(n => {
+      const m = sectorNorm(n); let i = 0;
+      while (i < k.length && i < m.length && k[i] === m[i]) i++;
+      if (i > bl) { best = n; bl = i; tie = false; } else if (i === bl && best) tie = true;
+    });
+    return (best && !tie) ? best : null;
+  }
+  async function fetchSectorTemp(force){
+    if (sectorTemp.status === 'loading') return;
+    if (!force && Date.now() - sectorTemp.triedAt < 10*60*1000) return;
+    sectorTemp.status = 'loading'; sectorTemp.triedAt = Date.now();
+    const byDate = {};   // date -> { src, m:{name:cp} }
+    try {
+      const ctrl = new AbortController(); const tid = setTimeout(() => ctrl.abort(), 15000);
+      const res = await fetch(SECTOR_CSV_URL + '&_=' + Date.now(), { cache:'no-store', signal: ctrl.signal });
+      clearTimeout(tid);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const rows = skyParseCSV(await res.text());
+      const ix = {}; (rows[0] || []).forEach((h, i) => { ix[String(h).trim()] = i; });
+      ['date','sector','change_pct'].forEach(k => { if (ix[k] == null) throw new Error('列の形が違います'); });
+      rows.slice(1).forEach(r => {
+        const d = String(r[ix.date] || '').replace(/^'/, '').trim(), n = String(r[ix.sector] || '').trim(), cp = parseFloat(r[ix.change_pct]);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || SECTOR_NAMES33.indexOf(n) < 0 || !isFinite(cp)) return;
+        (byDate[d] = byDate[d] || { src:'松井証券', m:{} }).m[n] = cp;
+      });
+      sectorTemp.error = null;
+    } catch(e) { sectorTemp.error = 'シート: ' + ((e && e.name === 'AbortError') ? '時間切れ' : String((e && e.message) || e)); }
+    const key = lsGet('ktq:liveKey');
+    sectorTemp.fbError = null;
+    if (key) {
+      try {
+        const ctrl = new AbortController(); const tid = setTimeout(() => ctrl.abort(), 15000);
+        const res = await fetch(`${LIVE_FB}/live/${encodeURIComponent(key)}/sec/d.json`, { cache:'no-store', signal: ctrl.signal });
+        clearTimeout(tid);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const j = await res.json();
+        Object.keys(j || {}).forEach(d => {
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || (byDate[d] && Object.keys(byDate[d].m).length === 33)) return; // シートにそろっている日はシート優先
+          const m = {};
+          ((j[d] && j[d].s) || []).forEach(x => { const n = sectorMatch(x && x.n); const cp = Number(x && x.cp); if (n && isFinite(cp) && !(n in m)) m[n] = cp; });
+          if (Object.keys(m).length === 33) byDate[d] = { src:'kabuステーション', m };
+        });
+      } catch(e) { sectorTemp.fbError = (e && e.name === 'AbortError') ? '時間切れ' : String((e && e.message) || e); }
+    }
+    const days = Object.keys(byDate).filter(d => Object.keys(byDate[d].m).length === 33).sort().map(d => {
+      const m = byDate[d].m;
+      const order = SECTOR_NAMES33.slice().sort((a, b) => (m[b] - m[a]) || (a < b ? -1 : 1));
+      const rank = {}; order.forEach((n, i) => { rank[n] = i + 1; });
+      return { date:d, src:byDate[d].src, cp:m, rank };
+    });
+    sectorTemp.days = days;
+    sectorTemp.status = days.length ? 'ok' : 'error';
+    if (screen === 'world' || screen === 'hub') render();
+  }
+  // 計算(画面から分離。検算しやすいように純粋な関数)
+  function sectorTempCalc(days){
+    if (!days || !days.length) return null;
+    const recent = days.slice(-SECTOR_RECENT), prior = days.slice(0, -SECTOR_RECENT).slice(-SECTOR_BASE);
+    const heat = r => (33 - r) / 32 * 100;
+    const avg = (arr, n) => arr.reduce((s, d) => s + heat(d.rank[n]), 0) / arr.length;
+    const list = SECTOR_NAMES33.map(n => ({ n, t: avg(recent, n), diff: prior.length ? avg(recent, n) - avg(prior, n) : null, cp: days[days.length-1].cp[n] }));
+    list.sort((a, b) => b.t - a.t || (b.cp - a.cp));
+    const last = days[days.length-1];
+    const up = SECTOR_NAMES33.filter(n => last.cp[n] > 0).length;
+    return { list, recent, prior, last, up, market: up / 33 * 100 };
+  }
+  function sectorHue(t){ return Math.round(220 * (1 - Math.max(0, Math.min(100, t)) / 100)); } // 0=青(冷たい)→100=赤(熱い)
+  function sectorBar(t, h){
+    const w = Math.max(0, Math.min(100, t));
+    return `<div style="position:relative; height:${h}px; background:rgba(157,180,255,0.14); border-radius:${h}px; overflow:hidden;"><div style="position:absolute; left:0; top:0; bottom:0; width:${w.toFixed(1)}%; background:linear-gradient(90deg, hsl(220,70%,55%), hsl(${sectorHue(t)},80%,55%)); border-radius:${h}px;"></div></div>`;
+  }
+  function sectorMd(d){ return d ? `${+d.slice(5,7)}/${+d.slice(8,10)}` : ''; }
+  function buildSectorThermoPanel(){
+    const wrap = document.createElement('div'); wrap.className = 'pw';
+    const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = '🌡️ 日本の業種 温度計（33業種）'; wrap.appendChild(t);
+    const note = (txt, css) => { const d = document.createElement('div'); d.style.cssText = css || 'font-size:11px; color:#8a93b8; line-height:1.6; margin-top:6px;'; d.textContent = txt; wrap.appendChild(d); };
+    const c = sectorTempCalc(sectorTemp.days);
+    if (!c) {
+      note(sectorTemp.status === 'loading' ? '業種の記録を読んでいます…' : ('まだ表示できる記録がありません。' + (sectorTemp.error ? '（' + sectorTemp.error + '）' : '')), 'font-size:13px; color:#9db4ff; line-height:1.7;');
+      return wrap;
+    }
+    const mk = document.createElement('div'); mk.style.cssText = 'background:rgba(255,215,107,0.08); border:1px solid rgba(255,215,107,0.35); padding:10px 12px; margin-bottom:8px;';
+    mk.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;"><span style="font-size:16px; font-weight:bold; color:#ffd76b;">市場の温度（${sectorMd(c.last.date)}）</span><span style="white-space:nowrap;"><span style="font-size:40px; font-weight:bold; color:hsl(${sectorHue(c.market)},85%,65%);">${Math.round(c.market)}</span><span style="font-size:14px; color:#c8d0f0;">/100</span></span></div>${sectorBar(c.market, 12)}<div style="font-size:12px; color:#c8d0f0; margin-top:4px;">33業種のうち ${c.up} 業種が上昇</div>`;
+    wrap.appendChild(mk);
+    c.list.forEach(x => {
+      const row = document.createElement('div'); row.style.cssText = 'display:grid; grid-template-columns:7.5em 1fr 2.4em 3.6em; align-items:center; gap:6px; padding:5px 0; border-top:1px solid rgba(157,180,255,0.12);';
+      const arrow = x.diff == null ? '<span style="color:#8a93b8;">－</span>'
+        : `<span style="color:${x.diff > 0 ? '#ff8a6b' : (x.diff < 0 ? '#7fb2ff' : '#c8d0f0')};">${x.diff > 0 ? '▲' : (x.diff < 0 ? '▼' : '→')}${x.diff > 0 ? '+' : ''}${Math.round(x.diff)}</span>`;
+      row.innerHTML = `<div style="font-size:13px; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${x.n}（最新日 ${x.cp >= 0 ? '+' : ''}${x.cp.toFixed(2)}%）">${x.n}</div>${sectorBar(x.t, 10)}<div style="font-size:14px; font-weight:bold; text-align:right; color:hsl(${sectorHue(x.t)},85%,68%);">${Math.round(x.t)}</div><div style="font-size:12px; text-align:right; white-space:nowrap;">${arrow}</div>`;
+      wrap.appendChild(row);
+    });
+    const r0 = c.recent[0].date, r1 = c.last.date;
+    note(`温度＝毎日の上昇率の順位を0〜100に直した値（1位=100・33位=0）の、直近${c.recent.length}日分の記録（${sectorMd(r0)}〜${sectorMd(r1)}${sectorTemp.days.length < 25 ? '・抜けた日あり' : ''}）の平均。矢印＝その前の${c.prior.length ? c.prior.length + '日分の平均との差' : '記録がまだ無いので比べられません'}。市場の温度＝最新日に上がった業種の割合。`);
+    if (c.recent.length < SECTOR_RECENT || c.prior.length < SECTOR_BASE) note(`記録はまだ${sectorTemp.days.length}日分（そろうと：温度は${SECTOR_RECENT}日、比べる相手は${SECTOR_BASE}日）。毎営業日1日ずつ増えます。`, 'font-size:11px; color:#ffd76b; line-height:1.6; margin-top:4px;');
+    const srcs = Array.from(new Set(sectorTemp.days.map(d => d.src)));
+    note(`出典：${srcs.join('・')}（業種別の騰落率）。順位はアプリで計算。` + (sectorTemp.fbError ? ` ／ kabuの記録は読めず(${sectorTemp.fbError})` : ''));
+    return wrap;
+  }
+  // 勇者のいえ用の1行(市場の温度＋いちばん熱い業種3つ)
+  function buildSectorHubLine(){
+    const c = sectorTempCalc(sectorTemp.days);
+    const d = document.createElement('div'); d.className = 'pw'; d.style.padding = '8px 12px';
+    if (!c) { d.style.display = 'none'; return d; }
+    const top = c.list.slice(0, 3).map(x => `${x.n}<b style="color:hsl(${sectorHue(x.t)},85%,68%);">${Math.round(x.t)}</b>`).join('・');
+    d.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;"><span style="font-size:14px; font-weight:bold; color:#ffd76b;">🌡️ 市場の温度（${sectorMd(c.last.date)}）</span><span style="white-space:nowrap;"><b style="font-size:24px; color:hsl(${sectorHue(c.market)},85%,65%);">${Math.round(c.market)}</b><span style="font-size:12px; color:#c8d0f0;">/100</span></span></div>${sectorBar(c.market, 8)}<div style="font-size:12px; color:#c8d0f0; margin-top:4px; line-height:1.6;">🔥 熱い業種：${top}　<span style="color:#8a93b8;">（全33業種は🌍世界の入口）</span></div>`;
+    return d;
   }
   // ===== 🧪 実験室(世界の入口)：過去の日足から「じわじわ成立の日」を再計算し、その後の値動きを数える(キング指示 2026-10-05) =====
   // 日足(1年)だけで、過去の各日の成立/不成立を computeGoldMineSignals で再計算できるので、記録がたまるのを待たずに今すぐ検証できる。
@@ -13589,7 +13714,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-20b';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-20c';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
