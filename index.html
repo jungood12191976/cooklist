@@ -438,6 +438,9 @@
   .kcr-ev{ flex:1; min-width:0; }
   .kcr-i{ margin:0 0 6px; }
   .kcr-t{ font-size:12px; font-weight:bold; line-height:1.4; }
+  /* 速報の予定(紫)は大きめに(2026-10-20 キング指示) */
+  .kcr-news .kcr-t{ font-size:17px; }
+  .kcr-news .kcr-m{ font-size:13px; }
   .kcr-n{ font-size:14px; font-weight:bold; color:#fff; line-height:1.45; }
   .kcr-m{ font-size:11px; color:#8a93b8; line-height:1.45; }
   /* ⚔️ 今日の作戦(2026-10-15) */
@@ -10788,7 +10791,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
           add(ord, t === 'ly' ? '#9aa0c8' : TAGC.us, tag, `${W2_CHAIN_SHORT[ch.id] || ch.title}×${by[t].length}社`, nm, memo);
         });
       });
-      e.news.forEach(x => add(2500, TAGC.news, '速報の予定', `${x.kind} ${x.label}`, '', '記事から拾った予定(公式日程ではありません)'));
+      e.news.forEach(x => { add(2500, TAGC.news, '速報の予定', `${x.kind} ${x.label}`, '', '記事から拾った予定(公式日程ではありません)'); it[it.length - 1].html = it[it.length - 1].html.replace('class="kcr-i"', 'class="kcr-i kcr-news"'); });
       it.sort((a, b) => a.ord - b.ord);
       return it.map(x => x.html).join('');
     };
@@ -13586,7 +13589,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-20a';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-20b';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
