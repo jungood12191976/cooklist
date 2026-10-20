@@ -4644,8 +4644,14 @@ ${keywordLine}${bpBlock}${conditionBlock}
     lastRenderedScreen = screen;
     if (screen !== 'world' && screen !== 'world2' && screen !== 'world3' && screen !== 'setup' && screen !== 'letters' && screen !== 'sage') stopStageBGM();
     if (screen === 'setup' && soundOn) startStageBGM('hokora'); // 秘密のほこら「石の祈り」(勇者の画面は従来のBGMのまま)
-    // ほこら専用の曲を出たあと、ほこら・世界・天空の城・時のへや以外(勇者など)へ移ったら、いつものBGM(baseBGM)に戻す
-    if (screenChanged && prevRenderedScreen === 'setup' && soundOn && !['setup','world','world2','world3','letters','sage','sky','timeroom'].includes(screen)) baseBGM();
+    // ほこらを出る時(2026-10-20 キング指示「全部、出たら止める」): ほこらで鳴らしていた音(木琴などの楽器・ピアノ・バイオリン・ラジカセ)は止める。
+    // 楽器を押すと baseBGM が楽器に差し替わるので、いつもの曲(startBGM)に戻してから、
+    // ほこら・世界・天空の城・時のへや以外(勇者など)へ移った時だけ、いつものBGM(baseBGM)を鳴らす
+    if (screenChanged && prevRenderedScreen === 'setup' && screen !== 'setup') {
+      stopBGM();
+      baseBGM = () => startBGM();
+      if (soundOn && !['world','world2','world3','letters','sage','sky','timeroom'].includes(screen)) baseBGM();
+    }
     if (screen === 'setup') renderSetup(root);
     else if (screen === 'graph') renderGraph(root);
     else if (screen === 'sky') renderSkyCastle(root);
@@ -13644,7 +13650,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-20a';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-20b';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
