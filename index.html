@@ -10518,7 +10518,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   }
 
   // ---------- 🌍 世界の入口3：注目度(ニュース記事数)の折れ線 ----------
-  let world3UI = { sort:'trend', q:'', label:'all', topOpen:true, pmOpen:true };  // 2026-10-19 キング指示：最初は「📈株価↑×記事」から表示。topOpen/pmOpen＝上位5個・温度計の折りたたみ(開いたまま)
+  let world3UI = { sort:'trend', q:'', label:'all', upOpen:false, pmOpen:true };  // 2026-10-19 キング指示：最初は「📈株価↑×記事」から表示。2026-10-22 upOpen＝「📈株価↑×記事」の蛇腹(閉じたまま上位5個だけ見える)、pmOpen＝Polymarketの折りたたみ(開いたまま)
   function renderWorldNews3(root){
     const bar = document.createElement('div'); bar.className = 'rpg-topbar';
     bar.appendChild(buildScreenNavBar('world3')); root.appendChild(bar);
@@ -10539,8 +10539,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     ensureDataDocs(['news_volume.json', 'earnings_jp.json', 'polymarket.json']);
     const wrap = document.createElement('div'); wrap.className = 'pw';
     const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = '📈 注目度の折れ線（ニュース記事数・30日）'; wrap.appendChild(t);
-    // 2026-10-21 キング指示：上に「株価↑×記事の上位5個」(いつも出す・折りたためる)と、その下にPolymarketの温度計(折りたためる)
-    const topBox = document.createElement('div'); wrap.appendChild(topBox);
+    // 2026-10-22 キング指示：Polymarketの温度計(折りたためる・▼は右上)。「📈株価↑×記事」は下の一覧の蛇腹に統合(閉じたまま上位5個だけ見える)。単独の上位5個の枠は無くした
     const pmBox = document.createElement('div'); wrap.appendChild(pmBox);
     buildPolymarketBox(pmBox);
     root.appendChild(wrap);
@@ -10558,7 +10557,6 @@ ${keywordLine}${bpBlock}${conditionBlock}
       const it = nv.items[code]; const c = newsClassify(it.counts, newsMarketRatio(nv));
       return { code, name: it.name || nameFor(code), it, c, tr: newsTrend(it, jm && jm[code]) };
     });
-    buildTop5Box(topBox, rows, nv, jm);
     const intro = document.createElement('div'); intro.style.cssText = 'font-size:12px; color:#c8d0f0; line-height:1.7; margin-bottom:6px;';
     intro.innerHTML = '線が右上がり＝その銘柄の記事が日々増えている／右下がり＝減っている。点線の最後の点は<b>今日(途中経過)</b>。' +
       '「+1だけで消える」＝⚡単発、「次の日も、3日後も出る」＝🔥積み上がり。' +
@@ -10600,13 +10598,25 @@ ${keywordLine}${bpBlock}${conditionBlock}
         ];
         count.textContent = `${arr.length} / ${rows.length}銘柄を表示`;
         list.innerHTML = '';
-        groups.forEach(g => {
+        groups.forEach((g, gi) => {
           if (!g.a.length) return;
           g.a.sort(byNews);
-          const h = document.createElement('div'); h.style.cssText = 'margin:12px 0 2px; padding:6px 8px; background:rgba(157,180,255,0.10); border-left:3px solid #ffd76b; border-radius:3px;';
-          h.innerHTML = `<div style="font-size:14px; color:#fff; font-weight:bold;">${g.t} <span style="font-size:12px; color:#ffd76b;">${g.a.length}銘柄</span></div><div style="font-size:11px; color:#9db4ff; line-height:1.5;">${g.s}</div>`;
+          // 2026-10-22 キング指示：「📈株価↑×記事」だけ蛇腹。閉じていても上位5個は常に見える。▼は右上(開＝▼／閉＝▶)。
+          const fold = (gi === 0 && g.a.length > 5);
+          const h = document.createElement('div'); h.style.cssText = 'margin:12px 0 2px; padding:6px 8px; background:rgba(157,180,255,0.10); border-left:3px solid #ffd76b; border-radius:3px;' + (fold ? ' display:flex; justify-content:space-between; align-items:flex-start; gap:8px; cursor:pointer;' : '');
+          const hInner = `<div style="font-size:14px; color:#fff; font-weight:bold;">${g.t} <span style="font-size:12px; color:#ffd76b;">${g.a.length}銘柄</span></div><div style="font-size:11px; color:#9db4ff; line-height:1.5;">${g.s}</div>`;
+          let rest = null;
+          if (fold) {
+            h.innerHTML = `<div style="min-width:0;">${hInner}</div>`;
+            const arrow = document.createElement('span'); arrow.style.cssText = 'flex:0 0 auto; font-size:18px; line-height:1.2; color:#ffd76b;';
+            arrow.textContent = world3UI.upOpen ? '▼' : '▶';
+            h.appendChild(arrow);
+            rest = document.createElement('div'); rest.style.display = world3UI.upOpen ? '' : 'none';
+            h.onclick = () => { playSelect(); world3UI.upOpen = !world3UI.upOpen; rest.style.display = world3UI.upOpen ? '' : 'none'; arrow.textContent = world3UI.upOpen ? '▼' : '▶'; };
+          } else h.innerHTML = hInner;
           list.appendChild(h);
-          g.a.forEach(r => list.appendChild(buildNewsRow(r, nv, jm)));
+          g.a.forEach((r, i) => (fold && i >= 5 ? rest : list).appendChild(buildNewsRow(r, nv, jm)));
+          if (fold) list.appendChild(rest);
         });
         return;
       }
@@ -10629,28 +10639,63 @@ ${keywordLine}${bpBlock}${conditionBlock}
       `検索は社名で行うため、同名の別の話題が混ざることがあります。`;
     wrap.appendChild(foot);
   }
-  // 2026-10-21 キング指示：「📈株価↑×記事」の上位5個を、並べ替えやタブに関係なくいつも一番上に出す(折りたためる。開閉は world3UI.topOpen に覚える)。
-  // 並び順は港の画面・勇者のいえの上位3つと同じ(🔥積み上がり→直近7日の平均件数が多い順)。株価↑が0件なら、その旨を出す。
-  function buildTop5Box(box, rows, nv, jm){
-    const up = rows.filter(r => r.tr.state === 'up').sort((a, b) => ((b.c.key === 'build') - (a.c.key === 'build')) || (b.c.aL - a.c.aL));
-    const d = document.createElement('details'); d.open = world3UI.topOpen !== false;
-    d.style.cssText = 'margin:0 0 10px; padding:2px 8px 4px; background:rgba(255,215,107,0.07); border:1px solid rgba(255,215,107,0.35); border-radius:4px;';
-    d.addEventListener('toggle', () => { world3UI.topOpen = d.open; });
-    const s = document.createElement('summary'); s.style.cssText = 'cursor:pointer; font-size:14px; color:#ffd76b; font-weight:bold; padding:6px 0;';
-    s.textContent = `⭐ 株価↑×記事 上位${Math.min(5, up.length)}（いつも出ています）`;
-    d.appendChild(s);
-    if (!up.length) {
-      const m = document.createElement('div'); m.style.cssText = 'font-size:12px; color:#8a93b8; line-height:1.6; padding:4px 0 6px;';
-      m.textContent = jm ? '株価が上向き(5営業日プラス＋25日線の上)の銘柄が、いまはありません。' : '25日線の値がありません(日経225のスキャン後に判定されます)。';
-      d.appendChild(m);
-    } else {
-      up.slice(0, 5).forEach(r => d.appendChild(buildNewsRow(r, nv, jm)));
-    }
-    box.appendChild(d);
-  }
   // 2026-10-21 キング指示：Polymarket(予測市場)の温度計。data/polymarket.json(GitHub Actionsが毎時更新・scripts/fetch_polymarket.py)を読むだけ。
   // 棒＝「Yes」の値段(＝市場が見ている確率)、右の矢印＝24時間の変化(ポイント)。良い/悪いの色分け・しきい値は付けない(キング未定義)。
   // 同じ市場が複数のテーマに出ても、最初のテーマだけに出す。テーマの振り分けはキーワードでの機械的なもの(使いながら消す)。
+  // 2026-10-22 キング指示：Polymarketの英語の題名・選択肢を日本語にする。機械的な置き換えで、翻訳AIは使わない。表にないものは英語のまま出す。
+  // PM_JA_BEGIN
+  const PM_MON = {January:1,February:2,March:3,April:4,May:5,June:6,July:7,August:8,September:9,October:10,November:11,December:12};
+  const PM_ACT = {Hike:'利上げ', Pause:'据え置き', Cut:'利下げ'};
+  function pmMon(s){ return PM_MON[s] ? PM_MON[s] + '月' : null; }
+  function pmDate(s){
+    const m = /^([A-Za-z]+) (\d{1,2})(?:, (\d{4}))?$/.exec(String(s).trim());
+    if (!m || !PM_MON[m[1]]) return null;
+    return (m[3] ? m[3] + '年' : '') + PM_MON[m[1]] + '月' + m[2] + '日';
+  }
+  function pmPct(bps, plus){ return (bps / 100) + '%' + (plus ? '以上' : ''); }
+  const PM_TITLES = [
+    [/^Fed Decision in ([A-Za-z]+)\?$/, m => pmMon(m[1]) && (pmMon(m[1]) + 'のFRB会合の結果は？')],
+    [/^Fed decisions \(Sep[–-]Dec\)$/, () => 'FRBの9〜12月の会合3回の結果'],
+    [/^How many Fed rate (cuts|hikes) in (\d{4})\?$/, m => m[2] + '年のFRBの' + (m[1] === 'cuts' ? '利下げ' : '利上げ') + 'は何回？'],
+    [/^Bank of England decision in ([A-Za-z]+)\?$/, m => pmMon(m[1]) && (pmMon(m[1]) + 'のイングランド銀行の決定は？')],
+    [/^US-Iran ceasefire continues through\.\.\.\?$/, () => '米国とイランの停戦は、いつまで続く？'],
+    [/^Israel x Iran ceasefire continues through\.\.\.\?$/, () => 'イスラエルとイランの停戦は、いつまで続く？'],
+    [/^Iran leadership change by\.\.\.\?$/, () => 'イランの指導者の交代は、いつまでに起きる？'],
+    [/^What will WTI Crude Oil \(WTI\) hit in ([A-Za-z]+) (\d{4})\?$/, m => pmMon(m[1]) && (m[2] + '年' + pmMon(m[1]) + 'にWTI原油は、いくらまで上がる？')],
+    [/^US announces end of Iranian blockade by\.\.\.\?$/, () => '米国がイラン封鎖の終了を発表するのは、いつまでに？'],
+    [/^Who wins the Senate pending oil below \$85 before the midterms\?$/, () => '中間選挙：上院はどちらが勝つ？(原油が85ドル未満かどうかとの組み合わせ)'],
+    [/^Prime Minister of Israel after the next election\?$/, () => '次の選挙後の、イスラエルの首相は？'],
+    [/^Russia x Ukraine [Cc]easefire( agreement)? by\.\.\.\?$/, m => 'ロシアとウクライナの停戦' + (m[1] ? '合意' : '') + 'は、いつまでに？'],
+    [/^Mexico Annual Inflation (\d{4})$/, m => 'メキシコの' + m[1] + '年の年間インフレ率'],
+    [/^S&P 500 \(SPY\) closes above ___ on ([A-Za-z]+) (\d{1,2})\?$/, m => pmMon(m[1]) && ('S&P500(SPY)の' + pmMon(m[1]) + m[2] + '日の終値は、いくらより上？')],
+    [/^Anthropic announces bankruptcy by\.\.\.\?$/, () => 'Anthropicが破産を発表するのは、いつまでに？'],
+    [/^Will Anthropic[’'] ?s valuation hit __ by December 31\?$/, () => 'Anthropicの評価額は、12月31日までにいくらに届く？'],
+    [/^Which company has best AI model end of (\d{4})\?$/, m => m[1] + '年末に、最高のAIモデルを持つ会社は？'],
+    [/^Next Fable Model \((\d+\.\d+)\+\) released by\.\.\.\?$/, m => '次のFableモデル(' + m[1] + '以降)の公開は、いつまでに？'],
+    [/^Anthropic IPO by __\?$/, () => 'AnthropicのIPOは、いつまでに？'],
+    [/^Anthropic IPO Closing Market Cap$/, () => 'AnthropicのIPO初日の終値の時価総額']
+  ];
+  function pmTitleJa(t){
+    const T = String(t == null ? '' : t).trim();
+    for (const [rx, fn] of PM_TITLES) { const m = rx.exec(T); if (m) { const r = fn(m); if (r) return r; } }
+    return t;
+  }
+  function pmLabelJa(label, title){
+    const L = String(label).trim(); let m;
+    const d = pmDate(L); if (d) return d;
+    if ((m = /^(\d+)(\+)? bps (decrease|increase)$/.exec(L))) return pmPct(+m[1], !!m[2]) + (m[3] === 'decrease' ? 'の利下げ' : 'の利上げ');
+    if (L === 'No change') return '据え置き';
+    if ((m = /^(\d+) \((\d+) bps\)$/.exec(L))) return m[1] + '回(' + pmPct(+m[2]) + ')';
+    if ((m = /^↑ ?\$([\d.,]+)T$/.exec(L))) return m[1] + '兆ドルまで上昇';
+    if ((m = /^↑ ?\$([\d.,]+)$/.exec(L))) return '$' + m[1] + 'まで上昇';
+    if ((m = /^\$([\d.,]+)[–-]\$([\d.,]+)T$/.exec(L))) return m[1] + '〜' + m[2] + '兆ドル';
+    if ((m = /^\$([\d.,]+)$/.exec(L)) && /closes above/.test(title || '')) return '$' + m[1] + 'より上';
+    if ((m = /^([\d.]+)% to ([\d.]+)%$/.exec(L))) return m[1] + '%〜' + m[2] + '%';
+    if ((m = /^Oil (≥|<) \$(\d+); ([DR]) Senate$/.exec(L))) return '原油$' + m[2] + (m[1] === '≥' ? '以上' : '未満') + '・上院は' + (m[3] === 'D' ? '民主党' : '共和党');
+    if (/^(Hike|Pause|Cut)([–-](Hike|Pause|Cut))+$/.test(L)) return L.split(/[–-]/).map(x => PM_ACT[x]).join('→');
+    return label;
+  }
+  // PM_JA_END
   function pmChgHtml(d){
     if (d == null) return '<span style="color:#6f78a0;">—</span>';
     const p = d * 100;
@@ -10659,15 +10704,18 @@ ${keywordLine}${bpBlock}${conditionBlock}
   }
   function buildPolymarketBox(box){
     const pm = ddoc('polymarket.json');
-    const d = document.createElement('details'); d.open = world3UI.pmOpen !== false;
-    d.style.cssText = 'margin:0 0 10px; padding:2px 8px 6px; background:rgba(157,180,255,0.06); border:1px solid rgba(157,180,255,0.30); border-radius:4px;';
-    d.addEventListener('toggle', () => { world3UI.pmOpen = d.open; });
-    const s = document.createElement('summary'); s.style.cssText = 'cursor:pointer; font-size:14px; color:#9db4ff; font-weight:bold; padding:6px 0;';
-    s.textContent = '🌡️ Polymarketの温度計（予測市場・株に関係するテーマ）';
-    d.appendChild(s);
-    box.appendChild(d);
+    // 2026-10-22 キング指示：見出しは赤文字の「Polymarket」だけ。▼は右上(開＝▼／閉＝▶)。スマホを右手で操作するため。
+    const frame = document.createElement('div'); frame.style.cssText = 'margin:0 0 10px; padding:2px 8px 6px; background:rgba(157,180,255,0.06); border:1px solid rgba(157,180,255,0.30); border-radius:4px;';
+    const head = document.createElement('div'); head.style.cssText = 'display:flex; justify-content:space-between; align-items:flex-start; gap:8px; cursor:pointer; padding:6px 0;';
+    const ht = document.createElement('div'); ht.style.cssText = 'font-size:16px; color:#e8605a; font-weight:bold;'; ht.textContent = 'Polymarket';
+    const arrow = document.createElement('span'); arrow.style.cssText = 'flex:0 0 auto; font-size:18px; line-height:1.2; color:#e8605a;';
+    arrow.textContent = world3UI.pmOpen !== false ? '▼' : '▶';
+    head.appendChild(ht); head.appendChild(arrow);
+    const d = document.createElement('div'); d.style.display = world3UI.pmOpen !== false ? '' : 'none';
+    head.onclick = () => { playSelect(); world3UI.pmOpen = !(world3UI.pmOpen !== false); d.style.display = world3UI.pmOpen ? '' : 'none'; arrow.textContent = world3UI.pmOpen ? '▼' : '▶'; };
+    frame.appendChild(head); frame.appendChild(d); box.appendChild(frame);
     const say = (txt) => { const m = document.createElement('div'); m.style.cssText = 'font-size:12px; color:#8a93b8; line-height:1.6; padding:4px 0;'; m.textContent = txt; d.appendChild(m); };
-    if (!pm || !Array.isArray(pm.themes)) { say(ddNote('polymarket.json', 'Polymarketのデータ') || 'Polymarketのデータがまだありません。毎時、自動で更新されます。'); return; }
+    if (!pm || !Array.isArray(pm.themes)) { say(ddNote('polymarket.json', 'Polymarketのデータ') || 'Polymarketのデータがまだありません。夜〜朝は毎時、昼は数回、自動で更新されます。'); return; }
     const seen = new Set();
     pm.themes.forEach(th => {
       const evs = (th.events || []).filter(ev => { if (seen.has(ev.slug)) return false; seen.add(ev.slug); return true; });
@@ -10677,12 +10725,12 @@ ${keywordLine}${bpBlock}${conditionBlock}
       evs.forEach(ev => {
         const box2 = document.createElement('div'); box2.style.cssText = 'padding:6px 0; border-top:1px solid rgba(157,180,255,0.15);';
         const end = ev.end ? fmtMD(String(ev.end).slice(0, 10)) : '';
-        box2.innerHTML = `<div style="display:flex; justify-content:space-between; gap:8px; align-items:baseline;"><div style="font-size:12px; color:#fff;">${escapeHtml(ev.title)}</div><div style="font-size:10px; color:#6f78a0; white-space:nowrap;">${end ? '〜' + escapeHtml(end) : ''}</div></div>`;
+        box2.innerHTML = `<div style="display:flex; justify-content:space-between; gap:8px; align-items:baseline;"><div style="font-size:12px; color:#fff;">${escapeHtml(pmTitleJa(ev.title))}</div><div style="font-size:10px; color:#6f78a0; white-space:nowrap;">${end ? '〜' + escapeHtml(end) : ''}</div></div>`;
         (ev.markets || []).forEach(m => {
           const pct = Math.max(0, Math.min(100, (m.yes || 0) * 100));
           const row = document.createElement('div'); row.style.cssText = 'display:flex; align-items:center; gap:6px; margin:3px 0;';
           row.innerHTML =
-            `<div style="flex:0 0 36%; min-width:0; font-size:11px; color:#c8d0f0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(m.q || '')}">${escapeHtml(m.label || m.q || '')}</div>` +
+            `<div style="flex:0 0 36%; min-width:0; font-size:11px; color:#c8d0f0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(m.q || '')}">${escapeHtml(m.label ? pmLabelJa(m.label, ev.title) : (m.q || ''))}</div>` +
             `<div style="flex:1; height:10px; background:rgba(157,180,255,0.15); border-radius:5px; overflow:hidden;"><div style="width:${pct.toFixed(1)}%; height:100%; background:#ffd76b;"></div></div>` +
             `<div style="flex:0 0 46px; text-align:right; font-size:12px; color:#fff;">${pct.toFixed(1)}%</div>` +
             `<div style="flex:0 0 66px; text-align:right; font-size:11px;">${pmChgHtml(m.d1)}</div>`;
@@ -10697,8 +10745,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const when = pm.fetched_at ? String(pm.fetched_at).replace('T', ' ').slice(0, 16) : '不明';
     const ageH = pm.fetched_at ? (Date.now() - new Date(pm.fetched_at).getTime()) / 3600000 : null;
     foot.innerHTML = `出典：${escapeHtml(pm.source)}／取得 ${escapeHtml(when)}(JST)／確認レベル ${escapeHtml(pm.grade)}` +
-      (ageH != null && ageH > 3 ? `<br><span style="color:#e8605a;">⚠ 更新から${Math.floor(ageH)}時間以上たっています(自動更新が止まっている可能性)</span>` : '') +
-      `<br>棒＝「Yes」の値段(市場が見ている確率)、右＝24時間の変化(ポイント)。${escapeHtml(pm.note || '')}タイトルは英語のままです。`;
+      (ageH != null && ageH > 5 ? `<br><span style="color:#e8605a;">⚠ 更新から${Math.floor(ageH)}時間以上たっています(自動更新が止まっている可能性)</span>` : '') +
+      `<br>棒＝「Yes」の値段(市場が見ている確率)、右＝24時間の変化(ポイント)。${escapeHtml(pm.note || '')}日本語は機械的な置き換えです(置き換えの表にない題名・人名は英語のまま)。`;
     d.appendChild(foot);
   }
   // 2026-10-20 キング指示：ウワサの港「📈株価↑×記事」の上位3つ(並び順は港の画面と同じ＝🔥積み上がり→直近7日の平均件数が多い順)。勇者のいえの黄色い枠用。
@@ -14280,7 +14328,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-22a';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-22b';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;

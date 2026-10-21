@@ -1,9 +1,13 @@
 name: polymarket
 
-# Polymarket(公開API)から株に関係する市場を集めて data/polymarket.json を更新する。毎時(10分過ぎ)。
+# Polymarket(公開API)から株に関係する市場を集めて data/polymarket.json を更新する。
+# 2026-10-22 キング承認：Polymarketはアメリカの活動時間(日本の夜〜朝)によく動き、日本の昼〜夕方は静かだった(14日・40市場の実測。data/polymarket_hours_study.txt)ため、
+# 日本時間 22:10〜翌8:10 は毎時、7:30(朝の確認の直前)に1回、昼は 12:10 / 16:10 / 20:10 の3回。cronはUTC表記。
 on:
   schedule:
-    - cron: '10 * * * *'
+    - cron: '10 13-23 * * *'   # 日本時間 22:10〜翌8:10(毎時)
+    - cron: '30 22 * * *'      # 日本時間 7:30(朝の確認の直前)
+    - cron: '10 3,7,11 * * *'  # 日本時間 12:10 / 16:10 / 20:10
   workflow_dispatch:
   push:
     paths:
