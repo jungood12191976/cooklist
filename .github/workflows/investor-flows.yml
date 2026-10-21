@@ -1,0 +1,42 @@
+name: investor-flows
+
+# JPX 投資部門別売買状況(週次)を取り込み、data/investor_flows.json に新しい週を追記する。
+# JPXは毎週木曜ごろ前週分を掲載。木・金の夕方に数回確認し、新しい週が無ければ何も変えない。
+on:
+  schedule:
+    - cron: '30 7,10,13 * * 4,5'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/fetch_investor_flows.py'
+      - '.github/workflows/investor-flows.yml'
+
+permissions:
+  contents: write
+
+concurrency: investor-flows
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests openpyxl
+      - run: python scripts/fetch_investor_flows.py
+      - name: commit if changed
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/investor_flows.json data/investor_flows_check.txt
+          if git diff --cached --quiet; then
+            echo "変更なし"
+            exit 0
+          fi
+          git commit -m "投資家別売買(JPX週次)を更新"
+          git pull --rebase origin main
+          git push origin HEAD:main
