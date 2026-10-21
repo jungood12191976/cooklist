@@ -10947,13 +10947,15 @@ ${keywordLine}${bpBlock}${conditionBlock}
   // 2026-10-21 キング指示：勇者のいえ「ウワサの港より」黄色枠。見出しを押すとウワサの港へ。中身は newsTopUp3()(📈株価↑×記事の上位3つ)。無ければ出さない。
   function buildUwasaPickBox(){
     const t3 = newsTopUp3(); if (!t3) return null;
-    const box = document.createElement('div');
-    box.style.cssText = 'background:#ffd76b; color:#2c1f5c; border:2px solid #a9741f; padding:6px 10px; margin:8px 0; font-weight:bold; font-size:13px;';
-    const h = document.createElement('button');
-    h.textContent = 'ウワサの港より ▶';
-    h.style.cssText = 'display:block; background:none; border:none; padding:0 0 3px; margin:0; font:inherit; font-size:12px; color:#7a4a00; text-decoration:underline; cursor:pointer; text-align:left;';
+    // 2026-10-21 キング指示：他のカテゴリ(今日の作戦など)と同じ見せ方。黄色い枠(.pw)＋左上の黄色いタブ(.pw-title)。タブを押すとウワサの港へ。おすすめ文は枠の中。
+    const box = document.createElement('div'); box.className = 'pw';
+    const h = document.createElement('div'); h.className = 'pw-title';
+    h.textContent = '⚓ ウワサの港より ▶';
+    h.style.cursor = 'pointer';
+    h.setAttribute('role', 'button');
     h.addEventListener('click', () => { playSelect(); screen = 'world3'; render(); });
     const t = document.createElement('div');
+    t.style.cssText = 'font-size:16px; font-weight:bold; color:#fff; line-height:1.6;';
     t.textContent = t3.join('、') + 'がおすすめです';
     box.appendChild(h); box.appendChild(t);
     return box;
@@ -13839,7 +13841,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-21e';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-21f';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
