@@ -6527,12 +6527,14 @@ ${keywordLine}${bpBlock}${conditionBlock}
       const res = await fetch(SAKABA_CSV_URL(), { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const rows = skyParseCSV(await res.text()).slice(1).filter(r => r[0] === skEp.id && r[3]);
+      const hasV = rows.some(r => /^v/.test(r[5] || ''));
       const subs = rows.map(r => {
         const o = { s: parseFloat(r[1]), e: parseFloat(r[2]), t: r[3] };
         // E列=単語ごとの開始時刻(行の頭からの1/100秒) / F列=動詞の番号('v'+空白区切り)。無い回は文字数での推定になる
         const n = r[3].split(' ').length, offs = (r[4] || '').trim().split(/\s+/).map(Number);
         if (offs.length === n && offs.every(isFinite)) o.wt = offs.map(v => o.s + v / 100);
-        if (o.wt && /^v/.test(r[5] || '')) o.vb = new Set((r[5] || '').slice(1).trim().split(/\s+/).filter(Boolean).map(Number));
+        // 動詞のデータがある回は、動詞の無い行(F列が空)も「動詞なし」として扱う(空だと「全」に戻ってしまうバグの修正)
+        if (o.wt && hasV) o.vb = new Set((r[5] || '').replace(/^v/, '').trim().split(/\s+/).filter(Boolean).map(Number));
         return o;
       }).filter(x => isFinite(x.s) && isFinite(x.e));
       subs.sort((a, b) => a.s - b.s);
@@ -14275,7 +14277,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-21r';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-22a';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
