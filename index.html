@@ -14103,7 +14103,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-21i';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-21j';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
@@ -15443,7 +15443,8 @@ ${note}
     setTimeout(() => window.scrollTo(0, 0), 300);
     setTimeout(maybeShowKingQuestPopup, 600); // その日最初の起動なら、まずキングクエストの誓いポップアップ
     setTimeout(() => { try { kingdomPrefetch(); } catch(e){} }, 300); // 「冒険を始める」を押したら、王様の話を裏で用意しはじめる
-    setTimeout(maybeShowEnglishNudge, 2400); // 起動アニメが落ち着いてから、今日まだなら執事が声をかける
+    // 2026-10-21 キング指示：ポッドキャストができて使わないため「王国の使者」ポップアップは非表示。呼び出しだけコメントアウト(関数本体は残してある)
+    // setTimeout(maybeShowEnglishNudge, 2400); // 起動アニメが落ち着いてから、今日まだなら執事が声をかける
     if (holdings.length) refreshAllQuotes(null); // 起動した瞬間に裏側で株価を自動取得しておく(袋を開いた時にはもう最新)
     // 世界の入口の数字(62か所・順番に取るので約1分)も、起動したら裏で取り始める。開いてから待たせないため(キング指示 2026-10-05)。
     // 株価の自動取得と同じ回線を取り合わないよう5秒ずらす。米国の最後の引け(＋1時間)より後に取得済みなら fetchWorldSignals が取り直さない(2026-10-07〜)。
