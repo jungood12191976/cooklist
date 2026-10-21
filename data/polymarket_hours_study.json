@@ -1,0 +1,436 @@
+{
+ "generated_at": "2026-10-22T08:05:29+09:00",
+ "days": 14,
+ "markets_used": 40,
+ "markets_failed": 0,
+ "note": "hour_jst は『その1時間の終わりの時刻の時(日本時間)』。例: 9 = 8:00→9:00 の変化",
+ "hours": [
+  {
+   "hour_jst": 0,
+   "samples": 530,
+   "mean_abs_move_pt": 0.3909,
+   "share_of_total_move": 0.0442
+  },
+  {
+   "hour_jst": 1,
+   "samples": 530,
+   "mean_abs_move_pt": 0.975,
+   "share_of_total_move": 0.1102
+  },
+  {
+   "hour_jst": 2,
+   "samples": 530,
+   "mean_abs_move_pt": 0.6713,
+   "share_of_total_move": 0.0759
+  },
+  {
+   "hour_jst": 3,
+   "samples": 530,
+   "mean_abs_move_pt": 0.5269,
+   "share_of_total_move": 0.0596
+  },
+  {
+   "hour_jst": 4,
+   "samples": 530,
+   "mean_abs_move_pt": 0.6934,
+   "share_of_total_move": 0.0784
+  },
+  {
+   "hour_jst": 5,
+   "samples": 530,
+   "mean_abs_move_pt": 0.4948,
+   "share_of_total_move": 0.0559
+  },
+  {
+   "hour_jst": 6,
+   "samples": 530,
+   "mean_abs_move_pt": 0.4523,
+   "share_of_total_move": 0.0511
+  },
+  {
+   "hour_jst": 7,
+   "samples": 490,
+   "mean_abs_move_pt": 0.3457,
+   "share_of_total_move": 0.0361
+  },
+  {
+   "hour_jst": 8,
+   "samples": 490,
+   "mean_abs_move_pt": 0.2645,
+   "share_of_total_move": 0.0276
+  },
+  {
+   "hour_jst": 9,
+   "samples": 525,
+   "mean_abs_move_pt": 0.2647,
+   "share_of_total_move": 0.0296
+  },
+  {
+   "hour_jst": 10,
+   "samples": 525,
+   "mean_abs_move_pt": 0.2875,
+   "share_of_total_move": 0.0322
+  },
+  {
+   "hour_jst": 11,
+   "samples": 525,
+   "mean_abs_move_pt": 0.3038,
+   "share_of_total_move": 0.034
+  },
+  {
+   "hour_jst": 12,
+   "samples": 525,
+   "mean_abs_move_pt": 0.1869,
+   "share_of_total_move": 0.0209
+  },
+  {
+   "hour_jst": 13,
+   "samples": 525,
+   "mean_abs_move_pt": 0.2013,
+   "share_of_total_move": 0.0225
+  },
+  {
+   "hour_jst": 14,
+   "samples": 525,
+   "mean_abs_move_pt": 0.1724,
+   "share_of_total_move": 0.0193
+  },
+  {
+   "hour_jst": 15,
+   "samples": 525,
+   "mean_abs_move_pt": 0.2665,
+   "share_of_total_move": 0.0298
+  },
+  {
+   "hour_jst": 16,
+   "samples": 525,
+   "mean_abs_move_pt": 0.1845,
+   "share_of_total_move": 0.0207
+  },
+  {
+   "hour_jst": 17,
+   "samples": 525,
+   "mean_abs_move_pt": 0.2574,
+   "share_of_total_move": 0.0288
+  },
+  {
+   "hour_jst": 18,
+   "samples": 525,
+   "mean_abs_move_pt": 0.2002,
+   "share_of_total_move": 0.0224
+  },
+  {
+   "hour_jst": 19,
+   "samples": 525,
+   "mean_abs_move_pt": 0.2112,
+   "share_of_total_move": 0.0237
+  },
+  {
+   "hour_jst": 20,
+   "samples": 525,
+   "mean_abs_move_pt": 0.2136,
+   "share_of_total_move": 0.0239
+  },
+  {
+   "hour_jst": 21,
+   "samples": 525,
+   "mean_abs_move_pt": 0.2509,
+   "share_of_total_move": 0.0281
+  },
+  {
+   "hour_jst": 22,
+   "samples": 525,
+   "mean_abs_move_pt": 0.5025,
+   "share_of_total_move": 0.0563
+  },
+  {
+   "hour_jst": 23,
+   "samples": 530,
+   "mean_abs_move_pt": 0.6062,
+   "share_of_total_move": 0.0685
+  }
+ ],
+ "markets": [
+  {
+   "theme": "イラン・原油",
+   "q": "US x Iran ceasefire continues through October 22?",
+   "event": "US-Iran ceasefire continues through...?",
+   "yes_now": 0.8665,
+   "points": 176
+  },
+  {
+   "theme": "金利・FRB",
+   "q": "Will the Fed increase interest rates by 25 bps after the October 2026 meeting?",
+   "event": "Fed Decision in October?",
+   "yes_now": 0.125,
+   "points": 334
+  },
+  {
+   "theme": "金利・FRB",
+   "q": "Will there be no change in Fed interest rates after the October 2026 meeting?",
+   "event": "Fed Decision in October?",
+   "yes_now": 0.875,
+   "points": 334
+  },
+  {
+   "theme": "イラン・原油",
+   "q": "US x Iran ceasefire continues through October 31?",
+   "event": "US-Iran ceasefire continues through...?",
+   "yes_now": 0.72,
+   "points": 334
+  },
+  {
+   "theme": "トランプ関連",
+   "q": "Will Benjamin Netanyahu be the next Prime Minister of Israel?",
+   "event": "Prime Minister of Israel after the next election?",
+   "yes_now": 0.265,
+   "points": 334
+  },
+  {
+   "theme": "イラン・原油",
+   "q": "US x Iran ceasefire continues through October 24?",
+   "event": "US-Iran ceasefire continues through...?",
+   "yes_now": 0.82,
+   "points": 176
+  },
+  {
+   "theme": "イラン・原油",
+   "q": "Israel x Iran ceasefire continues through October 31?",
+   "event": "Israel x Iran ceasefire continues through...?",
+   "yes_now": 0.795,
+   "points": 334
+  },
+  {
+   "theme": "イラン・原油",
+   "q": "Iran leadership change by December 31?",
+   "event": "Iran leadership change by...?",
+   "yes_now": 0.125,
+   "points": 334
+  },
+  {
+   "theme": "イラン・原油",
+   "q": "Will WTI Crude Oil (WTI) hit (HIGH) $115 in October?",
+   "event": "What will WTI Crude Oil (WTI) hit in October 2026?",
+   "yes_now": 0.045,
+   "points": 334
+  },
+  {
+   "theme": "イラン・原油",
+   "q": "US x Iran ceasefire continues through October 28?",
+   "event": "US-Iran ceasefire continues through...?",
+   "yes_now": 0.75,
+   "points": 176
+  },
+  {
+   "theme": "AI・半導体",
+   "q": "Will Anthropic announce bankruptcy by December 31, 2029?",
+   "event": "Anthropic announces bankruptcy by...?",
+   "yes_now": 0.195,
+   "points": 334
+  },
+  {
+   "theme": "イラン・原油",
+   "q": "US x Iran ceasefire continues through November 15?",
+   "event": "US-Iran ceasefire continues through...?",
+   "yes_now": 0.505,
+   "points": 334
+  },
+  {
+   "theme": "トランプ関連",
+   "q": "Russia x Ukraine ceasefire agreement by May 31, 2027?",
+   "event": "Russia x Ukraine ceasefire agreement by...?",
+   "yes_now": 0.525,
+   "points": 334
+  },
+  {
+   "theme": "イラン・原油",
+   "q": "US x Iran ceasefire continues through December 31?",
+   "event": "US-Iran ceasefire continues through...?",
+   "yes_now": 0.31,
+   "points": 334
+  },
+  {
+   "theme": "イラン・原油",
+   "q": "US x Iran ceasefire continues through November 30?",
+   "event": "US-Iran ceasefire continues through...?",
+   "yes_now": 0.41,
+   "points": 334
+  },
+  {
+   "theme": "トランプ関連",
+   "q": "Will Gadi Eizenkot be the next Prime Minister of Israel?",
+   "event": "Prime Minister of Israel after the next election?",
+   "yes_now": 0.5285,
+   "points": 334
+  },
+  {
+   "theme": "トランプ関連",
+   "q": "Russia x Ukraine ceasefire agreement by December 31, 2026?",
+   "event": "Russia x Ukraine ceasefire agreement by...?",
+   "yes_now": 0.205,
+   "points": 334
+  },
+  {
+   "theme": "イラン・原油",
+   "q": "Israel x Iran ceasefire continues through November 15?",
+   "event": "Israel x Iran ceasefire continues through...?",
+   "yes_now": 0.565,
+   "points": 334
+  },
+  {
+   "theme": "イラン・原油",
+   "q": "Iran leadership change by November 30?",
+   "event": "Iran leadership change by...?",
+   "yes_now": 0.075,
+   "points": 334
+  },
+  {
+   "theme": "トランプ関連",
+   "q": "Will Naftali Bennett be the next Prime Minister of Israel?",
+   "event": "Prime Minister of Israel after the next election?",
+   "yes_now": 0.145,
+   "points": 334
+  },
+  {
+   "theme": "AI・半導体",
+   "q": "Will Anthropic announce bankruptcy by December 31, 2028?",
+   "event": "Anthropic announces bankruptcy by...?",
+   "yes_now": 0.165,
+   "points": 334
+  },
+  {
+   "theme": "AI・半導体",
+   "q": "Will Anthropic's valuation hit (HIGH) $2.5T by December 31?",
+   "event": "Will Anthropic’s valuation hit __ by December 31?",
+   "yes_now": 0.24,
+   "points": 334
+  },
+  {
+   "theme": "イラン・原油",
+   "q": "US x Iran ceasefire continues through November 22?",
+   "event": "US-Iran ceasefire continues through...?",
+   "yes_now": 0.445,
+   "points": 176
+  },
+  {
+   "theme": "AI・半導体",
+   "q": "Next Fable Model (5.2+) released by October 31, 2026?",
+   "event": "Next Fable Model (5.2+) released by...?",
+   "yes_now": 0.68,
+   "points": 334
+  },
+  {
+   "theme": "金利・FRB",
+   "q": "Will the Fed increase interest rates by 25 bps after the December 2026 meeting?",
+   "event": "Fed Decision in December?",
+   "yes_now": 0.785,
+   "points": 334
+  },
+  {
+   "theme": "金利・FRB",
+   "q": "Will the Fed increase interest rates by 25 bps after the January 2027 meeting?",
+   "event": "Fed Decision in January?",
+   "yes_now": 0.395,
+   "points": 334
+  },
+  {
+   "theme": "金利・FRB",
+   "q": "Will no Fed rate cuts happen in 2026?",
+   "event": "How many Fed rate cuts in 2026?",
+   "yes_now": 0.9695,
+   "points": 334
+  },
+  {
+   "theme": "金利・FRB",
+   "q": "Will there be no change in Fed interest rates after the January 2027 meeting?",
+   "event": "Fed Decision in January?",
+   "yes_now": 0.56,
+   "points": 334
+  },
+  {
+   "theme": "金利・FRB",
+   "q": "Will there be no change in Fed interest rates after the December 2026 meeting?",
+   "event": "Fed Decision in December?",
+   "yes_now": 0.185,
+   "points": 334
+  },
+  {
+   "theme": "イラン・原油",
+   "q": "Will WTI Crude Oil (WTI) hit (HIGH) $110 in October?",
+   "event": "What will WTI Crude Oil (WTI) hit in October 2026?",
+   "yes_now": 0.135,
+   "points": 334
+  },
+  {
+   "theme": "イラン・原油",
+   "q": "US x Iran ceasefire continues through November 8?",
+   "event": "US-Iran ceasefire continues through...?",
+   "yes_now": 0.57,
+   "points": 176
+  },
+  {
+   "theme": "イラン・原油",
+   "q": "Israel x Iran ceasefire continues through December 31?",
+   "event": "Israel x Iran ceasefire continues through...?",
+   "yes_now": 0.405,
+   "points": 334
+  },
+  {
+   "theme": "インフレ",
+   "q": "Another Fed rate hike in 2026?",
+   "event": "Another Fed rate hike in 2026?",
+   "yes_now": 0.805,
+   "points": 334
+  },
+  {
+   "theme": "トランプ関連",
+   "q": "Russia x Ukraine ceasefire agreement by March 31, 2027?",
+   "event": "Russia x Ukraine ceasefire agreement by...?",
+   "yes_now": 0.375,
+   "points": 334
+  },
+  {
+   "theme": "AI・半導体",
+   "q": "Next Fable Model (5.2+) released by October 24, 2026?",
+   "event": "Next Fable Model (5.2+) released by...?",
+   "yes_now": 0.185,
+   "points": 334
+  },
+  {
+   "theme": "AI・半導体",
+   "q": "Will Anthropic's valuation hit (HIGH) $2.0T by December 31?",
+   "event": "Will Anthropic’s valuation hit __ by December 31?",
+   "yes_now": 0.6,
+   "points": 334
+  },
+  {
+   "theme": "AI・半導体",
+   "q": "Will Anthropic have the best AI model at the end of December 2026?",
+   "event": "Which company has best AI model end of 2026?",
+   "yes_now": 0.485,
+   "points": 334
+  },
+  {
+   "theme": "トランプ関連",
+   "q": "Russia x Ukraine ceasefire agreement by January 31, 2027?",
+   "event": "Russia x Ukraine ceasefire agreement by...?",
+   "yes_now": 0.265,
+   "points": 334
+  },
+  {
+   "theme": "イラン・原油",
+   "q": "Israel x Iran ceasefire continues through November 30?",
+   "event": "Israel x Iran ceasefire continues through...?",
+   "yes_now": 0.445,
+   "points": 334
+  },
+  {
+   "theme": "AI・半導体",
+   "q": "Will Anthropic announce bankruptcy by December 31, 2027?",
+   "event": "Anthropic announces bankruptcy by...?",
+   "yes_now": 0.095,
+   "points": 334
+  }
+ ],
+ "failed": []
+}

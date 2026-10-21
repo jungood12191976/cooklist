@@ -1,0 +1,67 @@
+generated_at=2026-10-22T08:05:29+09:00 days=14 markets_used=40 failed=0
+hour_jst(終わりの時) samples mean_abs_move_pt share
+00   530 0.3909 0.0442
+01   530 0.975 0.1102
+02   530 0.6713 0.0759
+03   530 0.5269 0.0596
+04   530 0.6934 0.0784
+05   530 0.4948 0.0559
+06   530 0.4523 0.0511
+07   490 0.3457 0.0361
+08   490 0.2645 0.0276
+09   525 0.2647 0.0296
+10   525 0.2875 0.0322
+11   525 0.3038 0.034
+12   525 0.1869 0.0209
+13   525 0.2013 0.0225
+14   525 0.1724 0.0193
+15   525 0.2665 0.0298
+16   525 0.1845 0.0207
+17   525 0.2574 0.0288
+18   525 0.2002 0.0224
+19   525 0.2112 0.0237
+20   525 0.2136 0.0239
+21   525 0.2509 0.0281
+22   525 0.5025 0.0563
+23   530 0.6062 0.0685
+--- markets
+[イラン・原油] US x Iran ceasefire continues through October 22? (yes_now=0.8665, points=176)
+[金利・FRB] Will the Fed increase interest rates by 25 bps after the October 2026 meeting? (yes_now=0.125, points=334)
+[金利・FRB] Will there be no change in Fed interest rates after the October 2026 meeting? (yes_now=0.875, points=334)
+[イラン・原油] US x Iran ceasefire continues through October 31? (yes_now=0.72, points=334)
+[トランプ関連] Will Benjamin Netanyahu be the next Prime Minister of Israel? (yes_now=0.265, points=334)
+[イラン・原油] US x Iran ceasefire continues through October 24? (yes_now=0.82, points=176)
+[イラン・原油] Israel x Iran ceasefire continues through October 31? (yes_now=0.795, points=334)
+[イラン・原油] Iran leadership change by December 31? (yes_now=0.125, points=334)
+[イラン・原油] Will WTI Crude Oil (WTI) hit (HIGH) $115 in October? (yes_now=0.045, points=334)
+[イラン・原油] US x Iran ceasefire continues through October 28? (yes_now=0.75, points=176)
+[AI・半導体] Will Anthropic announce bankruptcy by December 31, 2029? (yes_now=0.195, points=334)
+[イラン・原油] US x Iran ceasefire continues through November 15? (yes_now=0.505, points=334)
+[トランプ関連] Russia x Ukraine ceasefire agreement by May 31, 2027? (yes_now=0.525, points=334)
+[イラン・原油] US x Iran ceasefire continues through December 31? (yes_now=0.31, points=334)
+[イラン・原油] US x Iran ceasefire continues through November 30? (yes_now=0.41, points=334)
+[トランプ関連] Will Gadi Eizenkot be the next Prime Minister of Israel? (yes_now=0.5285, points=334)
+[トランプ関連] Russia x Ukraine ceasefire agreement by December 31, 2026? (yes_now=0.205, points=334)
+[イラン・原油] Israel x Iran ceasefire continues through November 15? (yes_now=0.565, points=334)
+[イラン・原油] Iran leadership change by November 30? (yes_now=0.075, points=334)
+[トランプ関連] Will Naftali Bennett be the next Prime Minister of Israel? (yes_now=0.145, points=334)
+[AI・半導体] Will Anthropic announce bankruptcy by December 31, 2028? (yes_now=0.165, points=334)
+[AI・半導体] Will Anthropic's valuation hit (HIGH) $2.5T by December 31? (yes_now=0.24, points=334)
+[イラン・原油] US x Iran ceasefire continues through November 22? (yes_now=0.445, points=176)
+[AI・半導体] Next Fable Model (5.2+) released by October 31, 2026? (yes_now=0.68, points=334)
+[金利・FRB] Will the Fed increase interest rates by 25 bps after the December 2026 meeting? (yes_now=0.785, points=334)
+[金利・FRB] Will the Fed increase interest rates by 25 bps after the January 2027 meeting? (yes_now=0.395, points=334)
+[金利・FRB] Will no Fed rate cuts happen in 2026? (yes_now=0.9695, points=334)
+[金利・FRB] Will there be no change in Fed interest rates after the January 2027 meeting? (yes_now=0.56, points=334)
+[金利・FRB] Will there be no change in Fed interest rates after the December 2026 meeting? (yes_now=0.185, points=334)
+[イラン・原油] Will WTI Crude Oil (WTI) hit (HIGH) $110 in October? (yes_now=0.135, points=334)
+[イラン・原油] US x Iran ceasefire continues through November 8? (yes_now=0.57, points=176)
+[イラン・原油] Israel x Iran ceasefire continues through December 31? (yes_now=0.405, points=334)
+[インフレ] Another Fed rate hike in 2026? (yes_now=0.805, points=334)
+[トランプ関連] Russia x Ukraine ceasefire agreement by March 31, 2027? (yes_now=0.375, points=334)
+[AI・半導体] Next Fable Model (5.2+) released by October 24, 2026? (yes_now=0.185, points=334)
+[AI・半導体] Will Anthropic's valuation hit (HIGH) $2.0T by December 31? (yes_now=0.6, points=334)
+[AI・半導体] Will Anthropic have the best AI model at the end of December 2026? (yes_now=0.485, points=334)
+[トランプ関連] Russia x Ukraine ceasefire agreement by January 31, 2027? (yes_now=0.265, points=334)
+[イラン・原油] Israel x Iran ceasefire continues through November 30? (yes_now=0.445, points=334)
+[AI・半導体] Will Anthropic announce bankruptcy by December 31, 2027? (yes_now=0.095, points=334)
