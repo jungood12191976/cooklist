@@ -1,0 +1,6 @@
+実行 2026-10-21T14:10:36.895484Z / 一覧のxlsx 4件 / 保存済みの最新週 2026-10-05
+20260914〜20260918: {'foreign': -6425, 'individual': -3118, 'trustbank': -2943} 市場=['東証プライム', '東証スタンダード', '東証グロース'] / 保存値との差: foreign=+0, individual=-1, trustbank=+0
+20260924〜20260925: {'foreign': -930, 'individual': -87, 'trustbank': -3673} 市場=['東証プライム', '東証スタンダード', '東証グロース'] / 保存値との差: foreign=+0, individual=-1, trustbank=+0
+20260928〜20261002: {'foreign': 9559, 'individual': 2230, 'trustbank': 1764} 市場=['東証プライム', '東証スタンダード', '東証グロース'] / 保存値との差: foreign=+0, individual=+1, trustbank=+0
+20261005〜20261009: {'foreign': 14318, 'individual': 880, 'trustbank': -360} 市場=['東証プライム', '東証スタンダード', '東証グロース'] / 保存値との差: foreign=+0, individual=+0, trustbank=-1
+追記 0週
