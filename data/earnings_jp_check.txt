@@ -1,4 +1,4 @@
-FILE kessan.xlsx as_of=None data_rows=7 parsed=3 (うち日付未定=0) skipped=4 dups=0
+FILE kessan.xlsx as_of=None data_rows=8 parsed=4 (うち日付未定=0) skipped=4 dups=0
   SKIPPED ['※ 決算期変更による変則決算期中の会社を含む場合があります。', '', '', '', '', '', '', '']
   SKIPPED ['May include companies with irregular fiscal terms due to changes in the fiscal year.', '', '', '', '', '', '', '']
   SKIPPED ['※ テクニカル上場した会社は、前身となる会社（株式移転等を行った旧上場会社）の決算情報を発表する場合があります。', '', '', '', '', '', '', '']
@@ -8,11 +8,12 @@ FILE kessan08_1002.xlsx as_of=2026-10-01 data_rows=463 parsed=459 (うち日付�
   SKIPPED ['May include companies with irregular fiscal terms due to changes in the fiscal year.', '', '', '', '', '', '', '']
   SKIPPED ['※ テクニカル上場した会社は、前身となる会社（株式移転等を行った旧上場会社）の決算情報を発表する場合があります。', '', '', '', '', '', '', '']
   SKIPPED ['Technical listed companies may announce the financial information of their predecessor (former listed companies that have transferred stock, etc.)', '', '', '', '', '', '', '']
-FILE kessan09_1016.xlsx as_of=2026-10-15 data_rows=2928 parsed=2924 (うち日付未定=43) skipped=4 dups=3
+FILE kessan09_1016.xlsx as_of=2026-10-15 data_rows=2928 parsed=2924 (うち日付未定=43) skipped=4 dups=4
   SKIPPED ['※ 決算期変更による変則決算期中の会社を含む場合があります。', '', '', '', '', '', '', '']
   SKIPPED ['May include companies with irregular fiscal terms due to changes in the fiscal year.', '', '', '', '', '', '', '']
   SKIPPED ['※ テクニカル上場した会社は、前身となる会社（株式移転等を行った旧上場会社）の決算情報を発表する場合があります。', '', '', '', '', '', '', '']
   SKIPPED ['Technical listed companies may announce the financial information of their predecessor (former listed companies that have transferred stock, etc.)', '', '', '', '', '', '', '']
-  DUP ('296A', '2026-10-21', '第２四半期')
-  DUP ('4929', '2026-10-21', '第２四半期')
-  DUP ('5576', '2026-10-21', '第２四半期')
+  DUP ('5204', '2026-10-22', '第２四半期')
+  DUP ('6146', '2026-10-22', '第２四半期')
+  DUP ('8617', '2026-10-22', '第２四半期')
+  DUP ('9478', '2026-10-22', '第２四半期')
