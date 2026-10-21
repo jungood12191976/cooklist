@@ -11200,28 +11200,31 @@ ${keywordLine}${bpBlock}${conditionBlock}
     r.sort((a, b) => (a.g - b.g) || (a.d < b.d ? -1 : a.d > b.d ? 1 : 0) || (a.i - b.i));
     return r.map(x => x.c);
   }
-  function w2Chip(code, ctx, extra){
+  // big=true：ケッサンの町の「日付別」の予定画面だけ文字を大きく・淡い灰色を明るくする(2026-10-22 キング指示)。連鎖別は従来どおり。
+  function w2Chip(code, ctx, extra, big){
     const nm = nameFor(code) || code;
     const e = jpNextEarn(ctx.jp, code, ctx.today);
+    const gray = big ? '#b5bddc' : '#8a93b8';
     let near = false;
-    let earn = '<span style="color:#8a93b8;">決算日: JPXの一覧に未掲載</span>';
-    if (e && e.undecided) earn = '<span style="color:#8a93b8;">決算日: 未定(JPX)</span>';
-    else if (e && e.past) earn = `<span style="color:#8a93b8;">直近の決算 ${fmtMD(e.date)}(発表済み)</span>`;
+    let earn = `<span style="color:${gray};">決算日: JPXの一覧に未掲載</span>`;
+    if (e && e.undecided) earn = `<span style="color:${gray};">決算日: 未定(JPX)</span>`;
+    else if (e && e.past) earn = `<span style="color:${gray};">直近の決算 ${fmtMD(e.date)}(発表済み)</span>`;
     else if (e) {
       const nd = bdUntil(ctx.today, e.date);
       const inWin = nd >= 0 && nd <= EARN_WINDOW_BD;
       near = inWin;
-      earn = `<span style="color:${inWin ? '#ffd76b' : '#c8d0f0'};${inWin ? ' font-weight:bold; font-size:13px;' : ''}">${inWin ? '🪟決算ウィンドウ内 ' : ''}決算 ${fmtMD(e.date)}${e.item.kind ? '(' + escapeHtml(e.item.kind) + ')' : ''} ${nd === 0 ? '本日' : 'あと' + nd + '営業日'}${nd >= 0 && nd <= W2_NEAR_BD ? ' <span style="color:#ff9d6b;">⚠直前ゾーン</span>' : ''}</span>${(inWin && prevTradingDay(e.date, 1) >= ctx.today) ? ` <span style="color:#ff9d6b;">▮回避ライン ${fmtMD(prevTradingDay(e.date, 1))}引け</span>` : ''}`;
+      const winSize = big ? 15 : 13;
+      earn = `<span style="color:${inWin ? '#ffd76b' : '#c8d0f0'};${inWin ? ' font-weight:bold; font-size:' + winSize + 'px;' : ''}">${inWin ? '🪟決算ウィンドウ内 ' : ''}決算 ${fmtMD(e.date)}${e.item.kind ? '(' + escapeHtml(e.item.kind) + ')' : ''} ${nd === 0 ? '本日' : 'あと' + nd + '営業日'}${nd >= 0 && nd <= W2_NEAR_BD ? ' <span style="color:#ff9d6b;">⚠直前ゾーン</span>' : ''}</span>${(inWin && prevTradingDay(e.date, 1) >= ctx.today) ? ` <span style="color:#ff9d6b;${big ? ' font-weight:bold; font-size:14px;' : ''}">▮回避ライン ${fmtMD(prevTradingDay(e.date, 1))}引け</span>` : ''}`;
     }
-    let jw = '<span style="color:#8a93b8;">株価: 未判定</span>';
-    if (ctx.jm && ctx.jm[code]) jw = ctx.jm[code].ok ? '<span style="color:#7be08a;">🟢じわじわ成立</span>' : '<span style="color:#8a93b8;">⚪じわじわ不成立</span>';
+    let jw = `<span style="color:${gray};">株価: 未判定</span>`;
+    if (ctx.jm && ctx.jm[code]) jw = ctx.jm[code].ok ? '<span style="color:#7be08a;">🟢じわじわ成立</span>' : `<span style="color:${gray};">⚪じわじわ不成立</span>`;
     let nw = '';
     if (ctx.nv && ctx.nv.items[code]) { const L = NEWS_LABELS[newsClassify(ctx.nv.items[code].counts, newsMarketRatio(ctx.nv)).key]; nw = `<span style="color:${L.color};">📰${L.icon}${L.text}</span>`; }
     const rowStyle = near
       ? 'padding:5px 6px; margin:2px 0; border-top:1px dashed rgba(157,180,255,0.15); border-left:3px solid #ffd76b; background:rgba(255,215,107,0.10); border-radius:4px;'
       : 'padding:5px 0; border-top:1px dashed rgba(157,180,255,0.15);';
-    return `<div style="${rowStyle}"><div style="font-size:13px; color:#fff;"><b>${escapeHtml(code)}</b> ${escapeHtml(nm)}${extra ? ' ' + extra : ''}</div>` +
-      `<div style="font-size:11px; display:flex; flex-wrap:wrap; gap:4px 10px; margin-top:1px;">${earn}${jw}${nw}</div></div>`;
+    return `<div style="${rowStyle}"><div style="font-size:${big ? 16 : 13}px; color:#fff;"><b>${escapeHtml(code)}</b> ${escapeHtml(nm)}${extra ? ' ' + extra : ''}</div>` +
+      `<div style="font-size:${big ? 13 : 11}px; display:flex; flex-wrap:wrap; gap:4px 10px; margin-top:${big ? 3 : 1}px;">${earn}${jw}${nw}</div></div>`;
   }
   const EARN_WINDOW_BD = 10; // 決算の何営業日前から「ウィンドウ内」とするか(米国の研究で約10営業日前から。日本は未検証。キング調整可)
 
@@ -11539,28 +11542,28 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const wrap = document.createElement('div'); wrap.className = 'pw';
     const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = `📅 ${fmtMD(d)} の予定`; wrap.appendChild(t);
     const e = evs[d];
-    const sec = (head, color, inner) => `<div style="margin:0 0 12px;"><div style="font-size:12px; font-weight:bold; color:${color}; margin-bottom:3px;">${head}</div>${inner}</div>`;
+    const sec = (head, color, inner) => `<div style="margin:0 0 14px;"><div style="font-size:15px; font-weight:bold; color:${color}; margin-bottom:4px;">${head}</div>${inner}</div>`;
     let h = '';
-    if (!skyIsTradingDay(d)) h += `<div style="font-size:11px; color:#8a93b8; margin-bottom:8px;">東証休み${SKY_JPX_HOLIDAYS[d] ? '(' + escapeHtml(SKY_JPX_HOLIDAYS[d]) + ')' : ''}。米国の発表日としてだけ載っています。</div>`;
-    const line = c => { const ee = w2EarnOf(ctx, c); return `<div style="font-size:12px; color:#c8d0f0; padding:2px 0;"><b style="color:#fff;">${escapeHtml(c)}</b> ${escapeHtml(nameFor(c) || '')} ${w2ChainIcons(c)} <span style="color:#8a93b8;">決算 ${ee ? fmtMD(ee.date) : ''}</span></div>`; };
+    if (!skyIsTradingDay(d)) h += `<div style="font-size:13px; color:#b5bddc; margin-bottom:8px;">東証休み${SKY_JPX_HOLIDAYS[d] ? '(' + escapeHtml(SKY_JPX_HOLIDAYS[d]) + ')' : ''}。米国の発表日としてだけ載っています。</div>`;
+    const line = c => { const ee = w2EarnOf(ctx, c); return `<div style="font-size:16px; color:#c8d0f0; padding:3px 0;"><b style="color:#fff;">${escapeHtml(c)}</b> ${escapeHtml(nameFor(c) || '')} ${w2ChainIcons(c)} <span style="color:#ffd76b; font-weight:bold; font-size:15px;">決算 ${ee ? fmtMD(ee.date) : ''}</span></div>`; };
     let any = false;
     if (e && d >= ctx.today) {
       const ids = W2_CHAINS.filter(ch => e.trig[ch.id]);
       if (ids.length) { any = true; h += sec('⚡ 起爆剤の発表(米国の日付)', '#ffb37a', ids.map(ch => `<div style="font-size:12px; color:#fff; margin:4px 0 2px;">${ch.icon} <b>${escapeHtml(ch.title)}</b></div><div>` + e.trig[ch.id].map(x => `<span class="kchip"><b>${escapeHtml(x.symbol)}</b> ${x.est ? '' : escapeHtml(W2_TIME[x.time] || '')}${x.eps ? ' 予想EPS ' + escapeHtml(x.eps) : ''}</span>`).join('') + '</div>').join('')); }
-      if (e.r1.length) { any = true; h += sec('🌅 日本の寄り付き(巻き添え1)', '#7ec8ff', e.r1.map(x => `<div style="font-size:12px; color:#fff; margin:4px 0 2px;">${x.ch.icon} <b>${escapeHtml(x.ch.title)}</b> <span style="color:#8a93b8;">(${fmtMD(x.from)}の米国の発表を受けて)</span></div>` + w2SortByEarn(x.ch.w1, ctx).map(c => w2Chip(c, ctx)).join('')).join('')); }
-      if (e.earn.length) { any = true; h += sec(`📋 この日が決算の銘柄(${e.earn.length})`, '#ffd76b', e.earn.slice().sort().map(c => w2Chip(c, ctx, w2ChainIcons(c))).join('')); }
+      if (e.r1.length) { any = true; h += sec('🌅 日本の寄り付き(巻き添え1)', '#7ec8ff', e.r1.map(x => `<div style="font-size:12px; color:#fff; margin:4px 0 2px;">${x.ch.icon} <b>${escapeHtml(x.ch.title)}</b> <span style="color:#b5bddc;">(${fmtMD(x.from)}の米国の発表を受けて)</span></div>` + w2SortByEarn(x.ch.w1, ctx).map(c => w2Chip(c, ctx, '', true)).join('')).join('')); }
+      if (e.earn.length) { any = true; h += sec(`📋 この日が決算の銘柄(${e.earn.length})`, '#ffd76b', e.earn.slice().sort().map(c => w2Chip(c, ctx, w2ChainIcons(c), true)).join('')); }
       if (e.win.length) { any = true; h += sec(`🪟 この日から決算窓に入る(${e.win.length}) 監視スタート`, '#bfe8a8', e.win.slice().sort().map(line).join('')); }
       if (e.out.length) { any = true; h += sec(`▮ この日の引けがまたぎ回避ライン(${e.out.length}) 翌営業日が決算`, '#ff9d6b', e.out.slice().sort().map(line).join('')); }
     }
     if (e && d >= ctx.today && e.news.length) {
       any = true;
       h += sec(`📰 速報の記事から拾った予定(${e.news.length}) 公式日程ではありません`, '#c8a8ff', e.news.map(x => {
-        const link = /^https?:\/\/[^\s"'<>]+$/i.test(x.url || '') ? ` <a href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer" style="color:#9db4ff;">元記事</a>` : '';
-        return `<div style="font-size:12px; color:#c8d0f0; padding:3px 0; line-height:1.6;"><span class="kchip"><b>${escapeHtml(x.kind)}</b></span> <b style="color:#fff;">${escapeHtml(x.label)}</b> <span style="color:#8a93b8;">確度${escapeHtml(x.grade || '?')}・出典 ${escapeHtml(x.source || '不明')}(公開 ${escapeHtml(x.published || '不明')})</span>${link}</div>`;
+        const link = /^https?:\/\/[^\s"'<>]+$/i.test(x.url || '') ? ` <a href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer" style="color:#9db4ff; font-size:15px; font-weight:bold; display:inline-block; padding:4px 8px;">元記事</a>` : '';
+        return `<div style="color:#c8d0f0; padding:5px 0; line-height:1.6;"><div style="font-size:16px;"><span class="kchip" style="font-size:14px;"><b>${escapeHtml(x.kind)}</b></span> <b style="color:#fff;">${escapeHtml(x.label)}</b></div><div style="font-size:13px; color:#b5bddc; margin-top:1px;">確度${escapeHtml(x.grade || '?')}・出典 ${escapeHtml(x.source || '不明')}(公開 ${escapeHtml(x.published || '不明')})${link}</div></div>`;
       }).join(''));
     }
-    if (d < ctx.today) { any = true; h += '<div style="font-size:12px; color:#8a93b8;">過ぎた日です。この日の予定は、上の暦の行に残してあります。</div>'; }
-    if (!any) h += '<div style="font-size:12px; color:#8a93b8;">この日の予定はありません。</div>';
+    if (d < ctx.today) { any = true; h += '<div style="font-size:13px; color:#b5bddc;">過ぎた日です。この日の予定は、上の暦の行に残してあります。</div>'; }
+    if (!any) h += '<div style="font-size:13px; color:#b5bddc;">この日の予定はありません。</div>';
     const b = document.createElement('div'); b.innerHTML = h; wrap.appendChild(b);
     return wrap;
   }
