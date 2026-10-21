@@ -6465,6 +6465,9 @@ ${keywordLine}${bpBlock}${conditionBlock}
   let skEp = SAKABA_EPS[0], skView = 'home';
   let skSize = (lsGet('wd3:sakabasize') || {}).v || 32; if (skSize < 30) skSize = 32;  // 「標準」は廃止(2026-10-21)
   let skHint = true, skSkip = true, skSkipOk = true;
+  const SK_RATES = [1, 0.85, 0.7];  // ゆっくり再生(2026-10-21)
+  let skRate = (lsGet('wd3:sakabarate') || {}).v || 1; if (SK_RATES.indexOf(skRate) < 0) skRate = 1;
+  const skRateLabel = () => '速さ：' + ({ 1: '1.0', 0.85: '0.85', 0.7: '0.7' }[skRate]) + '倍';
   let skAudio = null, skSubs = null, skSubsState = 'idle', skTimer = null, skToastUntil = 0, skPlayErr = '';
 
   const skFmt = (sec) => { sec = Math.max(0, Math.floor(sec || 0)); return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); };
@@ -6495,7 +6498,9 @@ ${keywordLine}${bpBlock}${conditionBlock}
   function skEnsureAudio(){
     if (skAudio) return skAudio;
     skAudio = new Audio(); skAudio.preload = 'metadata'; skAudio.src = skEp.audio;
+    skAudio.preservesPitch = true; skAudio.playbackRate = skRate;
     skAudio.addEventListener('loadedmetadata', () => {
+      skAudio.playbackRate = skRate;
       // 配信側で広告が差し替わると長さが変わり、広告の位置がずれる。予定の長さと3秒以上違ったら広告とばしを止める
       skSkipOk = Math.abs(skAudio.duration - skEp.duration) <= 3;
       skUpdate();
@@ -6581,6 +6586,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     else if (!skSkipOk && skSkip) msg = '音声の長さが予定と違うため、広告とばしは止めています（広告が差し替わった可能性）。';
     else if (Date.now() < skToastUntil) msg = '広告をとばしました（' + skFmt(skToastFrom) + ' から先へ）';
     const m = $('skMsg'); m.textContent = msg; m.style.display = msg ? '' : 'none';
+    if ($('skRateTg')) { $('skRateTg').textContent = skRateLabel(); $('skRateTg').className = 'sk-pill' + (skRate !== 1 ? ' on-a' : ''); }
     $('skHintTg').className = 'sk-pill' + (skHint ? ' on-a' : ''); $('skHintTg').textContent = '日本語ひとこと：' + (skHint ? '入' : '切');
   }
 
@@ -6591,6 +6597,13 @@ ${keywordLine}${bpBlock}${conditionBlock}
     if (soundOn && screen === 'setup') startStageBGM('hokora'); // 止めておいたほこらの曲に戻す
   }
   function openSakabaRadio(){ skView = 'home'; renderSakabaRadio(); }
+  // 過去の回を聞く(2026-10-21): 音声と字幕を切り替えて、その回の再生画面へ
+  function skPickEp(id){
+    const ep = SAKABA_EPS.find(e => e.id === id); if (!ep) return;
+    if (skAudio) { skAudio.pause(); skAudio = null; }
+    if (skTimer) { clearInterval(skTimer); skTimer = null; }
+    skEp = ep; skSubs = null; skSubsState = 'idle'; skSkipOk = true; skPlayErr = ''; skToastUntil = 0;
+  }
   function skGoPlayer(seekTo, autoplay){
     skView = 'player'; renderSakabaRadio(); skLoadSubs();
     if (seekTo != null) skSeek(seekTo);
@@ -6611,6 +6624,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
         ? `<div class="sk-ad"><span>広告 ${r.label}</span><span>自動でとばす</span></div>`
         : `<button class="sk-row" data-ch="${r.i}" style="width:100%;background:none;border-left:none;border-right:none;border-top:none;text-align:left;font-family:inherit;color:inherit;cursor:pointer;padding:0;"><span class="sk-time">${skFmt(r.t)}</span><span style="font-size:17px;line-height:1.4;font-weight:700;flex-grow:1;">${skEsc(r.label)}</span></button>`
       ).join('');
+      const past = SAKABA_EPS.filter(e => e.id !== EP.id);
+      const pastHtml = past.length ? `<div style="margin-top:18px;font-size:13px;font-weight:800;color:#6B4A9A;">過去の回</div>` + past.map(e => `<div class="sk-card" style="flex-direction:row;align-items:center;gap:12px;"><div style="flex:1;min-width:0;"><div class="sk-en" style="font-size:16px;font-weight:800;line-height:1.35;">${skEsc(e.title)}</div><div class="sk-sub" style="margin-top:4px;line-height:1.5;">${skEsc(e.date)}　${skEsc(e.summary.split('。')[0])}</div></div><button class="sk-pill" data-ep="${skEsc(e.id)}" style="flex:none;width:72px;">聞く</button></div>`).join('') : '';
       html = `<div class="sk-in">
         <div class="sk-top" style="justify-content:flex-end;"><button class="sk-x" id="skClose" aria-label="とじる">✕</button></div>
         <div><div class="sk-en" style="font-weight:800;font-size:26px;line-height:1.3;">${skEsc(EP.title)}</div><div class="sk-sub" style="margin-top:6px;font-weight:500;font-size:13px;line-height:1.6;">${meta}</div></div>
@@ -6620,7 +6635,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
         <div class="sk-card" style="padding-bottom:12px;gap:0;">${rows}
           <div class="sk-note" style="margin-top:6px;">見出しを押すと、そこから再生します。時刻は概算です。</div></div>
         <div style="flex-grow:1;"></div>
-        <button class="sk-cta" id="skToPlayer">再生画面をひらく</button>
+        <button class="sk-cta" id="skToPlayer">再生画面をひらく</button>${pastHtml}
       </div>`;
     } else {
       const size = skSize, small = Math.max(14, Math.round(size * 0.55));
@@ -6649,7 +6664,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:900;color:#3B1470;margin-top:6px;"><span id="skTime">0:00</span><span class="sk-sub" style="font-size:11px;">斜線＝広告 ／ 黒い線＝章の始まり</span><span>${skFmt(EP.duration)}</span></div>
         </div>
-        <div style="display:flex;gap:10px;"><button class="sk-pill" id="skHintTg"></button></div>
+        <div style="display:flex;gap:10px;"><button class="sk-pill" id="skHintTg"></button><button class="sk-pill" id="skRateTg"></button></div>
         <div style="display:flex;align-items:center;gap:10px;"><span class="sk-sub" style="width:56px;flex-shrink:0;">字幕の<br>大きさ</span>
           <div style="display:flex;flex:1;">${seg(32, '大', 'border-radius:22px 0 0 22px;')}${seg(42, '特大', 'border-left:none;border-radius:0 22px 22px 0;')}</div></div>
         <div style="display:flex;align-items:center;justify-content:center;gap:28px;height:64px;"><button class="sk-ctl" id="skBack15" aria-label="15秒戻る">−15</button><button class="sk-play" id="skPlay" aria-label="再生">▶</button><button class="sk-ctl" id="skFwd15" aria-label="15秒進む">+15</button></div>
@@ -6661,6 +6676,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     on('skClose', () => { playSelect(); closeSakabaRadio(); });
     on('skToPlayer', () => { playSelect(); skGoPlayer(null, false); });
     on('skBack', () => { playSelect(); if (skAudio) skAudio.pause(); if (skTimer) { clearInterval(skTimer); skTimer = null; } skView = 'home'; renderSakabaRadio(); });
+    ov.querySelectorAll('[data-ep]').forEach(b => b.addEventListener('click', () => { playSelect(); skPickEp(b.getAttribute('data-ep')); skGoPlayer(null, true); }));
     ov.querySelectorAll('[data-ch]').forEach(b => b.addEventListener('click', () => { playSelect(); skGoPlayer(skEp.chapters[parseInt(b.getAttribute('data-ch'), 10)].t, true); }));
     ov.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => {
       skSize = parseInt(b.getAttribute('data-size'), 10); lsSet('wd3:sakabasize', { v: skSize }); playSelect(); renderSakabaRadio(); skUpdate();
@@ -6670,7 +6686,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       on('skBack15', () => { skSeek((skAudio ? skAudio.currentTime : 0) - 15); });
       on('skFwd15', () => { skSeek((skAudio ? skAudio.currentTime : 0) + 15); });
       on('skHintTg', () => { playSelect(); skHint = !skHint; skUpdate(); });
-      on('skSkipTg', () => { playSelect(); skSkip = !skSkip; skUpdate(); });
+      on('skRateTg', () => { playSelect(); skRate = SK_RATES[(SK_RATES.indexOf(skRate) + 1) % SK_RATES.length]; lsSet('wd3:sakabarate', { v: skRate }); if (skAudio) skAudio.playbackRate = skRate; skUpdate(); });
       const bar = document.getElementById('skBar');
       bar.addEventListener('click', (e) => {
         const r = bar.getBoundingClientRect(); const dur = (skAudio && isFinite(skAudio.duration)) ? skAudio.duration : skEp.duration;
@@ -14200,7 +14216,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-21o';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-21p';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
