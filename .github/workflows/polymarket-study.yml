@@ -1,0 +1,28 @@
+name: polymarket-study
+
+# 調査用(手動で1回だけ動かす)。Polymarketの価格履歴APIの実レスポンスを data/polymarket_study_raw.txt に保存する。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  study:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests
+      - run: python scripts/study_polymarket_raw.py
+      - name: commit result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/polymarket_study_raw.txt
+          git commit -m "Polymarket価格履歴の実レスポンスを保存(調査用)" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
