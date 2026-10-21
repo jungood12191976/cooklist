@@ -1,0 +1,142 @@
+{
+ "unit": "億円",
+ "market": "東証プライム+スタンダード+グロース(現物・差引=買い−売り)",
+ "source": "JPX 投資部門別売買状況(週次) https://www.jpx.co.jp/markets/statistics-equities/investor-type/index.html",
+ "note": "個人は信用取引を含む。最新週(10/5〜9)はJPX公式PDFの3市場の差引を合計して確認済み(2026-10-21)。それ以前の週は株探の週次集計から転記。",
+ "updated": "2026-10-21",
+ "weeks": [
+  {
+   "from": "2026-06-01",
+   "to": "2026-06-05",
+   "foreign": -809,
+   "individual": 3081,
+   "trustbank": -310
+  },
+  {
+   "from": "2026-06-08",
+   "to": "2026-06-12",
+   "foreign": -5074,
+   "individual": -5010,
+   "trustbank": -57
+  },
+  {
+   "from": "2026-06-15",
+   "to": "2026-06-19",
+   "foreign": 10562,
+   "individual": -4469,
+   "trustbank": -1373
+  },
+  {
+   "from": "2026-06-22",
+   "to": "2026-06-26",
+   "foreign": -12378,
+   "individual": 9503,
+   "trustbank": 273
+  },
+  {
+   "from": "2026-06-29",
+   "to": "2026-07-03",
+   "foreign": 3662,
+   "individual": -6368,
+   "trustbank": 92
+  },
+  {
+   "from": "2026-07-06",
+   "to": "2026-07-10",
+   "foreign": 4929,
+   "individual": -637,
+   "trustbank": 2315
+  },
+  {
+   "from": "2026-07-13",
+   "to": "2026-07-17",
+   "foreign": -2863,
+   "individual": 4074,
+   "trustbank": 588
+  },
+  {
+   "from": "2026-07-20",
+   "to": "2026-07-24",
+   "foreign": 3514,
+   "individual": -4568,
+   "trustbank": 1932
+  },
+  {
+   "from": "2026-07-27",
+   "to": "2026-07-31",
+   "foreign": -4921,
+   "individual": -4167,
+   "trustbank": -3182
+  },
+  {
+   "from": "2026-08-03",
+   "to": "2026-08-07",
+   "foreign": -3827,
+   "individual": -1566,
+   "trustbank": 1697
+  },
+  {
+   "from": "2026-08-10",
+   "to": "2026-08-14",
+   "foreign": 2134,
+   "individual": -6557,
+   "trustbank": -823
+  },
+  {
+   "from": "2026-08-17",
+   "to": "2026-08-21",
+   "foreign": -4378,
+   "individual": 6977,
+   "trustbank": -5082
+  },
+  {
+   "from": "2026-08-24",
+   "to": "2026-08-28",
+   "foreign": -1319,
+   "individual": -1155,
+   "trustbank": -1915
+  },
+  {
+   "from": "2026-08-31",
+   "to": "2026-09-04",
+   "foreign": 6893,
+   "individual": -18,
+   "trustbank": -4469
+  },
+  {
+   "from": "2026-09-07",
+   "to": "2026-09-11",
+   "foreign": -3036,
+   "individual": 4491,
+   "trustbank": -5506
+  },
+  {
+   "from": "2026-09-14",
+   "to": "2026-09-18",
+   "foreign": -6425,
+   "individual": -3117,
+   "trustbank": -2943
+  },
+  {
+   "from": "2026-09-21",
+   "to": "2026-09-25",
+   "foreign": -930,
+   "individual": -86,
+   "trustbank": -3673
+  },
+  {
+   "from": "2026-09-28",
+   "to": "2026-10-02",
+   "foreign": 9559,
+   "individual": 2229,
+   "trustbank": 1764
+  },
+  {
+   "from": "2026-10-05",
+   "to": "2026-10-09",
+   "foreign": 14318,
+   "individual": 880,
+   "trustbank": -359
+  }
+ ]
+}
