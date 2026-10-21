@@ -1,40 +1,41 @@
-fetched_at=2026-10-22T00:08:50+09:00
+fetched_at=2026-10-22T04:17:06+09:00
 events_fetched=500
-event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sortBy,startDate,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
+event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cyom,deploying,deployingTimestamp,description,elapsed,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,gameId,icon,id,image,liquidity,liquidityClob,live,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
     - Fed Decision in October?
-    - How many Fed rate cuts in 2026?
     - Fed Decision in December?
     - Fed Decision in January?
+    - How many Fed rate cuts in 2026?
+    - How many Fed rate hikes in 2026?
     - Bank of England decision in November?
-    - Fed decisions (Sep–Dec)
 theme oil_iran: 6 events
     - US-Iran ceasefire continues through...?
-    - US announces end of Iranian blockade by...?
     - Israel x Iran ceasefire continues through...?
     - Iran leadership change by...?
     - What will WTI Crude Oil (WTI) hit in October 2026?
+    - US announces end of Iranian blockade by...?
     - Who wins the Senate pending oil below $85 before the midterms?
 theme trump: 6 events
     - Fed Decision in October?
-    - Prime Minister of Israel after the next election?
     - US-Iran ceasefire continues through...?
+    - Prime Minister of Israel after the next election?
     - Russia x Ukraine ceasefire agreement by...?
-    - US announces end of Iranian blockade by...?
     - Russia x Ukraine Ceasefire by...?
+    - US announces end of Iranian blockade by...?
 theme tariff: 0 events
 theme recession: 0 events
 theme inflation: 4 events
     - Fed Decision in October?
-    - Fed decisions (Sep–Dec)
-    - Mexico Annual Inflation 2026
     - How many Fed rate hikes in 2026?
-theme stocks: 0 events
+    - Mexico Annual Inflation 2026
+    - Fed decisions (Sep–Dec)
+theme stocks: 1 events
+    - S&P 500 (SPY) closes above ___ on October 21?
 theme ai_chips: 6 events
     - Anthropic announces bankruptcy by...?
     - Will Anthropic’s valuation hit __ by December 31?
     - Which company has best AI model end of 2026?
     - Next Fable Model (5.2+) released by...?
+    - Anthropic IPO by __?
     - Anthropic IPO Closing Market Cap
-    - Next Fable Model (5.2+) released on...?
 theme fx: 0 events
