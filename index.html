@@ -5980,6 +5980,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
     root.appendChild(gWrap);
 
     // 魔法の言葉(英語の勉強枠) — 「未知の王国」方式の会話トレーニング
+    // 2026-10-21 キング指示：ポッドキャストができて使わないため「魔法の言葉」枠は非表示(コードは残してある。戻す時はこのコメントを外す)
+    /*
     const mwWrap = document.createElement('div'); mwWrap.className='pw';
     const mwTitle = document.createElement('div'); mwTitle.className='pw-title'; mwTitle.textContent='魔法の言葉'; mwWrap.appendChild(mwTitle);
     const mwDesc = document.createElement('div'); mwDesc.style.cssText='font-size:12.5px;color:#9db4ff;line-height:1.6;margin-bottom:6px;';
@@ -5995,6 +5997,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     mwHistoryBtn.addEventListener('click', () => { playSelect(); openMagicWordsHistoryModal(); });
     mwWrap.appendChild(mwHistoryBtn);
     root.appendChild(mwWrap);
+    */
 
     root.appendChild(buildBattlePanel());   // ⚔️ 日本の戦い結果(2026-10-20 キング指示：ダンジョンの上)
     // dungeon (single, fixed)
@@ -14103,7 +14106,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-21j';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-21k';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
