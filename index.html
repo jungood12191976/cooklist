@@ -541,6 +541,28 @@
   .rpg-tool-item span{ font-size: 10.5px; color:#2a2a2a; text-align:center; line-height:1.3; }
   .rpg-tool-item:active{ transform: scale(0.95); }
 
+  /* ---- 酒場ラジオ(2026-10-21・デザイン見本。まだ音は出ない) ---- */
+  .sk-ov{ position:fixed; inset:0; z-index:60; background:#FFF1A8; color:#1B1A55; overflow-y:auto; -webkit-text-size-adjust:100%;
+    font-family:'Hiragino Maru Gothic ProN','Hiragino Sans','Noto Sans JP','Noto Sans CJK JP',sans-serif; }
+  .sk-in{ max-width:430px; margin:0 auto; padding:20px 20px 28px; display:flex; flex-direction:column; gap:14px; min-height:100%; box-sizing:border-box; }
+  .sk-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .sk-logo{ font-size:20px; font-weight:900; color:#C21A60; flex-shrink:0; }
+  .sk-sub{ font-size:12px; font-weight:700; color:#4A4980; }
+  .sk-x{ width:44px; height:44px; margin:-8px -10px -8px 0; border:none; background:none; font-size:24px; font-weight:900; color:#1B1A55; cursor:pointer; flex-shrink:0; font-family:inherit; }
+  .sk-en{ font-family:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; }
+  .sk-card{ background:#fff; border:3px solid #1B1A55; border-radius:16px; box-shadow:4px 4px 0 #1B1A55; padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+  .sk-chip{ align-self:flex-start; border:2px solid #1B1A55; border-radius:12px; padding:2px 10px; font-size:13px; font-weight:900; color:#1B1A55; }
+  .sk-row{ display:flex; align-items:center; gap:10px; min-height:42px; border-bottom:2px dashed #CFCBF0; }
+  .sk-time{ width:46px; flex-shrink:0; font-size:14px; font-weight:900; color:#5B2EE0; }
+  .sk-ad{ height:30px; margin:4px 0; border:2px solid #1B1A55; border-radius:8px; background:repeating-linear-gradient(135deg,#FFD84D 0 8px,#FFF1A8 8px 16px); display:flex; align-items:center; justify-content:space-between; padding:0 10px; font-size:12px; font-weight:700; }
+  .sk-cta{ height:58px; border:3px solid #1B1A55; border-radius:29px; background:#FF5CA8; color:#1B1A55; box-shadow:4px 4px 0 #1B1A55; font-size:17px; font-weight:900; cursor:pointer; font-family:inherit; }
+  .sk-note{ font-size:11px; font-weight:700; color:#4A4980; line-height:1.6; }
+  .sk-pill{ flex:1; height:44px; border:2px solid #1B1A55; border-radius:22px; color:#1B1A55; font-size:13px; font-weight:900; font-family:inherit; opacity:.55; }
+  .sk-seg{ flex:1; height:44px; border:2px solid #1B1A55; background:#fff; color:#1B1A55; font-size:14px; font-weight:900; cursor:pointer; font-family:inherit; }
+  .sk-seg.on{ background:#2EC4F1; }
+  .sk-ctl{ width:56px; height:56px; border:none; background:none; font-size:15px; font-weight:900; color:#1B1A55; font-family:inherit; opacity:.55; }
+  .sk-play{ width:64px; height:64px; border:3px solid #1B1A55; border-radius:32px; background:#FF5CA8; box-shadow:3px 3px 0 #1B1A55; font-size:22px; color:#1B1A55; font-family:inherit; opacity:.55; }
+
   .rpg-label{ font-size: 12.5px; color: #9db4ff; margin-bottom: 6px; }
   .rpg-date-input{ background:#0c1230; border: 2px solid #6ea8ff; color:#fff; padding: 7px 9px; font-size: 13px; }
   .rpg-select{ background:#0c1230; border: 2px solid #6ea8ff; color:#fff; padding: 7px 9px; font-size: 13px; }
@@ -1186,6 +1208,7 @@
   const TITLE_SPLASH = "assets/4b908d6813.jpg";
 
   const ICON_STEPPER = "assets/92ae5b29b1.webp";
+  const ICON_SAKABA_RADIO = "assets/09f78bc2ac.webp"; // 酒場ラジオ(2026-10-21 キング提供のドット絵)
 
   // ================= STORAGE (localStorage — works standalone & on GitHub Pages) =================
   const memFallback = {};
@@ -4753,7 +4776,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       { img: ICON_METRONOME,  name:'メトロノーム',   fn: openMetronomeModal, imgStyle:'width:60px;height:60px;' },
       { img: ICON_BIRD_WHISTLE, name:'鳥の笛', fn: openBirdWhistleModal, imgStyle:'width:60px;height:60px;' },
       { img: ICON_VIOLIN, name:'バイオリン', fn: openViolinModal, imgStyle:'width:60px;height:60px;' },
-      { img: ICON_STEPPER, name:'ステッパー', fn: openStepperModal },
+      { img: ICON_SAKABA_RADIO, name:'酒場ラジオ', fn: openSakabaRadio, imgStyle:'width:64px;height:58px;' }, // 2026-10-21 キング指示でステッパーの枠を差し替え(歩数データ'wd3:stepper'と関数は残してある)
       { img: ICON_POUCH, name:'かわいいポシェット', fn: openPouchModal },
       { img: ICON_RADIO, name:'壊れたラジカセ', fn: openRadioModal, imgStyle:'width:64px;height:64px;' },
       { img: ICON_DICT, name:'豪華な辞書', fn: openDictModal, imgStyle:'width:68px;height:68px;' },
@@ -6321,6 +6344,125 @@ ${keywordLine}${bpBlock}${conditionBlock}
       renderStepperChart();
       renderStepperList();
     });
+  }
+
+  // ================= 酒場ラジオ(2026-10-21・デザイン見本) =================
+  // 海外投資家の英語ポッドキャストを「盗み聞き」する画面。いまは見た目の見本で、音声の再生・字幕との連動はまだ無い。
+  // 見本の中身は 10/13配信 Prof G Markets "Has Nvidia Become Too Big To Fail?" の字幕(PCで文字起こし)から、
+  // 公開リポジトリに置くのは数行の抜粋だけ(全文は置かない)。日本語の要約は番組内の発言の要約で、事実確認はしていない。
+  const SAKABA_EP = {
+    title: 'Has Nvidia Become Too Big To Fail?',
+    meta: 'Prof G Markets ・ 10/13配信 ・ 全体25:19 ／ 本編 約20分（広告 約5分は自動でとばす予定）',
+    summary: 'Nvidiaは「大きすぎて潰せない」存在になったのか。Semaforの編集者 Liz Hoffman は「政府が救うならNvidiaだ」と答える。後半は決算シーズン前の相場と、トランプ政権のディーゼル取引への司会の批判。',
+    rows: [
+      { ad:true,  time:'0:00–2:09' },
+      { time:'2:18',  label:'今日の市場まとめ' },
+      { time:'3:14',  label:'Nvidiaは「供給元」から「保証人」にもなった' },
+      { time:'4:23',  label:'Liz：政府が救うならNvidia。答えは「イエス」' },
+      { time:'7:18',  label:'取引先にお金を貸し、信用まで貸している' },
+      { time:'9:47',  label:'2008年のAIGに似ている、という警告' },
+      { time:'10:50', label:'OpenAIは「潰せない」側か？' },
+      { ad:true,  time:'12:44–15:34' },
+      { time:'15:34', label:'決算シーズン：利益30%増の予想。でも割高では？' },
+      { time:'18:20', label:'債券は買い時か（10年債 5.24%）' },
+      { time:'20:47', label:'中間選挙は相場に効くか' },
+      { time:'22:22', label:'トランプ×ロシアのディーゼル取引への批判' }
+    ],
+    ticks: [9.1, 12.8, 17.3, 28.8, 38.6, 42.8, 72.4, 82.1, 88.4]
+  };
+  const SAKABA_SAMPLES = {
+    base: { chNo:3, chTime:'4:23', chName:'Liz：政府が救うならNvidia。答えは「イエス」',
+      hint:'「政府が救うか」で測るなら、潰せない側はNvidia。Liz の答えは「イエス」。',
+      prev:'But to me, the simplest way to decide if a company is too big to fail is to ask,',
+      cur:'would the government step in to save it if it were in trouble?',
+      next:'And I do not think the government would step in to save Meta or Google.',
+      head:19.2, time:'4:52', skip:false },
+    after: { chNo:7, chTime:'15:34', chName:'決算シーズン：利益30%増の予想。でも割高では？',
+      hint:'広告のあと、決算シーズンの話へ。利益成長は約30%の予想（番組内の発言）。',
+      prev:'After the break, a look ahead at earning season.',
+      cur:"We're back with Prof G Markets.",
+      next:'Earning season is kicking off this week and expectations are high.',
+      head:61.5, time:'15:34', skip:true }
+  };
+  let sakabaView = 'home', sakabaSize = 24, sakabaSample = 'base';
+
+  function closeSakabaRadio(){
+    const ov = document.getElementById('skOverlay');
+    if (ov) ov.remove();
+  }
+  function openSakabaRadio(){
+    sakabaView = 'home';
+    renderSakabaRadio();
+  }
+  function renderSakabaRadio(){
+    let ov = document.getElementById('skOverlay');
+    if (!ov) { ov = document.createElement('div'); ov.id = 'skOverlay'; ov.className = 'sk-ov'; document.body.appendChild(ov); }
+    const EP = SAKABA_EP;
+    let html;
+    if (sakabaView === 'home') {
+      const rows = EP.rows.map(r => r.ad
+        ? `<div class="sk-ad"><span>広告 ${r.time}</span><span>自動でとばす予定</span></div>`
+        : `<div class="sk-row"><span class="sk-time">${r.time}</span><span style="font-size:14px;line-height:1.35;font-weight:700;flex-grow:1;">${r.label}</span></div>`
+      ).join('');
+      html = `<div class="sk-in">
+        <div class="sk-top"><span class="sk-logo">酒場ラジオ</span><span class="sk-sub">字幕：英語（PC処理済み）</span><button class="sk-x" id="skClose" aria-label="とじる">✕</button></div>
+        <div><div class="sk-en" style="font-weight:800;font-size:20px;line-height:1.3;">${EP.title}</div><div class="sk-sub" style="margin-top:4px;font-weight:500;">${EP.meta}</div></div>
+        <div class="sk-card"><span class="sk-chip" style="background:#2EC4F1;">依頼書（あらすじ）</span>
+          <div style="font-size:15px;line-height:1.7;font-weight:700;">${EP.summary}</div>
+          <div class="sk-note">番組内の発言の要約です。事実の確認はしていません。</div></div>
+        <div class="sk-card" style="padding-bottom:10px;gap:0;"><span class="sk-chip" style="background:#FF9F1C;margin-bottom:6px;">地図（見出し）</span>${rows}
+          <div class="sk-note" style="margin-top:6px;">時刻は概算です（字幕の区切りから算出）。</div></div>
+        <div style="flex-grow:1;"></div>
+        <button class="sk-cta" id="skToPlayer">再生画面を見る（見本）</button>
+        <div class="sk-note" style="text-align:center;">まだ音は出ません。音声と字幕の連動はこれからです。</div>
+      </div>`;
+    } else {
+      const S = SAKABA_SAMPLES[sakabaSample], size = sakabaSize, small = Math.max(14, Math.round(size*0.55));
+      const ticks = EP.ticks.map(t => `<div style="position:absolute;top:4px;height:14px;left:${t}%;width:2px;background:#1B1A55;"></div>`).join('');
+      const stripe = 'background:repeating-linear-gradient(135deg,#FFD84D 0 5px,#FF9F1C 5px 10px);';
+      const clamp2 = '-webkit-line-clamp:2;-webkit-box-orient:vertical;display:-webkit-box;overflow:hidden;';
+      const seg = (v, label, rad) => `<button class="sk-seg${(v===24&&size<=26)||(v===32&&size>26&&size<38)||(v===42&&size>=38)?' on':''}" data-size="${v}" style="${rad}">${label}</button>`;
+      html = `<div class="sk-in">
+        <div class="sk-top"><span class="sk-logo" style="font-size:18px;">酒場ラジオ</span><span class="sk-en" style="font-size:12px;color:#4A4980;flex-grow:1;text-align:right;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${EP.title}</span><button class="sk-x" id="skBack" aria-label="もどる">✕</button></div>
+        <div class="sk-note">デザイン見本です。音はまだ出ません。字幕の大きさボタンと見本の切り替えだけ動きます。</div>
+        <div style="display:flex;align-items:center;gap:10px;"><span class="sk-chip" style="background:#FF5CA8;flex-shrink:0;">第${S.chNo}章 ${S.chTime}</span><span style="font-size:14px;font-weight:800;line-height:1.35;">${S.chName}</span></div>
+        ${S.skip ? `<div style="background:#FF9F1C;border:3px solid #1B1A55;box-shadow:3px 3px 0 #1B1A55;border-radius:12px;padding:8px 12px;font-size:14px;font-weight:800;">広告をとばしました　12:44 → 15:34（2分50秒）</div>` : ''}
+        <div class="sk-card" style="padding:8px 14px 10px;gap:4px;box-shadow:3px 3px 0 #1B1A55;"><span class="sk-chip" style="background:#7ED957;font-size:12px;padding:0 8px;">いまの話</span>
+          <span style="font-size:14px;line-height:1.55;font-weight:700;${clamp2}">${S.hint}</span></div>
+        <div class="sk-en" style="flex-grow:1;min-height:200px;display:flex;flex-direction:column;justify-content:center;gap:16px;">
+          <div style="font-weight:500;color:#5F5E94;line-height:1.35;font-size:${small}px;${clamp2}">${S.prev}</div>
+          <div style="font-weight:700;color:#2B2BD9;line-height:1.28;font-size:${size}px;">${S.cur}</div>
+          <div style="font-weight:500;color:#5F5E94;line-height:1.35;font-size:${small}px;${clamp2}">${S.next}</div>
+        </div>
+        <div>
+          <div style="position:relative;height:22px;">
+            <div style="position:absolute;left:0;right:0;top:4px;height:14px;border-radius:7px;background:#fff;"></div>
+            <div style="position:absolute;left:0;top:4px;height:14px;border-radius:7px 0 0 7px;background:#FF5CA8;width:${S.head}%;"></div>
+            <div style="position:absolute;top:4px;height:14px;left:0;width:8.5%;box-sizing:border-box;border-right:2px solid #1B1A55;border-radius:7px 0 0 7px;${stripe}"></div>
+            <div style="position:absolute;top:4px;height:14px;left:50.3%;width:11.2%;box-sizing:border-box;border-left:2px solid #1B1A55;border-right:2px solid #1B1A55;${stripe}"></div>
+            ${ticks}
+            <div style="position:absolute;left:0;right:0;top:4px;height:14px;box-sizing:border-box;border:2px solid #1B1A55;border-radius:7px;"></div>
+            <div style="position:absolute;top:1px;width:20px;height:20px;border-radius:10px;background:#fff;border:3px solid #1B1A55;box-sizing:border-box;left:calc(${S.head}% - 10px);"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:900;color:#5B2EE0;margin-top:6px;"><span>${S.time}</span><span class="sk-sub" style="font-size:11px;">斜線＝広告 ／ 黒い線＝章の始まり</span><span>25:19</span></div>
+        </div>
+        <div style="display:flex;gap:10px;"><button class="sk-pill" disabled style="background:#7ED957;">日本語ひとこと：入</button><button class="sk-pill" disabled style="background:#FF9F1C;">広告をとばす：入</button></div>
+        <div style="display:flex;align-items:center;gap:10px;"><span class="sk-sub" style="width:56px;flex-shrink:0;">字幕の<br>大きさ</span>
+          <div style="display:flex;flex:1;">${seg(24,'標準','border-radius:22px 0 0 22px;')}${seg(32,'大','border-left:none;border-right:none;')}${seg(42,'特大','border-radius:0 22px 22px 0;')}</div></div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:28px;height:64px;"><button class="sk-ctl" disabled aria-label="15秒戻る">−15</button><button class="sk-play" disabled aria-label="一時停止">Ⅱ</button><button class="sk-ctl" disabled aria-label="15秒進む">+15</button></div>
+        <button class="sk-seg" id="skSwap" style="flex:none;border-radius:22px;">見本を切り替える（${sakabaSample==='base' ? '広告をとばした瞬間' : '再生中'}）</button>
+      </div>`;
+    }
+    ov.innerHTML = html;
+    ov.scrollTop = 0;
+    const on = (id, fn) => { const e = document.getElementById(id); if (e) e.addEventListener('click', fn); };
+    on('skClose', () => { playSelect(); closeSakabaRadio(); });
+    on('skToPlayer', () => { playSelect(); sakabaView = 'player'; renderSakabaRadio(); });
+    on('skBack', () => { playSelect(); sakabaView = 'home'; renderSakabaRadio(); });
+    on('skSwap', () => { playSelect(); sakabaSample = sakabaSample === 'base' ? 'after' : 'base'; renderSakabaRadio(); });
+    ov.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => {
+      sakabaSize = parseInt(b.getAttribute('data-size'), 10); playSelect(); renderSakabaRadio();
+    }));
   }
 
   function fetchWeatherAuto(){
@@ -13841,7 +13983,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-21f';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-21g';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
