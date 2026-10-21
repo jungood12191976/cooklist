@@ -553,31 +553,31 @@
   .rpg-tool-item:active{ transform: scale(0.95); }
 
   /* ---- 酒場ラジオ(2026-10-21) ---- */
-  .sk-ov{ position:fixed; inset:0; z-index:60; background:#FFF1A8; color:#1B1A55; overflow-y:auto; -webkit-text-size-adjust:100%;
+  .sk-ov{ position:fixed; inset:0; z-index:60; background:#FFE4EE; color:#3B1470; overflow-y:auto; -webkit-text-size-adjust:100%;
     font-family:'Hiragino Maru Gothic ProN','Hiragino Sans','Noto Sans JP','Noto Sans CJK JP',sans-serif; }
   .sk-in{ max-width:430px; margin:0 auto; padding:20px 20px 28px; display:flex; flex-direction:column; gap:14px; min-height:100%; box-sizing:border-box; }
   .sk-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
   .sk-logo{ font-size:20px; font-weight:900; color:#C21A60; flex-shrink:0; }
-  .sk-sub{ font-size:12px; font-weight:700; color:#4A4980; }
-  .sk-x{ width:44px; height:44px; margin:-8px -10px -8px 0; border:none; background:none; font-size:24px; font-weight:900; color:#1B1A55; cursor:pointer; flex-shrink:0; font-family:inherit; }
+  .sk-sub{ font-size:12px; font-weight:700; color:#6B4A9A; }
+  .sk-x{ width:44px; height:44px; margin:-8px -10px -8px 0; border:none; background:none; font-size:24px; font-weight:900; color:#3B1470; cursor:pointer; flex-shrink:0; font-family:inherit; }
   @keyframes skFlow{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:translateY(0); } }
   .sk-flow{ animation:skFlow .3s ease-out; }
   @media (prefers-reduced-motion: reduce){ .sk-flow{ animation:none; } }
   .sk-en{ font-family:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; }
   .sk-card{ background:#fff; border-radius:16px; padding:16px 18px; display:flex; flex-direction:column; gap:8px; }
-  .sk-chip{ align-self:flex-start; border:2px solid #1B1A55; border-radius:12px; padding:2px 10px; font-size:13px; font-weight:900; color:#1B1A55; }
-  .sk-row{ display:flex; align-items:center; gap:10px; min-height:52px; border-bottom:1px solid #E8E4C8; }
-  .sk-time{ width:54px; flex-shrink:0; font-size:16px; font-weight:900; color:#5B2EE0; }
-  .sk-ad{ height:30px; margin:4px 0; border:2px solid #1B1A55; border-radius:8px; background:repeating-linear-gradient(135deg,#FFD84D 0 8px,#FFF1A8 8px 16px); display:flex; align-items:center; justify-content:space-between; padding:0 10px; font-size:12px; font-weight:700; }
-  .sk-cta{ height:58px; border:3px solid #1B1A55; border-radius:29px; background:#FF5CA8; color:#1B1A55; box-shadow:4px 4px 0 #1B1A55; font-size:17px; font-weight:900; cursor:pointer; font-family:inherit; }
-  .sk-note{ font-size:11px; font-weight:700; color:#4A4980; line-height:1.6; }
-  .sk-pill{ flex:1; height:44px; border:2px solid #1B1A55; border-radius:22px; background:#fff; color:#1B1A55; font-size:13px; font-weight:900; font-family:inherit; cursor:pointer; }
-  .sk-pill.on-a{ background:#7ED957; }
-  .sk-pill.on-b{ background:#FF9F1C; }
-  .sk-seg{ flex:1; height:44px; border:2px solid #1B1A55; background:#fff; color:#1B1A55; font-size:14px; font-weight:900; cursor:pointer; font-family:inherit; }
-  .sk-seg.on{ background:#2EC4F1; }
-  .sk-ctl{ width:56px; height:56px; border:none; background:none; font-size:15px; font-weight:900; color:#1B1A55; font-family:inherit; cursor:pointer; }
-  .sk-play{ width:64px; height:64px; border:3px solid #1B1A55; border-radius:32px; background:#FF5CA8; box-shadow:3px 3px 0 #1B1A55; font-size:22px; color:#1B1A55; font-family:inherit; cursor:pointer; }
+  .sk-chip{ align-self:flex-start; border:2px solid #3B1470; border-radius:12px; padding:2px 10px; font-size:13px; font-weight:900; color:#3B1470; }
+  .sk-row{ display:flex; align-items:center; gap:10px; min-height:52px; border-bottom:1px solid #F0D3E0; }
+  .sk-time{ width:54px; flex-shrink:0; font-size:16px; font-weight:900; color:#3B1470; }
+  .sk-ad{ height:30px; margin:4px 0; border:2px solid #3B1470; border-radius:8px; background:repeating-linear-gradient(135deg,#FFD84D 0 8px,#FFE4EE 8px 16px); display:flex; align-items:center; justify-content:space-between; padding:0 10px; font-size:12px; font-weight:700; }
+  .sk-cta{ height:58px; border:none; border-radius:29px; background:#3B1470; color:#fff; font-size:17px; font-weight:900; cursor:pointer; font-family:inherit; }
+  .sk-note{ font-size:11px; font-weight:700; color:#6B4A9A; line-height:1.6; }
+  .sk-pill{ flex:1; height:44px; border:2px solid #3B1470; border-radius:22px; background:#fff; color:#3B1470; font-size:13px; font-weight:900; font-family:inherit; cursor:pointer; }
+  .sk-pill.on-a{ background:#3B1470; color:#fff; }
+  .sk-pill.on-b{ background:#3B1470; color:#fff; }
+  .sk-seg{ flex:1; height:44px; border:2px solid #3B1470; background:#fff; color:#3B1470; font-size:14px; font-weight:900; cursor:pointer; font-family:inherit; }
+  .sk-seg.on{ background:#3B1470; color:#fff; }
+  .sk-ctl{ width:56px; height:56px; border:none; background:none; font-size:15px; font-weight:900; color:#3B1470; font-family:inherit; cursor:pointer; }
+  .sk-play{ width:64px; height:64px; border:none; border-radius:32px; background:#3B1470; font-size:22px; color:#fff; font-family:inherit; cursor:pointer; }
 
   .rpg-label{ font-size: 12.5px; color: #9db4ff; margin-bottom: 6px; }
   .rpg-date-input{ background:#0c1230; border: 2px solid #6ea8ff; color:#fff; padding: 7px 9px; font-size: 13px; }
@@ -6461,7 +6461,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     ]
   }];
   let skEp = SAKABA_EPS[0], skView = 'home';
-  let skSize = (lsGet('wd3:sakabasize') || {}).v || 24;
+  let skSize = (lsGet('wd3:sakabasize') || {}).v || 32; if (skSize < 30) skSize = 32;  // 「標準」は廃止(2026-10-21)
   let skHint = true, skSkip = true, skSkipOk = true;
   let skAudio = null, skSubs = null, skSubsState = 'idle', skTimer = null, skToastUntil = 0, skPlayErr = '';
 
@@ -6567,7 +6567,6 @@ ${keywordLine}${bpBlock}${conditionBlock}
     else if (Date.now() < skToastUntil) msg = '広告をとばしました（' + skFmt(skToastFrom) + ' から先へ）';
     const m = $('skMsg'); m.textContent = msg; m.style.display = msg ? '' : 'none';
     $('skHintTg').className = 'sk-pill' + (skHint ? ' on-a' : ''); $('skHintTg').textContent = '日本語ひとこと：' + (skHint ? '入' : '切');
-    $('skSkipTg').className = 'sk-pill' + (skSkip ? ' on-b' : ''); $('skSkipTg').textContent = '広告をとばす：' + (skSkip ? '入' : '切');
   }
 
   function closeSakabaRadio(){
@@ -6610,35 +6609,34 @@ ${keywordLine}${bpBlock}${conditionBlock}
       </div>`;
     } else {
       const size = skSize, small = Math.max(14, Math.round(size * 0.55));
-      const ticks = EP.chapters.map(c => `<div style="position:absolute;top:4px;height:14px;left:${(c.t / EP.duration * 100).toFixed(2)}%;width:2px;background:#1B1A55;"></div>`).join('');
-      const stripe = 'background:repeating-linear-gradient(135deg,#FFD84D 0 5px,#FF9F1C 5px 10px);';
-      const adBars = EP.ads.map(r => `<div style="position:absolute;top:4px;height:14px;left:${(r[0] / EP.duration * 100).toFixed(2)}%;width:${((r[1] - r[0]) / EP.duration * 100).toFixed(2)}%;box-sizing:border-box;border-right:2px solid #1B1A55;${r[0] > 0 ? 'border-left:2px solid #1B1A55;' : 'border-radius:7px 0 0 7px;'}${stripe}"></div>`).join('');
+      const ticks = EP.chapters.map(c => `<div style="position:absolute;top:4px;height:14px;left:${(c.t / EP.duration * 100).toFixed(2)}%;width:2px;background:#3B1470;"></div>`).join('');
+      const stripe = 'background:repeating-linear-gradient(135deg,#D9C4F2 0 5px,#F3EAFB 5px 10px);';
+      const adBars = EP.ads.map(r => `<div style="position:absolute;top:4px;height:14px;left:${(r[0] / EP.duration * 100).toFixed(2)}%;width:${((r[1] - r[0]) / EP.duration * 100).toFixed(2)}%;box-sizing:border-box;border-right:2px solid #3B1470;${r[0] > 0 ? 'border-left:2px solid #3B1470;' : 'border-radius:7px 0 0 7px;'}${stripe}"></div>`).join('');
       const clamp2 = '-webkit-line-clamp:2;-webkit-box-orient:vertical;display:-webkit-box;overflow:hidden;';
-      const seg = (v, label, rad) => `<button class="sk-seg${(v === 24 && size <= 26) || (v === 32 && size > 26 && size < 38) || (v === 42 && size >= 38) ? ' on' : ''}" data-size="${v}" style="${rad}">${label}</button>`;
+      const seg = (v, label, rad) => `<button class="sk-seg${(v === 32 && size < 38) || (v === 42 && size >= 38) ? ' on' : ''}" data-size="${v}" style="${rad}">${label}</button>`;
       html = `<div class="sk-in">
-        <div class="sk-top"><span class="sk-logo" style="font-size:18px;">酒場ラジオ</span><span class="sk-en" style="font-size:12px;color:#4A4980;flex-grow:1;text-align:right;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${skEsc(EP.title)}</span><button class="sk-x" id="skBack" aria-label="もどる">✕</button></div>
-        <div style="display:flex;align-items:center;gap:10px;"><span class="sk-chip" id="skChip" style="background:#FF5CA8;flex-shrink:0;"></span><span id="skChName" style="font-size:14px;font-weight:800;line-height:1.35;"></span></div>
-        <div id="skMsg" style="display:none;background:#FF9F1C;border:3px solid #1B1A55;box-shadow:3px 3px 0 #1B1A55;border-radius:12px;padding:8px 12px;font-size:14px;font-weight:800;"></div>
-        <div class="sk-card" id="skHintCard" style="padding:8px 14px 10px;gap:4px;"><span class="sk-chip" style="background:#7ED957;font-size:12px;padding:0 8px;">いまの話</span>
-          <span id="skHintText" style="font-size:14px;line-height:1.55;font-weight:700;${clamp2}"></span></div>
+        <div class="sk-top" style="justify-content:flex-end;"><button class="sk-x" id="skBack" aria-label="もどる">✕</button></div>
+        <div style="display:flex;align-items:center;gap:10px;"><span id="skChip" style="flex-shrink:0;font-size:17px;font-weight:900;"></span><span id="skChName" style="font-size:17px;font-weight:800;line-height:1.4;"></span></div>
+        <div id="skMsg" style="display:none;background:#fff;border-radius:12px;padding:10px 14px;font-size:15px;font-weight:800;"></div>
+        <div class="sk-card" id="skHintCard" style="padding:12px 16px;"><span id="skHintText" style="font-size:17px;line-height:1.6;font-weight:700;-webkit-line-clamp:3;-webkit-box-orient:vertical;display:-webkit-box;overflow:hidden;"></span></div>
         <div class="sk-en" style="flex-grow:1;min-height:200px;display:flex;flex-direction:column;justify-content:center;gap:16px;">
-          <div id="skPrev" style="font-weight:500;color:#5F5E94;line-height:1.35;font-size:${small}px;${clamp2}"></div>
-          <div id="skCur" style="font-weight:700;color:#2B2BD9;line-height:1.28;font-size:${size}px;"></div>
-          <div id="skNext" style="font-weight:500;color:#5F5E94;line-height:1.35;font-size:${small}px;${clamp2}"></div>
+          <div id="skPrev" style="font-weight:500;color:#9A7CC4;line-height:1.35;font-size:${small}px;${clamp2}"></div>
+          <div id="skCur" style="font-weight:700;color:#3B1470;line-height:1.28;font-size:${size}px;"></div>
+          <div id="skNext" style="font-weight:500;color:#9A7CC4;line-height:1.35;font-size:${small}px;${clamp2}"></div>
         </div>
         <div>
           <div id="skBar" style="position:relative;height:22px;cursor:pointer;touch-action:none;">
             <div style="position:absolute;left:0;right:0;top:4px;height:14px;border-radius:7px;background:#fff;"></div>
-            <div id="skFill" style="position:absolute;left:0;top:4px;height:14px;border-radius:7px 0 0 7px;background:#FF5CA8;width:0%;"></div>
+            <div id="skFill" style="position:absolute;left:0;top:4px;height:14px;border-radius:7px 0 0 7px;background:#B58CE8;width:0%;"></div>
             ${adBars}${ticks}
-            <div style="position:absolute;left:0;right:0;top:4px;height:14px;box-sizing:border-box;border:2px solid #1B1A55;border-radius:7px;"></div>
-            <div id="skHead" style="position:absolute;top:1px;width:20px;height:20px;border-radius:10px;background:#fff;border:3px solid #1B1A55;box-sizing:border-box;left:-10px;"></div>
+            <div style="position:absolute;left:0;right:0;top:4px;height:14px;box-sizing:border-box;border:2px solid #3B1470;border-radius:7px;"></div>
+            <div id="skHead" style="position:absolute;top:1px;width:20px;height:20px;border-radius:10px;background:#fff;border:3px solid #3B1470;box-sizing:border-box;left:-10px;"></div>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:900;color:#5B2EE0;margin-top:6px;"><span id="skTime">0:00</span><span class="sk-sub" style="font-size:11px;">斜線＝広告 ／ 黒い線＝章の始まり</span><span>${skFmt(EP.duration)}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:900;color:#3B1470;margin-top:6px;"><span id="skTime">0:00</span><span class="sk-sub" style="font-size:11px;">斜線＝広告 ／ 黒い線＝章の始まり</span><span>${skFmt(EP.duration)}</span></div>
         </div>
-        <div style="display:flex;gap:10px;"><button class="sk-pill" id="skHintTg"></button><button class="sk-pill" id="skSkipTg"></button></div>
+        <div style="display:flex;gap:10px;"><button class="sk-pill" id="skHintTg"></button></div>
         <div style="display:flex;align-items:center;gap:10px;"><span class="sk-sub" style="width:56px;flex-shrink:0;">字幕の<br>大きさ</span>
-          <div style="display:flex;flex:1;">${seg(24, '標準', 'border-radius:22px 0 0 22px;')}${seg(32, '大', 'border-left:none;border-right:none;')}${seg(42, '特大', 'border-radius:0 22px 22px 0;')}</div></div>
+          <div style="display:flex;flex:1;">${seg(32, '大', 'border-radius:22px 0 0 22px;')}${seg(42, '特大', 'border-left:none;border-radius:0 22px 22px 0;')}</div></div>
         <div style="display:flex;align-items:center;justify-content:center;gap:28px;height:64px;"><button class="sk-ctl" id="skBack15" aria-label="15秒戻る">−15</button><button class="sk-play" id="skPlay" aria-label="再生">▶</button><button class="sk-ctl" id="skFwd15" aria-label="15秒進む">+15</button></div>
       </div>`;
     }
@@ -14187,7 +14185,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-21m';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-21n';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
