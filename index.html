@@ -564,6 +564,7 @@
   .sk-flow{ animation:skFlow .5s ease-out; }
   .sk-w{ display:inline-block; color:#5C3C94; transition:transform .18s ease, color .18s ease; transform-origin:50% 85%; }
   .sk-w.on{ color:#2A0A5E; transform:scale(1.12); }
+  .sk-w.vb{ text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:5px; text-decoration-color:#B58CE8; }
   @media (prefers-reduced-motion: reduce){ .sk-flow{ animation:none; } .sk-w{ transition:none; } }
   .sk-en{ font-family:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; }
   .sk-card{ background:#fff; border-radius:16px; padding:16px 18px; display:flex; flex-direction:column; gap:8px; }
@@ -6461,6 +6462,26 @@ ${keywordLine}${bpBlock}${conditionBlock}
   // ここに書いてあるのは、あらすじ・章の見出し・日本語のひとことだけ(クロの要約。番組内の発言の要約で、事実確認はしていない)。
   const SAKABA_CSV_URL = () => 'https://docs.google.com/spreadsheets/d/' + SKY_BRIEF_SHEET_ID + '/export?format=csv&gid=1741504287';
   const SAKABA_EPS = [{
+    id: 'pg1017', title: 'How The Children Of Billionaires Took Over America', show: 'Prof G Markets', date: '10/17配信',
+    audio: 'https://www.podtrac.com/pts/redirect.mp3/pdst.fm/e/pscrb.fm/rss/p/mgln.ai/e/257/traffic.megaphone.fm/VMP6831202927.mp3',
+    duration: 629.3,               // 実測(ブラウザで読み込んだ長さ 629.26秒)。配信一覧の長さ(666秒)とは違う＝広告の差し込みで変わる。3秒以上違えば広告とばしを止める
+    ads: [[0, 95.2]],              // 冒頭の番組宣伝(0:00〜1:35)。字幕の時刻から算出
+    summary: 'パラマウントがワーナー・ブラザース・ディスカバリーの買収を完了し、デイビッド・エリソンが巨大メディアを握った、という話から始まる。司会 Ed Elson は、富豪の子どもが企業や権力を受け継ぐ「相続社会（Inheritocracy）」が米国で強まっていると語り、相続税の見直しなどを提案する。',
+    chapters: [
+      { t: 96,  label: '今週のテーマは「相続社会」', hint: 'Ed Elson の回。テーマは Inheritocracy（相続による権力の世襲）。' },
+      { t: 108, label: 'パラマウントがワーナーを買収', hint: 'パラマウントが約1,110億ドルでワーナー・ブラザース・ディスカバリーの買収を完了した、と紹介（番組内の発言）。' },
+      { t: 150, label: 'デイビッド・エリソンとは誰か', hint: '以前はほぼ無名。俳優を志したが出演作は失敗。2024年に80億ドルの資金でパラマウントに近づいた、と語る。' },
+      { t: 193, label: '資金の出どころは父ラリー・エリソン', hint: '父はオラクルの創業者。息子に500億ドル超を渡した、と語る。' },
+      { t: 247, label: '「相続社会」という言葉', hint: '富豪の子どもが権力を受け継ぐ世界を Inheritocracy と呼ぶ。特にメディア業界で目立つ、と語る。' },
+      { t: 299, label: '富豪の子どもの資産は4.7兆ドル', hint: '富豪の子どもの資産は4.7兆ドル。創業者より相続人の取り分が多くなった年がある、と語る。' },
+      { t: 331, label: '英国も建国期の米国も、世襲を避けた', hint: '英国の世襲貴族制度は今年廃止。米国も建国のころ、世襲を防ぐ法をつくった、と説明。' },
+      { t: 395, label: '相続税は骨抜きになった', hint: '最高税率は40%、非課税枠は5,000万ドルに。相続税を払う遺産は千分の1未満、と語る。' },
+      { t: 429, label: 'これから124兆ドルが相続される', hint: '2048年までに約124兆ドルが米国で移る。その約半分は上位2%の世帯の相続人へ、と語る。' },
+      { t: 462, label: '信頼が崩れ、民主主義とは呼べなくなる', hint: '子どもが権力を受け継ぐほど社会への信頼は下がる。このままだと「混乱」に向かう、と警告。' },
+      { t: 536, label: '解決策：相続税の見直し', hint: '非課税枠の廃止、税率の引き上げ、資本利得を所得と同率で課税、などを例に挙げる。' },
+      { t: 560, label: '放っておくとどうなるか', hint: '億万長者の子が産業ごと受け継ぐ未来。「誰がこうさせたのか」と問う日が来る、と締める。' }
+    ]
+  }, {
     id: 'pg1013', title: 'Has Nvidia Become Too Big To Fail?', show: 'Prof G Markets', date: '10/13配信',
     audio: 'https://www.podtrac.com/pts/redirect.mp3/pdst.fm/e/pscrb.fm/rss/p/mgln.ai/e/257/traffic.megaphone.fm/VMP4581985714.mp3',
     duration: 1525.5,              // 実測(ブラウザで読み込んだ長さ)。これと違う音声なら広告の位置がずれているので、広告とばしを止める
@@ -6482,6 +6503,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   let skEp = SAKABA_EPS[0], skView = 'home';
   let skSize = (lsGet('wd3:sakabasize') || {}).v || 32; if (skSize < 30) skSize = 32;  // 「標準」は廃止(2026-10-21)
   let skHint = true, skSkip = true, skSkipOk = true;
+  let skHl = (lsGet('wd3:sakabahl') || {}).v || 'all'; if (['all', 'v', 'none'].indexOf(skHl) < 0) skHl = 'all';  // 強調: 全(読んでいる単語) / V(動詞だけ) / 無
   const SK_RATES = [1, 0.85, 0.7];  // ゆっくり再生(2026-10-21)
   let skRate = (lsGet('wd3:sakabarate') || {}).v || 1; if (SK_RATES.indexOf(skRate) < 0) skRate = 1;
   const skRateLabel = () => '速さ：' + ({ 1: '1.0', 0.85: '0.85', 0.7: '0.7' }[skRate]) + '倍';
@@ -6505,7 +6527,14 @@ ${keywordLine}${bpBlock}${conditionBlock}
       const res = await fetch(SAKABA_CSV_URL(), { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const rows = skyParseCSV(await res.text()).slice(1).filter(r => r[0] === skEp.id && r[3]);
-      const subs = rows.map(r => ({ s: parseFloat(r[1]), e: parseFloat(r[2]), t: r[3] })).filter(x => isFinite(x.s) && isFinite(x.e));
+      const subs = rows.map(r => {
+        const o = { s: parseFloat(r[1]), e: parseFloat(r[2]), t: r[3] };
+        // E列=単語ごとの開始時刻(行の頭からの1/100秒) / F列=動詞の番号('v'+空白区切り)。無い回は文字数での推定になる
+        const n = r[3].split(' ').length, offs = (r[4] || '').trim().split(/\s+/).map(Number);
+        if (offs.length === n && offs.every(isFinite)) o.wt = offs.map(v => o.s + v / 100);
+        if (o.wt && /^v/.test(r[5] || '')) o.vb = new Set((r[5] || '').slice(1).trim().split(/\s+/).filter(Boolean).map(Number));
+        return o;
+      }).filter(x => isFinite(x.s) && isFinite(x.e));
       subs.sort((a, b) => a.s - b.s);
       if (!subs.length) throw new Error('字幕が0行');
       skSubs = subs; skSubsState = 'ok';
@@ -6566,13 +6595,13 @@ ${keywordLine}${bpBlock}${conditionBlock}
     $('skChName').textContent = ch ? ch.label : '広告・テーマ曲（自動でとばします）';
     $('skHintText').textContent = ch ? ch.hint : 'この番組は、広告のあとに本編が始まります。';
     $('skHintCard').style.display = skHint ? '' : 'none';
-    let prev = '', cur = '', next = '', prog = null;
+    let prev = '', cur = '', next = '', prog = null, curSub = null;
     if (skSubsState === 'loading' || skSubsState === 'idle') cur = '字幕を読み込み中…';
     else if (skSubsState === 'err') cur = '字幕を読み込めませんでした。通信を確認してください。';
     else {
       const i = skSubIdx(t);
       if (i < 0) { cur = '…'; next = skSubs[0].t; }
-      else if (t <= skSubs[i].e + 2.5) { prog = Math.max(0, Math.min(1, (t - skSubs[i].s) / Math.max(0.3, skSubs[i].e - skSubs[i].s))); prev = i > 0 ? skSubs[i - 1].t : ''; cur = skSubs[i].t; next = i + 1 < skSubs.length ? skSubs[i + 1].t : ''; }
+      else if (t <= skSubs[i].e + 2.5) { curSub = skSubs[i]; prog = Math.max(0, Math.min(1, (t - skSubs[i].s) / Math.max(0.3, skSubs[i].e - skSubs[i].s))); prev = i > 0 ? skSubs[i - 1].t : ''; cur = skSubs[i].t; next = i + 1 < skSubs.length ? skSubs[i + 1].t : ''; }
       else { prev = skSubs[i].t; cur = '…'; next = i + 1 < skSubs.length ? skSubs[i + 1].t : ''; }
     }
     const curEl = $('skCur');
@@ -6582,16 +6611,23 @@ ${keywordLine}${bpBlock}${conditionBlock}
       $('skPrev').textContent = prev; $('skNext').textContent = next;
       ['skPrev','skCur','skNext'].forEach((id) => { const el = $(id); el.classList.remove('sk-flow'); void el.offsetWidth; el.classList.add('sk-flow'); });
     } else { $('skPrev').textContent = prev; $('skNext').textContent = next; }
-    // いま読んでいる単語を少し大きく(2026-10-21: 文字数での推定。実際の声と少しずれることがある)
+    // いま読んでいる単語を少し大きく。単語の時刻がある回はその時刻で、無い回は文字数からの推定(声と少しずれる)
     const ws = curEl.querySelectorAll('.sk-w');
     let act = -1;
-    if (prog !== null && ws.length) {
-      let tot = 0; ws.forEach(w => { tot += w.textContent.length + 1; });
-      let acc = 0, target = prog * tot;
-      for (let k = 0; k < ws.length; k++) { acc += ws[k].textContent.length + 1; if (target < acc) { act = k; break; } }
-      if (act < 0) act = ws.length - 1;
+    if (skHl !== 'none' && prog !== null && ws.length) {
+      if (curSub && curSub.wt && curSub.wt.length === ws.length) {
+        for (let k = 0; k < ws.length; k++) { if (t >= curSub.wt[k] - 0.03) act = k; else break; }
+      } else {
+        let tot = 0; ws.forEach(w => { tot += w.textContent.length + 1; });
+        let acc = 0, target = prog * tot;
+        for (let k = 0; k < ws.length; k++) { acc += ws[k].textContent.length + 1; if (target < acc) { act = k; break; } }
+        if (act < 0) act = ws.length - 1;
+      }
+      // V: 動詞のデータがある回だけ、動詞のときだけ強調する(無い回は「全」と同じ動き)
+      if (skHl === 'v' && curSub && curSub.vb && !curSub.vb.has(act)) act = -1;
     }
-    ws.forEach((w, k) => w.classList.toggle('on', k === act));
+    const vmode = skHl === 'v' && curSub && curSub.vb;
+    ws.forEach((w, k) => { w.classList.toggle('on', k === act); w.classList.toggle('vb', !!(vmode && curSub.vb.has(k))); });
     const pct = Math.max(0, Math.min(100, t / dur * 100));
     $('skFill').style.width = pct + '%'; $('skHead').style.left = 'calc(' + pct + '% - 10px)';
     $('skTime').textContent = skFmt(t);
@@ -6660,6 +6696,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       const stripe = 'background:repeating-linear-gradient(135deg,#D9C4F2 0 5px,#F3EAFB 5px 10px);';
       const adBars = EP.ads.map(r => `<div style="position:absolute;top:4px;height:14px;left:${(r[0] / EP.duration * 100).toFixed(2)}%;width:${((r[1] - r[0]) / EP.duration * 100).toFixed(2)}%;box-sizing:border-box;border-right:2px solid #3B1470;${r[0] > 0 ? 'border-left:2px solid #3B1470;' : 'border-radius:7px 0 0 7px;'}${stripe}"></div>`).join('');
       const clamp2 = '-webkit-line-clamp:2;-webkit-box-orient:vertical;display:-webkit-box;overflow:hidden;';
+      const hseg = (v, label, rad) => `<button class="sk-seg${skHl === v ? ' on' : ''}" data-hl="${v}" style="${rad}">${label}</button>`;
       const seg = (v, label, rad) => `<button class="sk-seg${(v === 32 && size < 38) || (v === 42 && size >= 38) ? ' on' : ''}" data-size="${v}" style="${rad}">${label}</button>`;
       html = `<div class="sk-in">
         <div class="sk-top" style="justify-content:flex-end;"><button class="sk-x" id="skBack" aria-label="もどる">✕</button></div>
@@ -6682,6 +6719,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
           <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:900;color:#3B1470;margin-top:6px;"><span id="skTime">0:00</span><span class="sk-sub" style="font-size:11px;">斜線＝広告 ／ 黒い線＝章の始まり</span><span>${skFmt(EP.duration)}</span></div>
         </div>
         <div style="display:flex;gap:10px;"><button class="sk-pill" id="skHintTg"></button><button class="sk-pill" id="skRateTg"></button></div>
+        <div style="display:flex;align-items:center;gap:10px;"><span class="sk-sub" style="width:56px;flex-shrink:0;">強調</span>
+          <div style="display:flex;flex:1;">${hseg('all', '全', 'border-radius:22px 0 0 22px;')}${hseg('v', 'V', 'border-left:none;border-right:none;')}${hseg('none', '無', 'border-radius:0 22px 22px 0;')}</div></div>
         <div style="display:flex;align-items:center;gap:10px;"><span class="sk-sub" style="width:56px;flex-shrink:0;">字幕の<br>大きさ</span>
           <div style="display:flex;flex:1;">${seg(32, '大', 'border-radius:22px 0 0 22px;')}${seg(42, '特大', 'border-left:none;border-radius:0 22px 22px 0;')}</div></div>
         <div style="display:flex;align-items:center;justify-content:center;gap:28px;height:64px;"><button class="sk-ctl" id="skBack15" aria-label="15秒戻る">−15</button><button class="sk-play" id="skPlay" aria-label="再生">▶</button><button class="sk-ctl" id="skFwd15" aria-label="15秒進む">+15</button></div>
@@ -6695,6 +6734,9 @@ ${keywordLine}${bpBlock}${conditionBlock}
     on('skBack', () => { playSelect(); if (skAudio) skAudio.pause(); if (skTimer) { clearInterval(skTimer); skTimer = null; } skView = 'home'; renderSakabaRadio(); });
     ov.querySelectorAll('[data-ep]').forEach(b => b.addEventListener('click', () => { playSelect(); skPickEp(b.getAttribute('data-ep')); skGoPlayer(null, true); }));
     ov.querySelectorAll('[data-ch]').forEach(b => b.addEventListener('click', () => { playSelect(); skGoPlayer(skEp.chapters[parseInt(b.getAttribute('data-ch'), 10)].t, true); }));
+    ov.querySelectorAll('[data-hl]').forEach(b => b.addEventListener('click', () => {
+      skHl = b.getAttribute('data-hl'); lsSet('wd3:sakabahl', { v: skHl }); playSelect(); renderSakabaRadio(); skUpdate();
+    }));
     ov.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => {
       skSize = parseInt(b.getAttribute('data-size'), 10); lsSet('wd3:sakabasize', { v: skSize }); playSelect(); renderSakabaRadio(); skUpdate();
     }));
@@ -14233,7 +14275,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-21m';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-21r';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
