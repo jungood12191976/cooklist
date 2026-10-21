@@ -3525,8 +3525,24 @@
   // 他の温度計(日本の業種温度計 sectorBar)と同じ形・同じ青→赤のグラデーション。0〜40を0〜100%に直して描く。
   // 区分の線(20・30)は仮置き(Monex等の目安：20未満=落ち着き/20台=不安)。判定の色は付けず、位置の色だけ。
   const VIX_THERMO_MAX = 40;
+  // 今日すでに取得済みの記録(value未保存)でも、valueText('17.31')から数字を読んで表示する
+  function vixNum(x){ if (x.value != null && isFinite(x.value)) return x.value; const n = parseFloat(String(x.valueText || '').replace(/,/g, '')); return isFinite(n) ? n : null; }
+  // 1週間前の値が記録に無い時だけ、VIXの日足を取り直して今日の記録に足す(1回だけ。失敗しても表示は崩さない)
+  let vixWeekTried = false;
+  async function vixFillWeekAgo(){
+    if (vixWeekTried) return; vixWeekTried = true;
+    try {
+      const r = await oceanFetchSeries('^VIX');
+      if (!r || !r.ok || r.weekAgo == null) return;
+      updateVoyageToday(rec => {
+        const it = rec.view && (rec.view.items || []).find(x => x.label === 'VIX');
+        if (it) { it.weekAgo = r.weekAgo; it.weekAgoDate = r.weekAgoDate; if (it.value == null) it.value = r.value; }
+      });
+      render();
+    } catch(e){}
+  }
   function vixAnxietyHTML(x){
-    const v = x.value, esc = skyEsc;
+    const v = vixNum(x), esc = skyEsc;
     const t = Math.max(0, Math.min(100, v / VIX_THERMO_MAX * 100));
     const arrow = p => (p > 0 ? '▲+' : (p < 0 ? '▼' : '')) + p.toFixed(2) + '%';
     const day = x.pct == null ? '—' : arrow(x.pct);
@@ -3599,6 +3615,7 @@
     // 表示形式を変えた日(2026-10-08)だけの移行：旧形式(v未設定)で取得済みなら、取得時間帯の中で1回だけ取り直して新しいカード表にする
     if (hasFetched && rec.view && rec.view.v !== 2 && trading && inWin) voyageKick();
     const ev = voyageTodayEvents();
+    { const vi = hasFetched && rec.view && (rec.view.items || []).find(x => x.label === 'VIX' && !x.failed); if (vi && vi.weekAgo == null) vixFillWeekAgo(); }
 
     // 昨夜書いた「明日へのアドバイス」(天空の城。保存キー wd3:nextnote)を、トップに「キングからのアドバイス」として出す(1日だけ。キング指定 2026-10-07)
     // 前営業日以降に書いたものだけ表示。金曜の夜に書けば月曜の朝に出て、その日が終われば消える。
@@ -3632,7 +3649,7 @@
       const sub = x => x.note ? esc(x.note) : (x.ratio == null ? (x.moved ? '大きく動いた' : '比較不可') : `ふだんの${x.ratio.toFixed(1)}倍・${x.moved ? '大きく動いた' : 'いつもの範囲'}`);
       const nameOf = x => esc(x.label) + (x.valueText ? ' ' + esc(x.valueText) : '');
       const one = x => {
-        if (!x.failed && x.label === 'VIX' && x.value != null) return vixAnxietyHTML(x);
+        if (!x.failed && x.label === 'VIX' && vixNum(x) != null) return vixAnxietyHTML(x);
         if (x.failed) return `<div class="vw-row"><span class="vw-name">${esc(x.label)}</span><span class="vw-sub">取得できませんでした</span></div>`;
         if (x === top) return `<div class="vw-big"><div class="vw-tag">いちばん大きい波</div><div class="vw-line"><span class="vw-name">${nameOf(x)}</span><span class="vw-pct${waveCls(x, colored(x))}">${wavePct(x)}</span></div><div class="vw-sub vw-moved">${sub(x)}</div></div>`;
         return `<div class="vw-row"><span class="vw-name">${nameOf(x)}</span><span class="vw-right"><span class="vw-pct${waveCls(x, colored(x))}">${wavePct(x)}</span><span class="vw-sub${x.moved ? ' vw-moved' : ''}">　${sub(x)}</span></span></div>`;
@@ -14216,7 +14233,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-21p';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-21m';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
