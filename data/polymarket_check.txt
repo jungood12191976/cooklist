@@ -1,40 +1,40 @@
-fetched_at=2026-10-21T19:03:16+09:00
+fetched_at=2026-10-22T00:08:50+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sortBy,startDate,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
     - Fed Decision in October?
     - How many Fed rate cuts in 2026?
-    - Fed Decision in January?
     - Fed Decision in December?
+    - Fed Decision in January?
     - Bank of England decision in November?
     - Fed decisions (Sep–Dec)
 theme oil_iran: 6 events
     - US-Iran ceasefire continues through...?
     - US announces end of Iranian blockade by...?
-    - What will WTI Crude Oil (WTI) hit in October 2026?
-    - Iran leadership change by...?
     - Israel x Iran ceasefire continues through...?
+    - Iran leadership change by...?
+    - What will WTI Crude Oil (WTI) hit in October 2026?
     - Who wins the Senate pending oil below $85 before the midterms?
 theme trump: 6 events
     - Fed Decision in October?
     - Prime Minister of Israel after the next election?
     - US-Iran ceasefire continues through...?
-    - US announces end of Iranian blockade by...?
-    - NATO x Russia military clash by...?
     - Russia x Ukraine ceasefire agreement by...?
+    - US announces end of Iranian blockade by...?
+    - Russia x Ukraine Ceasefire by...?
 theme tariff: 0 events
 theme recession: 0 events
 theme inflation: 4 events
     - Fed Decision in October?
     - Fed decisions (Sep–Dec)
+    - Mexico Annual Inflation 2026
     - How many Fed rate hikes in 2026?
-    - October Inflation China - Annual
 theme stocks: 0 events
 theme ai_chips: 6 events
     - Anthropic announces bankruptcy by...?
-    - Which company has best AI model end of 2026?
     - Will Anthropic’s valuation hit __ by December 31?
+    - Which company has best AI model end of 2026?
     - Next Fable Model (5.2+) released by...?
     - Anthropic IPO Closing Market Cap
-    - Anthropic IPO by __?
+    - Next Fable Model (5.2+) released on...?
 theme fx: 0 events
