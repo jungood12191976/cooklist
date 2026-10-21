@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-10-22T08:13:43+09:00",
+ "fetched_at": "2026-10-22T08:16:25+09:00",
  "source": "Polymarket 公開API (gamma-api.polymarket.com/events・取引量の多い順500件から振り分け)",
  "grade": "A",
  "note": "確率は予測市場の値段で、事実の確率ではありません。キーワードでの機械的な振り分けです。",
@@ -206,16 +206,16 @@
       {
        "q": "US x Iran ceasefire continues through October 22?",
        "label": "October 22",
-       "yes": 0.87,
-       "d1": -0.0775,
+       "yes": 0.875,
+       "d1": -0.0725,
        "vol24": 844981.6002679998,
        "end": "2026-10-23T03:59:00Z"
       },
       {
        "q": "US x Iran ceasefire continues through October 31?",
        "label": "October 31",
-       "yes": 0.685,
-       "d1": -0.13,
+       "yes": 0.68,
+       "d1": -0.135,
        "vol24": 435746.04010899994,
        "end": "2026-10-31T23:59:00Z"
       },
@@ -239,16 +239,16 @@
       {
        "q": "Israel x Iran ceasefire continues through October 21?",
        "label": "October 21",
-       "yes": 0.993,
-       "d1": 0.009,
+       "yes": 0.995,
+       "d1": 0.011,
        "vol24": 395968.531192,
        "end": "2026-10-22T03:59:00Z"
       },
       {
        "q": "Israel x Iran ceasefire continues through October 31?",
        "label": "October 31",
-       "yes": 0.795,
-       "d1": -0.07,
+       "yes": 0.805,
+       "d1": -0.06,
        "vol24": 190402.616236,
        "end": "2026-10-31T20:29:00Z"
       },
@@ -427,16 +427,16 @@
       {
        "q": "US x Iran ceasefire continues through October 22?",
        "label": "October 22",
-       "yes": 0.87,
-       "d1": -0.0775,
+       "yes": 0.875,
+       "d1": -0.0725,
        "vol24": 844981.6002679998,
        "end": "2026-10-23T03:59:00Z"
       },
       {
        "q": "US x Iran ceasefire continues through October 31?",
        "label": "October 31",
-       "yes": 0.685,
-       "d1": -0.13,
+       "yes": 0.68,
+       "d1": -0.135,
        "vol24": 435746.04010899994,
        "end": "2026-10-31T23:59:00Z"
       },
@@ -476,8 +476,8 @@
       {
        "q": "Will Gadi Eizenkot be the next Prime Minister of Israel?",
        "label": "Gadi Eizenkot",
-       "yes": 0.5205,
-       "d1": 0.022,
+       "yes": 0.52,
+       "d1": 0.0215,
        "vol24": 46977.641382,
        "end": "2026-10-28T03:59:00Z"
       }
@@ -658,8 +658,8 @@
       {
        "q": "Will Mexico’s 2026 Annual Inflation be between 3.00% and 3.49%?",
        "label": "3.00% to 3.49%",
-       "yes": 0.087,
-       "d1": -0.0475,
+       "yes": 0.089,
+       "d1": -0.0455,
        "vol24": 6790.85412,
        "end": "2027-01-09T04:59:00Z"
       },
@@ -801,24 +801,24 @@
       {
        "q": "Next Fable Model (5.2+) released by October 31, 2026?",
        "label": "October 31",
-       "yes": 0.6885,
-       "d1": -0.134,
+       "yes": 0.6915,
+       "d1": -0.131,
        "vol24": 23529.061625,
        "end": "2026-10-31T23:59:00Z"
       },
       {
        "q": "Next Fable Model (5.2+) released by October 24, 2026?",
        "label": "October 24",
-       "yes": 0.17,
-       "d1": -0.145,
+       "yes": 0.175,
+       "d1": -0.14,
        "vol24": 12664.041334000001,
        "end": "2026-10-25T03:59:00Z"
       },
       {
        "q": "Next Fable Model (5.2+) released by October 22, 2026?",
        "label": "October 22",
-       "yes": 0.135,
-       "d1": -0.085,
+       "yes": 0.1335,
+       "d1": -0.0865,
        "vol24": 8255.330798,
        "end": "2026-10-23T03:59:00Z"
       }
@@ -875,8 +875,8 @@
       {
        "q": "Will Anthropic IPO by November 30, 2026?",
        "label": "November 30, 2026",
-       "yes": 0.685,
-       "d1": 0.035,
+       "yes": 0.68,
+       "d1": 0.03,
        "vol24": 11484.863416999999,
        "end": "2026-12-01T04:59:00Z"
       },
@@ -900,8 +900,8 @@
       {
        "q": "Will there be no next Fable model (5.2+) release by October 31, 2026?",
        "label": "No release by October 31",
-       "yes": 0.3165,
-       "d1": 0.1475,
+       "yes": 0.316,
+       "d1": 0.147,
        "vol24": 5054.376238999999,
        "end": "2026-11-01T03:59:00Z"
       },
@@ -916,8 +916,8 @@
       {
        "q": "Will the next Fable model (5.2+) be released on October 22, 2026?",
        "label": "October 22",
-       "yes": 0.1395,
-       "d1": 0.0235,
+       "yes": 0.14,
+       "d1": 0.024,
        "vol24": 3739.8066580000004,
        "end": "2026-10-23T03:59:00Z"
       }
