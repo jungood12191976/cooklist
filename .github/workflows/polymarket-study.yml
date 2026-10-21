@@ -1,6 +1,6 @@
 name: polymarket-study
 
-# 調査用(手動で1回だけ動かす)。Polymarketの価格履歴APIの実レスポンスを data/polymarket_study_raw.txt に保存する。
+# 調査用(手動で動かす)。Polymarketが日本時間の何時台によく動くかを測り、data/polymarket_hours_study.* に保存する。
 on:
   workflow_dispatch:
 
@@ -17,12 +17,12 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install requests
-      - run: python scripts/study_polymarket_raw.py
+      - run: python scripts/study_polymarket_hours.py
       - name: commit result
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/polymarket_study_raw.txt
-          git commit -m "Polymarket価格履歴の実レスポンスを保存(調査用)" || exit 0
+          git add data/polymarket_hours_study.json data/polymarket_hours_study.txt
+          git commit -m "Polymarketの時間帯別の動きを集計(調査用)" || exit 0
           git pull --rebase origin main
           git push origin HEAD:main
