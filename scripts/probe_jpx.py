@@ -16,11 +16,13 @@ try:
         u = links[0] if links[0].startswith("http") else BASE + links[0]
         x = requests.get(u, headers=UA, timeout=60); out.append(f"xlsx {u} HTTP {x.status_code} bytes={len(x.content)}")
         wb = load_workbook(io.BytesIO(x.content), data_only=True)
-        for ws in wb.worksheets:
-            out.append(f"=== sheet {ws.title!r} dims={ws.dimensions}")
-            for row in ws.iter_rows(min_row=1, max_row=min(ws.max_row, 70)):
-                cells = [(c.coordinate, c.value) for c in row if c.value is not None]
-                if cells: out.append(repr(cells)[:400])
+        ws = wb.worksheets[0]
+        out.append("sheets: " + repr(wb.sheetnames))
+        for c in range(1, ws.max_column + 1):
+            L = ws.cell(row=1, column=c).column_letter
+            hdr = [str(ws.cell(row=r, column=c).value or "").replace("\n", " ")[:28] for r in range(3, 8)]
+            vals = [ws.cell(row=r, column=c).value for r in (9, 11, 13)]
+            out.append(f"{L}: {hdr} | val Prime/Std/Growth = {vals}")
 except Exception as e:
     out.append("ERROR " + repr(e))
 open("data/investor_flows_probe.txt", "w", encoding="utf-8").write("\n".join(out))
