@@ -10538,7 +10538,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     if (soundOn) startStageBGM('uwasa'); // 曲は「あやしい酒場」(再描画では鳴らし直さない)
     ensureDataDocs(['news_volume.json', 'earnings_jp.json', 'polymarket.json']);
     const wrap = document.createElement('div'); wrap.className = 'pw';
-    const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = '📈 注目度の折れ線（ニュース記事数・30日）'; wrap.appendChild(t);
+    const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = 'ウワサを確認'; wrap.appendChild(t);
     // 2026-10-22 キング指示：Polymarketの温度計(折りたためる・▼は右上)。「📈株価↑×記事」は下の一覧の蛇腹に統合(閉じたまま上位5個だけ見える)。単独の上位5個の枠は無くした
     const pmBox = document.createElement('div'); wrap.appendChild(pmBox);
     buildPolymarketBox(pmBox);
@@ -14328,7 +14328,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-22b';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-22c';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
