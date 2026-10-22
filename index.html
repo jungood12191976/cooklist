@@ -3237,6 +3237,15 @@
     }).filter(o => o.name_ja && o._t && now >= o._t && now <= flashExpiry(o._t))
       .sort((a, b) => b._t - a._t).slice(0, FLASH_MAX);
   }
+  // 勇者のいえの見出し(黄色いタブ)を押すと、関連する画面へ飛ぶ(2026-10-23 キング指示。「ウワサの港より ▶」と同じ作り)
+  function pwTitleLink(wrap, dest){
+    const h = wrap && wrap.querySelector('.pw-title'); if (!h) return wrap;
+    if (!h.textContent.trim().endsWith('▶')) h.textContent = h.textContent.trim() + ' ▶';
+    h.style.cursor = 'pointer';
+    h.setAttribute('role', 'button');
+    h.addEventListener('click', () => { playSelect(); screen = dest; render(); });
+    return wrap;
+  }
   function buildFlashPanel(){
     flashLoad();
     const items = flashItems();
@@ -3358,6 +3367,7 @@
     // 平日の場中(9:00〜15:35)は取りに行かず出さない。土日・祝日・夜・朝は取得して、直近の営業日の結果を出す
     if (j.wd >= 1 && j.wd <= 5 && j.min >= 540 && j.min < 15 * 60 + 35 && skyIsTradingDay(todayDateKey())) { wrap.style.display = 'none'; return wrap; }
     const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = '⚔️ 日本の戦い結果'; wrap.appendChild(t);
+    pwTitleLink(wrap, 'timeroom');
     if (battleCache) battleRender(wrap, battleCache.data);
     else {
       const ld = document.createElement('div'); ld.className = 'battle-body'; ld.style.cssText = 'font-size:13px;color:#9aa4cc;'; ld.textContent = '戦況を取りに行っています…'; wrap.appendChild(ld);
@@ -3746,6 +3756,7 @@
       <div class="voy-sec-title">今日の予定</div>${sec2}
       <div class="voy-sec-title">今日の戦いアイテム</div>${bannerHtml}
       <div class="voy-sec-title">⚔️ iSPEEDを見る前のチェック</div>${sec4}`;
+    pwTitleLink(wrap, 'sky');
 
     const noteEl = wrap.querySelector('#voyNote');
     if (noteEl) noteEl.addEventListener('click', () => noteEl.classList.toggle('one'));
@@ -10101,6 +10112,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     if (!c) { d.style.display = 'none'; return d; }
     const top = c.list.slice(0, 3).map(x => `${x.n}<b style="font-size:20px; margin-left:2px; color:hsl(${sectorHue(x.t)},85%,68%);">${Math.round(x.t)}</b>`).join('・'); // 2026-10-20 キング指示で熱い業種の文字を大きく
     d.innerHTML = `<div class="pw-title">🌡️ 市場の温度（${sectorMd(c.last.date)}）</div><div style="display:flex; justify-content:flex-end; align-items:baseline; gap:8px;"><span style="white-space:nowrap;"><b style="font-size:24px; color:hsl(${sectorHue(c.market)},85%,65%);">${Math.round(c.market)}</b><span style="font-size:12px; color:#c8d0f0;">/100</span></span></div>${sectorBar(c.market, 8)}<div class="sector-hot-line" style="font-size:16px; font-weight:bold; color:#ffffff; margin-top:6px; line-height:1.6; white-space:nowrap; overflow:hidden;"><span style="font-weight:normal; color:#c8d0f0;">熱い業種：</span>${top}</div><div style="font-size:11px; color:#8a93b8;">（全33業種は🌍世界の入口）</div>`;
+    pwTitleLink(d, 'world');
     // 2026-10-20 キング指示：炎のマークを消し、1列に収める(はみ出すときは文字を少しずつ小さくする・最小10px)
     requestAnimationFrame(() => {
       const el = d.querySelector('.sector-hot-line'); if (!el) return;
@@ -11568,7 +11580,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const jpDoc = ddoc('earnings_jp.json'), usDoc = ddoc('earnings_us.json'), nv = ddoc('news_volume.json');
     const jp = jpDoc ? { byCode: (() => { const m = {}; jpDoc.items.forEach(x => { (m[x.code] = m[x.code] || []).push(x); }); return m; })() } : null;
     const ctx = { today, jp, nv, jm: jiwaMap(), wn: worldNews.items };
-    return buildW2Battle(ctx, usDoc, w2Events(ctx, usDoc, true));
+    return pwTitleLink(buildW2Battle(ctx, usDoc, w2Events(ctx, usDoc, true)), 'world2');   // 見出しを押すとケッサンの町へ(2026-10-23)
   }
   // 決算相場の期間(2026-10-15 キング承認：最後の決算の翌週に暦を隠す)。連鎖の日本株の決算日と米国の起爆剤の日付を、間が14日以内なら同じ相場とつなげる
   const W2_SEASON_GAP = 14, W2_SEASON_PRE = 14, W2_SEASON_POST = 7;
@@ -14441,7 +14453,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-23a';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-23b';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
