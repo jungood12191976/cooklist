@@ -1,2 +1,3 @@
-items=225 fail=0 sliced=1 pxfail=0 fetched_at=2026-10-22T00:57+09:00
-SLICED 285A キオクシアHD first=100 sliced=356 ok=True
+items=225 fail=0 sliced=2 pxfail=0 fetched_at=2026-10-23T00:54+09:00
+SLICED 285A キオクシアHD first=100 sliced=336 ok=True
+SLICED 4661 オリエンタルランド first=100 sliced=145 ok=True
