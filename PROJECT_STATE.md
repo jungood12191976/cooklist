@@ -778,3 +778,12 @@ corsproxyは廃止。stooqは除外。
 - Polymarketの見出しは赤文字の「Polymarket」だけ(▼は右上・`world3UI.pmOpen`)。題名と選択肢は`pmTitleJa`/`pmLabelJa`で機械的に日本語化(翻訳AIは使わない。表にない題名・人名・会社名は英語のまま)。新しい題名が出たら`PM_TITLES`に足す。
 - 更新日程(`.github/workflows/polymarket.yml`・UTC表記)：日本時間22:10〜翌8:10は毎時、7:30に1回、12:10/16:10/20:10の3回。根拠＝14日・40市場の実測(`data/polymarket_hours_study.txt`・`scripts/study_polymarket_hours.py`・手動実行の`polymarket-study.yml`)で、日本の夜〜朝は昼〜夕方の約2.4倍動いた。更新が古いという警告は5時間超に変更(昼の間隔が最大4時間のため)。
 - 2026-10-22時点で、設定上は毎時のはずの更新が実際は4〜6時間おきだった(GitHub Actionsの実行履歴で確認。原因は未確認)。日程変更後の実行履歴で再確認すること。
+
+## 2026-10-23a Polymarket：アプリが直接取り直す(キング承認)
+- 背景：`polymarket.yml`のcron(日本時間22:10〜翌8:10毎時など)が実際は4〜9時間おきにしか動かなかった(実行履歴で確認。原因は未確認)。
+- 方式：ウワサの港を開いたとき、保存データ(`data/polymarket.json`)が1時間より古ければ、アプリが`gamma-api.polymarket.com/events?slug=…`から直接取り直す(`pmLiveRefresh`/`pmRebuild`)。ブラウザからの直接読み取りが許可されていること(access-control-allow-origin: *)と、保存データの21題名を指定すると約1.5MB・約1秒で取れることをGitHub Actionsで実測確認済み(500件を読むと約6MB)。
+- 取るのは保存データにある題名(slug)だけ。新しい題名の追加・テーマの振り分けはGitHubの自動更新(`fetch_polymarket.py`)が行う。期限切れで返ってこない題名は画面から外す。
+- 失敗時は保存データのまま表示し、10分は再挑戦しない。画面の下に失敗の一言を出す。`loadDataDoc`は、アプリが直接取った新しい数字(`doc.live`)をGitHubの古いデータで上書きしない。
+- 検証：本物の応答の見本でPython(`pick_markets`)の結果と全テーマ一致(不一致0)。模擬の通信で、古い→取得／直後は取らない／失敗→保存データのまま／再挑戦は10分後／上書きされない、を確認。
+- `polymarket.yml`のcronは、そのまま残している(効けば追加の更新になる)。
+
