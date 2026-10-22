@@ -6466,6 +6466,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     audio: 'https://www.podtrac.com/pts/redirect.mp3/pdst.fm/e/pscrb.fm/rss/p/mgln.ai/e/257/traffic.megaphone.fm/VMP6831202927.mp3',
     duration: 629.3,               // 実測(ブラウザで読み込んだ長さ 629.26秒)。配信一覧の長さ(666秒)とは違う＝広告の差し込みで変わる。3秒以上違えば広告とばしを止める
     ads: [[0, 95.2]],              // 冒頭の番組宣伝(0:00〜1:35)。字幕の時刻から算出
+    pauses: [97.7,99.29,105.09,110.73,116.39,116.89,122.77,126.34,127.17,128.06,129.14,129.89,130.75,131.32,132.33,133.39,135.19,136.59,141.11,143.97,146.24,149.06,151.62,153.4,157.57,159.05,160.06,161.52,164.26,166.33,167.92,172.64,177.19,178.24,182.21,185.23,188.4,189.64,190.47,192.62,195.8,197.77,202.65,207.74,212.05,212.61,215.79,218.0,223.65,226.12,231.13,233.92,237.31,240.08,243.78,244.53,252.73,253.83,256.64,258.36,263.54,265.19,268.11,272.44,277.64,282.76,283.72,284.3,285.29,289.95,293.53,295.98,296.62,297.65,300.57,304.23,307.88,310.48,311.67,313.08,315.75,320.08,321.63,328.66,330.44,333.46,334.17,335.54,338.73,353.81,358.5,360.63,363.51,369.17,374.13,374.99,389.8,390.61,394.49,398.54,401.7,404.24,416.57,421.05,425.45,428.76,441.13,443.08,444.99,451.29,455.77,458.39,466.99,468.72,473.48,481.42,486.57,494.56,498.73,505.53,507.36,509.32,511.59,518.02,525.26,526.92,528.86,532.78,535.4,537.28,540.72,541.75,545.12,550.71,555.73,559.2,563.11,570.51,571.68,581.04,582.56,584.89,586.34],  // 本編の「間」(単語と単語のすき間)の位置。聞こえる音声の間と照らし合わせて字幕のずれを自動で測る(2026-10-23)
     summary: 'パラマウントがワーナー・ブラザース・ディスカバリーの買収を完了し、デイビッド・エリソンが巨大メディアを握った、という話から始まる。司会 Ed Elson は、富豪の子どもが企業や権力を受け継ぐ「相続社会（Inheritocracy）」が米国で強まっていると語り、相続税の見直しなどを提案する。',
     chapters: [
       { t: 96,  label: '今週のテーマは「相続社会」', hint: 'Ed Elson の回。テーマは Inheritocracy（相続による権力の世襲）。' },
@@ -6549,28 +6550,62 @@ ${keywordLine}${bpBlock}${conditionBlock}
     } catch (e) { console.error('酒場ラジオ:字幕の読み込み失敗', e); skSubsState = 'err'; }
     skUpdate();
   }
+  // 音声をひらいて「間」(静かなすき間)の位置を調べ、字幕側の間の位置と一番よく重なるずれ(秒)を探す。自信がなければ null
+  async function skAlignByPauses(pauses){
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AC({ sampleRate: 8000 });
+      const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 90000);
+      const res = await fetch(skEp.audio, { signal: ctl.signal }); clearTimeout(to);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const buf = await ctx.decodeAudioData(await res.arrayBuffer());
+      const x = buf.getChannelData(0), sr = buf.sampleRate, F = Math.round(sr * 0.05), N = Math.floor(x.length / F);
+      const env = new Float32Array(N);
+      for (let i = 0; i < N; i++) { let a = 0; for (let j = i * F, e = j + F; j < e; j++) a += x[j] * x[j]; env[i] = Math.sqrt(a / F); }
+      try { ctx.close(); } catch (e) {}
+      const thr = Float32Array.from(env).sort()[Math.floor(N * 0.25)] * 1.5 + 1e-4;
+      const P = []; let run = 0;
+      for (let i = 0; i < N; i++) { if (env[i] < thr) run++; else { if (run >= 5) P.push((i - run / 2) * 0.05); run = 0; } }
+      if (P.length < 20) return null;
+      const rate = (s) => { let h = 0; for (const g of pauses) { const t = g + s; let lo = 0, hi = P.length - 1; while (lo < hi) { const m = (lo + hi) >> 1; if (P[m] < t) lo = m + 1; else hi = m; } if (Math.abs(P[lo] - t) <= 0.2 || (lo > 0 && Math.abs(P[lo - 1] - t) <= 0.2)) h++; } return h / pauses.length; };
+      const r = []; for (let s = -40; s <= 40; s += 0.05) r.push([s, rate(s)]);
+      r.sort((a, b) => b[1] - a[1]);
+      const best = r[0], other = r.find(q => Math.abs(q[0] - best[0]) > 1);
+      if (best[1] < 0.5 || best[1] - other[1] < 0.2) return null;
+      return { shift: Math.round(best[0] * 10) / 10, score: best[1] };
+    } catch (e) { console.error('酒場ラジオ:自動ずらし失敗', e); return null; }
+  }
   function skEnsureAudio(){
     if (skAudio) return skAudio;
     skAudio = new Audio(); skAudio.preload = 'metadata'; skAudio.src = skEp.audio;
     skAudio.preservesPitch = true; skAudio.playbackRate = skRate;
     skAudio.addEventListener('loadedmetadata', () => {
       skAudio.playbackRate = skRate;
-      // 配信側で広告が差し替わると長さが変わる。冒頭の広告だけの回は、長さの差の分だけ字幕・章を後ろへずらして合わせる。
-      // それ以外(途中にも広告がある回など)や差が大きすぎる場合は、ずれるので広告とばしを止める
-      const base = SAKABA_EPS.find(e => e.id === skEp.id) || skEp, diff = skAudio.duration - base.duration;
-      const preOnly = base.ads.length === 1 && base.ads[0][0] === 0;
-      if (Math.abs(diff) <= 3) { skDelta = 0; skSkipOk = true; }
-      else if (preOnly && Math.abs(diff) <= 300) {
-        skDelta = diff; skSkipOk = true;
-        skNote = '冒頭の広告の長さが違ったので、字幕を' + (diff > 0 ? '後ろへ' : '前へ') + Math.abs(Math.round(diff)) + '秒ずらしました。'; skNoteUntil = Date.now() + 8000;
-      } else { skDelta = 0; skSkipOk = false; }
-      skEp = Object.assign({}, base, { duration: base.duration + skDelta,
-        ads: base.ads.map((a, i) => [a[0], a[1] + (i === 0 ? skDelta : 0)]),
-        chapters: base.chapters.map(c => Object.assign({}, c, { t: c.t + skDelta })) });
-      if (skSubsRaw) skShiftSubs();
-      if (skPendingBase !== null) { try { skAudio.currentTime = skPendingBase + skDelta; } catch (e) {} skPendingBase = null; }
-      if (skView === 'player') renderSakabaRadio();
-      skUpdate();
+      const base = SAKABA_EPS.find(e => e.id === skEp.id) || skEp;
+      const epId = base.id;
+      const finish = (delta, ok, note) => {
+        if (skEp.id !== epId) return;
+        skDelta = delta; skSkipOk = ok;
+        skNote = note || ''; skNoteUntil = Date.now() + 9000;
+        skEp = Object.assign({}, base, { duration: base.duration + delta,
+          ads: base.ads.map((a, i) => [a[0], a[1] + (i === 0 ? delta : 0)]),
+          chapters: base.chapters.map(c => Object.assign({}, c, { t: c.t + delta })) });
+        if (skSubsRaw) skShiftSubs();
+        if (skPendingBase !== null) { try { skAudio.currentTime = skPendingBase + delta; } catch (e) {} skPendingBase = null; }
+        if (skView === 'player') renderSakabaRadio();
+        skUpdate();
+      };
+      const diff = skAudio.duration - base.duration;
+      // 広告は配信のたびに差し替わる。音声そのものの「間」の位置を字幕の「間」と照らし合わせ、ずれを自動で測って合わせる(2026-10-23)
+      if (base.pauses && base.pauses.length) {
+        skNote = '字幕と音声の位置を合わせています…'; skNoteUntil = Date.now() + 60000; skUpdate();
+        skAlignByPauses(base.pauses).then(r => {
+          if (r) finish(r.shift, true, Math.abs(r.shift) < 0.5 ? '' : '広告が変わっていたので、字幕を' + (r.shift > 0 ? '後ろへ' : '前へ') + Math.abs(r.shift).toFixed(1) + '秒ずらして合わせました。');
+          else if (Math.abs(diff) <= 3) finish(0, true, '');
+          else finish(0, false, '字幕の位置を自動で合わせられませんでした。ずれている可能性があります（広告とばしは止めています）。');
+        });
+      } else if (Math.abs(diff) <= 3) finish(0, true, '');
+      else finish(0, false, '');
     });
     skAudio.addEventListener('error', () => { skPlayErr = '音声を読み込めませんでした（通信を確認してください）'; skUpdate(); });
     skAudio.addEventListener('play', skUpdate); skAudio.addEventListener('pause', skUpdate); skAudio.addEventListener('ended', skUpdate);
