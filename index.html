@@ -6507,6 +6507,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
   const SK_RATES = [1, 0.85, 0.7];  // ゆっくり再生(2026-10-21)
   let skRate = (lsGet('wd3:sakabarate') || {}).v || 1; if (SK_RATES.indexOf(skRate) < 0) skRate = 1;
   const skRateLabel = () => '速さ：' + ({ 1: '1.0', 0.85: '0.85', 0.7: '0.7' }[skRate]) + '倍';
+  // 広告の長さは配信のたびに変わる。音声の実際の長さと予定の差(skDelta)だけ、冒頭の広告のあとの字幕・章を後ろへずらす(2026-10-22)
+  let skDelta = null, skPendingBase = null, skSubsRaw = null, skNote = '', skNoteUntil = 0;
   let skAudio = null, skSubs = null, skSubsState = 'idle', skTimer = null, skToastUntil = 0, skPlayErr = '';
 
   const skFmt = (sec) => { sec = Math.max(0, Math.floor(sec || 0)); return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); };
@@ -6520,6 +6522,10 @@ ${keywordLine}${bpBlock}${conditionBlock}
     return lo;
   };
 
+  function skShiftSubs(){
+    const d = skDelta || 0;
+    skSubs = skSubsRaw.map(o => { if (!d) return o; const n = Object.assign({}, o, { s: o.s + d, e: o.e + d }); if (o.wt) n.wt = o.wt.map(v => v + d); return n; });
+  }
   async function skLoadSubs(){
     if (skSubsState === 'ok' || skSubsState === 'loading') return;
     skSubsState = 'loading'; skUpdate();
@@ -6539,7 +6545,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
       }).filter(x => isFinite(x.s) && isFinite(x.e));
       subs.sort((a, b) => a.s - b.s);
       if (!subs.length) throw new Error('字幕が0行');
-      skSubs = subs; skSubsState = 'ok';
+      skSubsRaw = subs; skShiftSubs(); skSubsState = 'ok';
     } catch (e) { console.error('酒場ラジオ:字幕の読み込み失敗', e); skSubsState = 'err'; }
     skUpdate();
   }
@@ -6549,8 +6555,21 @@ ${keywordLine}${bpBlock}${conditionBlock}
     skAudio.preservesPitch = true; skAudio.playbackRate = skRate;
     skAudio.addEventListener('loadedmetadata', () => {
       skAudio.playbackRate = skRate;
-      // 配信側で広告が差し替わると長さが変わり、広告の位置がずれる。予定の長さと3秒以上違ったら広告とばしを止める
-      skSkipOk = Math.abs(skAudio.duration - skEp.duration) <= 3;
+      // 配信側で広告が差し替わると長さが変わる。冒頭の広告だけの回は、長さの差の分だけ字幕・章を後ろへずらして合わせる。
+      // それ以外(途中にも広告がある回など)や差が大きすぎる場合は、ずれるので広告とばしを止める
+      const base = SAKABA_EPS.find(e => e.id === skEp.id) || skEp, diff = skAudio.duration - base.duration;
+      const preOnly = base.ads.length === 1 && base.ads[0][0] === 0;
+      if (Math.abs(diff) <= 3) { skDelta = 0; skSkipOk = true; }
+      else if (preOnly && Math.abs(diff) <= 300) {
+        skDelta = diff; skSkipOk = true;
+        skNote = '冒頭の広告の長さが違ったので、字幕を' + (diff > 0 ? '後ろへ' : '前へ') + Math.abs(Math.round(diff)) + '秒ずらしました。'; skNoteUntil = Date.now() + 8000;
+      } else { skDelta = 0; skSkipOk = false; }
+      skEp = Object.assign({}, base, { duration: base.duration + skDelta,
+        ads: base.ads.map((a, i) => [a[0], a[1] + (i === 0 ? skDelta : 0)]),
+        chapters: base.chapters.map(c => Object.assign({}, c, { t: c.t + skDelta })) });
+      if (skSubsRaw) skShiftSubs();
+      if (skPendingBase !== null) { try { skAudio.currentTime = skPendingBase + skDelta; } catch (e) {} skPendingBase = null; }
+      if (skView === 'player') renderSakabaRadio();
       skUpdate();
     });
     skAudio.addEventListener('error', () => { skPlayErr = '音声を読み込めませんでした（通信を確認してください）'; skUpdate(); });
@@ -6558,7 +6577,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     return skAudio;
   }
   function skAdEnd(t){
-    if (!skSkip || !skSkipOk) return null;
+    if (!skSkip || !skSkipOk || skDelta === null) return null;
     const r = skEp.ads.find(a => t >= a[0] && t < a[1] - 0.05);
     return r ? r : null;
   }
@@ -6638,6 +6657,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     $('skPlay').setAttribute('aria-label', playing ? '一時停止' : '再生');
     let msg = '';
     if (skPlayErr) msg = skPlayErr;
+    else if (skNote && Date.now() < skNoteUntil) msg = skNote;
     else if (!skSkipOk && skSkip) msg = '音声の長さが予定と違うため、広告とばしは止めています（広告が差し替わった可能性）。';
     else if (Date.now() < skToastUntil) msg = '広告をとばしました（' + skFmt(skToastFrom) + ' から先へ）';
     const m = $('skMsg'); m.textContent = msg; m.style.display = msg ? '' : 'none';
@@ -6657,11 +6677,11 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const ep = SAKABA_EPS.find(e => e.id === id); if (!ep) return;
     if (skAudio) { skAudio.pause(); skAudio = null; }
     if (skTimer) { clearInterval(skTimer); skTimer = null; }
-    skEp = ep; skSubs = null; skSubsState = 'idle'; skSkipOk = true; skPlayErr = ''; skToastUntil = 0;
+    skEp = ep; skSubs = null; skSubsRaw = null; skDelta = null; skPendingBase = null; skNote = ''; skSubsState = 'idle'; skSkipOk = true; skPlayErr = ''; skToastUntil = 0;
   }
   function skGoPlayer(seekTo, autoplay){
     skView = 'player'; renderSakabaRadio(); skLoadSubs();
-    if (seekTo != null) skSeek(seekTo);
+    if (seekTo != null) { if (skDelta === null) { skPendingBase = seekTo; skEnsureAudio(); } else skSeek(seekTo); }
     if (autoplay) skPlayToggle();
   }
 
