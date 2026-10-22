@@ -1,0 +1,22 @@
+name: cors-check
+# 調査用(手動・1回きり)：Polymarketの公開APIが、ブラウザ(別のサイト)からの直接読み取りを許可しているかを確かめる。
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          for u in "https://gamma-api.polymarket.com/events?limit=1" "https://data-api.polymarket.com/v2/prices-history?token_id=1&interval=1d"; do
+            echo "=== $u" >> data/cors_check.txt
+            curl -s -D - -o /dev/null -H "Origin: https://jungood12191976.github.io" "$u" | grep -i -E "^HTTP|access-control|vary" >> data/cors_check.txt || true
+          done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/cors_check.txt
+          git commit -m "CORS確認(調査用)" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
