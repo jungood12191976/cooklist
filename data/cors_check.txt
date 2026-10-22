@@ -1,8 +1,8 @@
 page(limit=100) bytes gz/raw:
-gz=1253235 time=0.229945
-raw=12154857
+gz=1252107 time=0.401045
+raw=12155605
 unique slugs in saved json: 21
-multi-slug(10) http=200 bytes=847248 time=0.430220
+multi-slug(10) http=200 bytes=847248 time=0.380683
 multi-slug events returned: 10
-multi-slug(all) http=200 bytes=1487982 time=1.001594
+multi-slug(all) http=200 bytes=1487982 time=3.145062
 all-slug events returned: 20 markets 283
