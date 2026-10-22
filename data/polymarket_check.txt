@@ -1,13 +1,13 @@
-fetched_at=2026-10-23T00:52:22+09:00
+fetched_at=2026-10-23T02:57:22+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sortBy,startDate,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
     - Fed Decision in October?
-    - Fed Decision in December?
     - Fed Decision in January?
+    - Fed Decision in December?
     - Another Fed rate hike in 2026?
+    - How many Fed rate hikes in 2026?
     - How many Fed rate cuts in 2026?
-    - How low will 30-year Treasury yield get before 2027?
 theme oil_iran: 6 events
     - US-Iran ceasefire continues through...?
     - Israel x Iran ceasefire continues through...?
@@ -20,14 +20,16 @@ theme trump: 6 events
     - US-Iran ceasefire continues through...?
     - Prime Minister of Israel after the next election?
     - Clarity Act (H.R.3633) signed into law in 2026?
+    - NATO x Russia military clash by...?
     - US announces end of Iranian blockade by...?
-    - Will the U.S. invade Iran before 2027?
 theme tariff: 0 events
 theme recession: 0 events
-theme inflation: 3 events
+theme inflation: 5 events
     - Fed Decision in October?
     - Another Fed rate hike in 2026?
     - How many Fed rate hikes in 2026?
+    - How high will 10-year Treasury yield go before 2027?
+    - Fed decisions (Sep–Dec)
 theme stocks: 1 events
     - S&P 500 (SPY) closes above ___ on October 22?
 theme ai_chips: 6 events
@@ -35,6 +37,6 @@ theme ai_chips: 6 events
     - Next Fable Model (5.2+) released by...?
     - Anthropic IPO by __?
     - Anthropic IPO Closing Market Cap
-    - Next Fable Model (5.2+) released on...?
     - Anthropic announces bankruptcy by...?
+    - Next Fable Model (5.2+) released on...?
 theme fx: 0 events
