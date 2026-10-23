@@ -4816,18 +4816,66 @@ ${keywordLine}${bpBlock}${conditionBlock}
     wrap.appendChild(stat);
     root.appendChild(wrap);
 
-    // 記録の中身（新しい順）
+    // ゴミの感情（勇者のいえのモンスター欄と同じ eventLog を共有。夜でも書ける）
+    const gWrap = document.createElement('div'); gWrap.className='pw';
+    const gt = document.createElement('div'); gt.className='pw-title'; gt.textContent='🗑️ ゴミの感情'; gWrap.appendChild(gt);
+    const gDesc = document.createElement('div'); gDesc.style.cssText='font-size:13px;color:#9db4ff;line-height:1.7;margin-bottom:8px;';
+    gDesc.textContent = 'イライラや嫌だったことを、ここに吐き捨てましょう。';
+    gWrap.appendChild(gDesc);
+    const gDate = document.createElement('input'); gDate.type='date'; gDate.className='rpg-date-input'; gDate.value = todayDateKey();
+    gDate.style.cssText='width:100%; margin-bottom:8px;';
+    gWrap.appendChild(gDate);
+    const gText = document.createElement('textarea'); gText.rows = 3; gText.placeholder = '例：今日あったイヤなこと';
+    gText.style.cssText='width:100%; padding:8px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box; margin-bottom:8px; color:#111;';
+    gWrap.appendChild(gText);
+    const gBtn = document.createElement('button'); gBtn.className='rpg-btn wide'; gBtn.textContent='ゴミを捨てる';
+    gBtn.addEventListener('click', () => {
+      const d = gDate.value || todayDateKey();
+      const tx = gText.value.trim();
+      if (!tx) return;
+      eventLog.push({ date: d, text: tx });
+      saveEventLog();
+      playSelect();
+      render();
+    });
+    gWrap.appendChild(gBtn);
+    root.appendChild(gWrap);
+
+    // 記録の中身（新しい順）。お通じ＋ゴミの感情を日付順に混ぜる
     const logWrap = document.createElement('div'); logWrap.className='pw';
     const lt = document.createElement('div'); lt.className='pw-title'; lt.textContent='記録の中身'; logWrap.appendChild(lt);
     let any = false;
-    rows.slice().reverse().forEach(r => {
+    const items = [];
+    rows.forEach(r => {
       const ty = detoxType(r.detox);
       if (!ty && !r.memo) return;
+      items.push({ key: localDateKey(r.date), ord: 0, kind: 'detox', r, ty });
+    });
+    eventLog.forEach((ev, i) => items.push({ key: ev.date, ord: 1 + i, kind: 'trash', ev }));
+    items.sort((a, b) => b.key.localeCompare(a.key) || (a.kind === b.kind ? b.ord - a.ord : (a.kind === 'detox' ? -1 : 1)));
+    const mdOf = key => { const p = String(key).split('-'); return `${Number(p[1])}/${Number(p[2])}`; };
+    items.forEach(it => {
       any = true;
       const row = document.createElement('div'); row.style.cssText='font-size:13.5px;color:#dbe4ff;margin-bottom:8px;line-height:1.6;';
-      row.innerHTML = `<span style="color:#9db4ff;">${r.date.getMonth()+1}/${r.date.getDate()}</span>　`
-        + (ty ? `<b style="color:#ffd76b;">${ty.icon} ${ty.label}</b>` : '<span style="opacity:0.6;">形の記録なし</span>')
-        + (r.memo ? `<div style="font-size:13px;opacity:0.9;white-space:pre-wrap;">${escapeHtml(r.memo)}</div>` : '');
+      if (it.kind === 'detox') {
+        const r = it.r, ty = it.ty;
+        row.innerHTML = `<span style="color:#9db4ff;">${r.date.getMonth()+1}/${r.date.getDate()}</span>　`
+          + (ty ? `<b style="color:#ffd76b;">${ty.icon} ${ty.label}</b>` : '<span style="opacity:0.6;">形の記録なし</span>')
+          + (r.memo ? `<div style="font-size:13px;opacity:0.9;white-space:pre-wrap;">${escapeHtml(r.memo)}</div>` : '');
+      } else {
+        row.innerHTML = `<div style="display:flex; gap:8px; align-items:flex-start;"><div style="flex:1; min-width:0;">`
+          + `<span style="color:#9db4ff;">${mdOf(it.ev.date)}</span>　<b style="color:#c9a8ff;">🗑️ ゴミの感情</b>`
+          + `<div style="font-size:13px;opacity:0.9;white-space:pre-wrap;">${escapeHtml(it.ev.text)}</div></div>`
+          + `<span class="gomi-del" style="cursor:pointer; opacity:0.5; padding:4px;">✕</span></div>`;
+        const del = row.querySelector('.gomi-del');
+        del.addEventListener('click', () => {
+          const idx = eventLog.indexOf(it.ev);
+          if (idx < 0) return;
+          eventLog.splice(idx, 1);
+          saveEventLog();
+          render();
+        });
+      }
       logWrap.appendChild(row);
     });
     if (!any) {
@@ -13294,7 +13342,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
         </div>`;
       });
     }
-    openToolModal('⚔️ 予期しない出来事', html);
+    openToolModal('🗑️ ゴミの感情', html);
     const saveBtn = document.getElementById('rpgEvtSave');
     if (saveBtn) saveBtn.addEventListener('click', () => {
       const d = document.getElementById('rpgEvtDate').value || todayDateKey();
