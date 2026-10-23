@@ -1,20 +1,20 @@
-fetched_at=2026-10-24T02:51:53+09:00
+fetched_at=2026-10-24T06:20:53+09:00
 events_fetched=500
-event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sortBy,startDate,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
+event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cyom,deploying,description,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,featuredOrder,gameId,icon,id,image,liquidity,liquidityClob,live,markets,negRisk,negRiskAugmented,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
     - Fed Decision in October?
-    - Fed Decision in December?
     - How low will 5-year Treasury yield get before 2027?
-    - Another Fed rate hike in 2026?
+    - Fed Decision in December?
     - How many Fed rate cuts in 2026?
     - Fed decisions (Sep–Dec)
+    - How low will 30-year Treasury yield get before 2027?
 theme oil_iran: 6 events
     - US-Iran ceasefire continues through...?
     - Israel x Iran ceasefire continues through...?
-    - What will WTI Crude Oil (WTI) hit in October 2026?
     - US announces end of Iranian blockade by...?
+    - What will WTI Crude Oil (WTI) hit in October 2026?
+    - Strait of Hormuz traffic returns to normal by October 31?
     - Will the Iranian regime fall before 2027?
-    - Iran full airspace closure by...?
 theme trump: 6 events
     - Fed Decision in October?
     - NATO x Russia military clash by...?
@@ -22,16 +22,16 @@ theme trump: 6 events
     - Prime Minister of Israel after the next election?
     - US announces end of Iranian blockade by...?
     - Russia x Ukraine ceasefire agreement by...?
-theme tariff: 0 events
-theme recession: 1 events
-    - US recession by end of 2026?
+theme tariff: 1 events
+    - US-Canada diplomatic agreement to lower tariffs by...?
+theme recession: 0 events
 theme inflation: 6 events
     - Fed Decision in October?
-    - Another Fed rate hike in 2026?
     - Fed decisions (Sep–Dec)
+    - Another Fed rate hike in 2026?
     - How high will 10-year Treasury yield go before 2027?
     - How many Fed rate hikes in 2026?
-    - How low will 10-year Treasury yield get before 2027?
+    - Core PCE MoM - September 2026
 theme stocks: 2 events
     - What will S&P 500 (SPY) hit Week of October 19 2026?
     - S&P 500 (SPY) closes above ___ on October 23?
@@ -39,8 +39,8 @@ theme ai_chips: 6 events
     - Anthropic announces bankruptcy by...?
     - Next Fable Model (5.2+) released by...?
     - Anthropic IPO Closing Market Cap
-    - Anthropic IPO by __?
     - Which company has best AI model end of 2026?
-    - Next Claude Haiku Model (4.6+): Text Arena Debut?
+    - Anthropic IPO by __?
+    - Next Fable Model (5.2+) released on...?
 theme fx: 1 events
     - Bank of Japan Decision in October?
