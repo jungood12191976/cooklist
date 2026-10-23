@@ -102,6 +102,7 @@
   .vw-sub{ font-size:11.5px; color:#9db4ff; font-weight:normal; }
   .vw-moved{ color:#ffd76b; font-weight:bold; }
   .vw-up{ color:#9ff5c5 !important; } .vw-dn{ color:#ffb4b4 !important; }
+  .vw-sep{ margin:8px 0 4px; border-top:2px dashed rgba(157,180,255,0.5); }
   .vw-beach{ margin-top:10px; border-top:2px dashed rgba(157,180,255,0.5); padding-top:6px; }
   .vw-nk{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
   .vw-nk .vw-name{ font-size:17px; font-weight:bold; color:#fff; }
@@ -2965,10 +2966,11 @@
     try {
       const settled = await Promise.allSettled([
         oceanFetchSeries('^TNX'), oceanFetchSeries('^VIX'), oceanFetchSeries('ES=F'),
-        oceanFetchSeries('NQ=F'), oceanFetchSeries('JPY=X'), fetchOceanCOT()
+        oceanFetchSeries('NQ=F'), oceanFetchSeries('JPY=X'), fetchOceanCOT(),
+        oceanFetchSeries('CL=F')   // 2026-10-23 キング承認：原油先物(WTI)。表示専用。天気の判定(indicators)には入れない
       ]);
       const sv = (i) => settled[i].status === 'fulfilled' ? settled[i].value : { ok:false, error:'internal_error' };
-      const tnx = sv(0), vix = sv(1), es = sv(2), nq = sv(3), jpy = sv(4);
+      const tnx = sv(0), vix = sv(1), es = sv(2), nq = sv(3), jpy = sv(4), wti = sv(6);
       const cot = settled[5].status === 'fulfilled' ? settled[5].value : { value:null, error:'internal_error', checkedAt: oceanNowISO() };
       const today = todayDateKey();
       const nowIso = oceanNowISO();
@@ -3011,6 +3013,7 @@
       addItem('S&P500先物', es, '');
       addItem('Nasdaq100先物', nq, '');
       addItem('USD/JPY', jpy, jpy.ok ? voyageFmt(jpy.value) : '');
+      addItem('原油先物(WTI)', wti, wti.ok ? '$' + voyageFmt(wti.value) : '');
       const anyFailed = items.some(x => x.failed) || cot.value == null;
       const allFailed = items.every(x => x.failed);
 
@@ -3038,7 +3041,7 @@
         lsSet('wd3:oceanlog', log);
       }
       try { console.log('[voyage] fetch summary', { tnx: tnx.ok ? tnx.ratio : tnx.error, vix: vix.ok ? vix.ratio : vix.error,
-        es: es.ok ? es.ratio : es.error, nq: nq.ok ? nq.ratio : nq.error, jpy: jpy.ok ? jpy.ratio : jpy.error, cot: cot.value == null ? cot.error : 'ok' }); } catch(e){}
+        es: es.ok ? es.ratio : es.error, nq: nq.ok ? nq.ratio : nq.error, jpy: jpy.ok ? jpy.ratio : jpy.error, wti: wti.ok ? wti.ratio : wti.error, cot: cot.value == null ? cot.error : 'ok' }); } catch(e){}
     } catch(e) {
       updateVoyageToday(r => { r.fetchedAt = Date.now(); r.view = { status:'通常', reason:'', items:[], anyFailed:true, allFailed:true }; });
     }
@@ -3665,8 +3668,13 @@
         if (x === top) return `<div class="vw-big"><div class="vw-tag">いちばん大きい波</div><div class="vw-line"><span class="vw-name">${nameOf(x)}</span><span class="vw-pct${waveCls(x, colored(x))}">${wavePct(x)}</span></div><div class="vw-sub vw-moved">${sub(x)}</div></div>`;
         return `<div class="vw-row"><span class="vw-name">${nameOf(x)}</span><span class="vw-right"><span class="vw-pct${waveCls(x, colored(x))}">${wavePct(x)}</span><span class="vw-sub${x.moved ? ' vw-moved' : ''}">　${sub(x)}</span></span></div>`;
       };
-      const ordered = top ? [top, ...items.filter(x => x !== top)] : items;
-      return (top ? '' : `<div class="vw-sub">どの指標も、いつもの動き幅の中でした。</div>`) + ordered.map(one).join('');
+      // 2026-10-23 キング承認：USD/JPYと原油は1つの固まりにして、アメリカ株の系統とは青い点線で分ける(上下に点線＝下は日本の浜辺の点線)。いちばん大きい波は、その固まりの先頭に出す
+      const isFxOil = x => x.label === 'USD/JPY' || x.label === '原油先物(WTI)';
+      const grpA = items.filter(x => !isFxOil(x)), grpB = items.filter(isFxOil);
+      const arrange = g => (top && g.includes(top)) ? [top, ...g.filter(x => x !== top)] : g;
+      return (top ? '' : `<div class="vw-sub">どの指標も、いつもの動き幅の中でした。</div>`)
+        + arrange(grpA).map(one).join('')
+        + (grpB.length ? `<div class="vw-sep"></div>` + arrange(grpB).map(one).join('') : '');
     };
     let beachHTML;
     if (fut.stance) {
@@ -14453,7 +14461,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-23b';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-23c';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
