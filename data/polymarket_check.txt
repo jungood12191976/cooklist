@@ -1,4 +1,4 @@
-fetched_at=2026-10-23T09:37:30+09:00
+fetched_at=2026-10-23T09:46:01+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cyom,deploying,description,elapsed,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,gameId,icon,id,image,liquidity,liquidityClob,live,markets,negRisk,negRiskAugmented,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
@@ -35,8 +35,8 @@ theme inflation: 6 events
 theme stocks: 0 events
 theme ai_chips: 6 events
     - Which company has best AI model end of 2026?
-    - Anthropic IPO Closing Market Cap
     - Next Fable Model (5.2+) released by...?
+    - Anthropic IPO Closing Market Cap
     - Anthropic IPO by __?
     - Anthropic announces bankruptcy by...?
     - Will Anthropic’s valuation hit __ by December 31?
