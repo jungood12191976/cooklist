@@ -1,43 +1,41 @@
-fetched_at=2026-10-24T17:03:05+09:00
+fetched_at=2026-10-24T23:28:57+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,countryName,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,showAllOutcomes,showMarketImages,slug,startDate,startTime,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
     - Fed Decision in October?
-    - Fed Decision in December?
     - How many Fed rate cuts in 2026?
-    - How low will 5-year Treasury yield get before 2027?
+    - Fed Decision in December?
     - Another Fed rate hike in 2026?
+    - How low will 5-year Treasury yield get before 2027?
     - How high will 10-year Treasury yield go before 2027?
 theme oil_iran: 6 events
     - US-Iran ceasefire continues through...?
     - Israel x Iran ceasefire continues through...?
     - What will WTI Crude Oil (WTI) hit in October 2026?
-    - Will the Iranian regime fall before 2027?
     - Strait of Hormuz traffic returns to normal by October 31?
-    - US announces end of Iranian blockade by...?
+    - Kharg Island no longer under Iranian control by...?
+    - US-Iran ceasefire continues through the midterms?
 theme trump: 6 events
     - Fed Decision in October?
     - NATO x Russia military clash by...?
     - US-Iran ceasefire continues through...?
     - Prime Minister of Israel after the next election?
-    - Will the Iranian regime fall before 2027?
-    - Russia x Ukraine ceasefire agreement by...?
+    - Kharg Island no longer under Iranian control by...?
+    - US-Iran ceasefire continues through the midterms?
 theme tariff: 1 events
     - US-Canada diplomatic agreement to lower tariffs by...?
 theme recession: 0 events
-theme inflation: 6 events
+theme inflation: 4 events
     - Fed Decision in October?
     - Another Fed rate hike in 2026?
     - How high will 10-year Treasury yield go before 2027?
     - Fed decisions (Sep–Dec)
-    - Core PCE MoM - September 2026
-    - How many Fed rate hikes in 2026?
 theme stocks: 0 events
 theme ai_chips: 6 events
     - Anthropic IPO by __?
     - Anthropic IPO Closing Market Cap
+    - Next Fable Model (5.2+) released on...?
     - Next Fable Model (5.2+) released by...?
     - Which company has best AI model end of 2026?
-    - Next Fable Model (5.2+) released on...?
-    - OpenAI announces another Millennium Prize solution by...?
+    - What will OpenAI's IPO valuation be?
 theme fx: 0 events
