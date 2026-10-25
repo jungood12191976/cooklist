@@ -1,6 +1,6 @@
-fetched_at=2026-10-25T23:56:12+09:00
+fetched_at=2026-10-26T02:02:40+09:00
 events_fetched=500
-event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,countryName,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,electionType,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,showAllOutcomes,showMarketImages,slug,sortBy,startDate,startTime,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
+event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cyom,deploying,deployingTimestamp,description,elapsed,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,gameId,icon,id,image,liquidity,liquidityClob,live,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
     - Fed Decision in October?
     - Fed Decision in December?
@@ -11,17 +11,17 @@ theme rates: 6 events
 theme oil_iran: 6 events
     - US-Iran ceasefire continues through...?
     - Israel x Iran ceasefire continues through...?
-    - Will the U.S. invade Iran before 2027?
     - US announces end of Iranian blockade by...?
+    - Will the U.S. invade Iran before 2027?
+    - Strait of Hormuz traffic returns to normal by December 31?
     - What will WTI Crude Oil (WTI) hit in October 2026?
-    - Bab el-Mandeb Strait effectively closed by...?
 theme trump: 6 events
     - Fed Decision in October?
     - US-Iran ceasefire continues through...?
     - Prime Minister of Israel after the next election?
     - Republican Senate seats after the 2026 midterm elections?
-    - Will the U.S. invade Iran before 2027?
     - US announces end of Iranian blockade by...?
+    - Fed Decision in December?
 theme tariff: 0 events
 theme recession: 0 events
 theme inflation: 4 events
@@ -31,9 +31,9 @@ theme inflation: 4 events
     - How many Fed rate hikes in 2026?
 theme stocks: 0 events
 theme ai_chips: 6 events
+    - Anthropic IPO Closing Market Cap
     - OpenAI announces bankruptcy by...?
     - OpenAI announces another Millennium Prize solution by...?
-    - Anthropic IPO Closing Market Cap
     - Which company has best AI model end of 2026?
     - Anthropic IPO by __?
     - Will Anthropic’s valuation hit __ by December 31?
