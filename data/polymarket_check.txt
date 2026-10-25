@@ -1,4 +1,4 @@
-fetched_at=2026-10-25T09:24:22+09:00
+fetched_at=2026-10-25T10:05:17+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cyom,deploying,description,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,gameId,icon,id,image,liquidity,liquidityClob,live,markets,negRisk,negRiskAugmented,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
@@ -31,9 +31,9 @@ theme inflation: 3 events
 theme stocks: 0 events
 theme ai_chips: 6 events
     - OpenAI announces bankruptcy by...?
-    - Anthropic IPO by __?
     - Anthropic IPO Closing Market Cap
-    - What will OpenAI's IPO valuation be?
+    - Anthropic IPO by __?
     - OpenAI announces another Millennium Prize solution by...?
+    - What will OpenAI's IPO valuation be?
     - Next Fable Model (5.2+) released by...?
 theme fx: 0 events
