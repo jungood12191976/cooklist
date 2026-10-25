@@ -1,0 +1,4505 @@
+{
+ "unit": "億円",
+ "market": "東証の現物・差引=買い−売り。era=old は旧市場(一部+二部+マザーズ+JASDAQ)、era=new はプライム+スタンダード+グロース",
+ "source": "JPX 投資部門別売買状況(週次) https://www.jpx.co.jp/markets/statistics-equities/investor-type/index.html",
+ "note": "scripts/backfill_investor_flows.py が過去の全週を取り込んだもの。市場区分が旧→新に変わる継ぎ目は era で見分ける。",
+ "updated": "2026-10-25",
+ "weeks": [
+  {
+   "from": "2016-01-04",
+   "to": "2016-01-08",
+   "foreign": -4472,
+   "individual": 5815,
+   "trustbank": 346,
+   "era": "old"
+  },
+  {
+   "from": "2016-01-11",
+   "to": "2016-01-15",
+   "foreign": -2109,
+   "individual": 2567,
+   "trustbank": 1201,
+   "era": "old"
+  },
+  {
+   "from": "2016-01-18",
+   "to": "2016-01-22",
+   "foreign": -1902,
+   "individual": 278,
+   "trustbank": 1822,
+   "era": "old"
+  },
+  {
+   "from": "2016-01-25",
+   "to": "2016-01-29",
+   "foreign": -2073,
+   "individual": -685,
+   "trustbank": 2708,
+   "era": "old"
+  },
+  {
+   "from": "2016-02-01",
+   "to": "2016-02-05",
+   "foreign": -6113,
+   "individual": 1942,
+   "trustbank": 252,
+   "era": "old"
+  },
+  {
+   "from": "2016-02-08",
+   "to": "2016-02-12",
+   "foreign": -5735,
+   "individual": 1887,
+   "trustbank": 401,
+   "era": "old"
+  },
+  {
+   "from": "2016-02-15",
+   "to": "2016-02-19",
+   "foreign": -4053,
+   "individual": 26,
+   "trustbank": 5000,
+   "era": "old"
+  },
+  {
+   "from": "2016-02-22",
+   "to": "2016-02-26",
+   "foreign": -4082,
+   "individual": -416,
+   "trustbank": 3849,
+   "era": "old"
+  },
+  {
+   "from": "2016-02-29",
+   "to": "2016-03-04",
+   "foreign": -954,
+   "individual": -1989,
+   "trustbank": 2814,
+   "era": "old"
+  },
+  {
+   "from": "2016-03-07",
+   "to": "2016-03-11",
+   "foreign": -11932,
+   "individual": 2039,
+   "trustbank": 737,
+   "era": "old"
+  },
+  {
+   "from": "2016-03-14",
+   "to": "2016-03-18",
+   "foreign": -4580,
+   "individual": 1875,
+   "trustbank": 182,
+   "era": "old"
+  },
+  {
+   "from": "2016-03-21",
+   "to": "2016-03-25",
+   "foreign": -2043,
+   "individual": -205,
+   "trustbank": 1831,
+   "era": "old"
+  },
+  {
+   "from": "2016-03-28",
+   "to": "2016-04-01",
+   "foreign": -79,
+   "individual": 1107,
+   "trustbank": -581,
+   "era": "old"
+  },
+  {
+   "from": "2016-04-04",
+   "to": "2016-04-08",
+   "foreign": 323,
+   "individual": 111,
+   "trustbank": 1542,
+   "era": "old"
+  },
+  {
+   "from": "2016-04-11",
+   "to": "2016-04-15",
+   "foreign": 3846,
+   "individual": -3465,
+   "trustbank": 891,
+   "era": "old"
+  },
+  {
+   "from": "2016-04-18",
+   "to": "2016-04-22",
+   "foreign": 5318,
+   "individual": -4606,
+   "trustbank": -698,
+   "era": "old"
+  },
+  {
+   "from": "2016-04-25",
+   "to": "2016-04-28",
+   "foreign": -891,
+   "individual": 1013,
+   "trustbank": -313,
+   "era": "old"
+  },
+  {
+   "from": "2016-05-02",
+   "to": "2016-05-06",
+   "foreign": -3142,
+   "individual": 2616,
+   "trustbank": 579,
+   "era": "old"
+  },
+  {
+   "from": "2016-05-09",
+   "to": "2016-05-13",
+   "foreign": 568,
+   "individual": -139,
+   "trustbank": 238,
+   "era": "old"
+  },
+  {
+   "from": "2016-05-16",
+   "to": "2016-05-20",
+   "foreign": 22,
+   "individual": -1301,
+   "trustbank": 179,
+   "era": "old"
+  },
+  {
+   "from": "2016-05-23",
+   "to": "2016-05-27",
+   "foreign": -705,
+   "individual": -1104,
+   "trustbank": 158,
+   "era": "old"
+  },
+  {
+   "from": "2016-05-30",
+   "to": "2016-06-03",
+   "foreign": -1462,
+   "individual": 349,
+   "trustbank": 512,
+   "era": "old"
+  },
+  {
+   "from": "2016-06-06",
+   "to": "2016-06-10",
+   "foreign": 2236,
+   "individual": 296,
+   "trustbank": 1489,
+   "era": "old"
+  },
+  {
+   "from": "2016-06-13",
+   "to": "2016-06-17",
+   "foreign": -2207,
+   "individual": 1934,
+   "trustbank": 324,
+   "era": "old"
+  },
+  {
+   "from": "2016-06-20",
+   "to": "2016-06-24",
+   "foreign": -1297,
+   "individual": 356,
+   "trustbank": 1251,
+   "era": "old"
+  },
+  {
+   "from": "2016-06-27",
+   "to": "2016-07-01",
+   "foreign": 106,
+   "individual": -118,
+   "trustbank": 2283,
+   "era": "old"
+  },
+  {
+   "from": "2016-07-04",
+   "to": "2016-07-08",
+   "foreign": -1749,
+   "individual": 1693,
+   "trustbank": 1527,
+   "era": "old"
+  },
+  {
+   "from": "2016-07-11",
+   "to": "2016-07-15",
+   "foreign": 3512,
+   "individual": -4990,
+   "trustbank": -57,
+   "era": "old"
+  },
+  {
+   "from": "2016-07-18",
+   "to": "2016-07-22",
+   "foreign": -1262,
+   "individual": 387,
+   "trustbank": 660,
+   "era": "old"
+  },
+  {
+   "from": "2016-07-25",
+   "to": "2016-07-29",
+   "foreign": 788,
+   "individual": -988,
+   "trustbank": 506,
+   "era": "old"
+  },
+  {
+   "from": "2016-08-01",
+   "to": "2016-08-05",
+   "foreign": -4587,
+   "individual": 2238,
+   "trustbank": 1726,
+   "era": "old"
+  },
+  {
+   "from": "2016-08-08",
+   "to": "2016-08-12",
+   "foreign": 484,
+   "individual": -2114,
+   "trustbank": 1204,
+   "era": "old"
+  },
+  {
+   "from": "2016-08-15",
+   "to": "2016-08-19",
+   "foreign": -1667,
+   "individual": 767,
+   "trustbank": 1080,
+   "era": "old"
+  },
+  {
+   "from": "2016-08-22",
+   "to": "2016-08-26",
+   "foreign": 1714,
+   "individual": 187,
+   "trustbank": 653,
+   "era": "old"
+  },
+  {
+   "from": "2016-08-29",
+   "to": "2016-09-02",
+   "foreign": -642,
+   "individual": -3174,
+   "trustbank": 700,
+   "era": "old"
+  },
+  {
+   "from": "2016-09-05",
+   "to": "2016-09-09",
+   "foreign": -3339,
+   "individual": -1020,
+   "trustbank": -445,
+   "era": "old"
+  },
+  {
+   "from": "2016-09-12",
+   "to": "2016-09-16",
+   "foreign": -4806,
+   "individual": 1764,
+   "trustbank": -170,
+   "era": "old"
+  },
+  {
+   "from": "2016-09-19",
+   "to": "2016-09-23",
+   "foreign": -1019,
+   "individual": -2031,
+   "trustbank": 201,
+   "era": "old"
+  },
+  {
+   "from": "2016-09-26",
+   "to": "2016-09-30",
+   "foreign": -1884,
+   "individual": 548,
+   "trustbank": -372,
+   "era": "old"
+  },
+  {
+   "from": "2016-10-03",
+   "to": "2016-10-07",
+   "foreign": 2805,
+   "individual": -2877,
+   "trustbank": -278,
+   "era": "old"
+  },
+  {
+   "from": "2016-10-10",
+   "to": "2016-10-14",
+   "foreign": 1134,
+   "individual": -120,
+   "trustbank": -56,
+   "era": "old"
+  },
+  {
+   "from": "2016-10-17",
+   "to": "2016-10-21",
+   "foreign": 728,
+   "individual": -1889,
+   "trustbank": 103,
+   "era": "old"
+  },
+  {
+   "from": "2016-10-24",
+   "to": "2016-10-28",
+   "foreign": 51,
+   "individual": -2773,
+   "trustbank": -576,
+   "era": "old"
+  },
+  {
+   "from": "2016-10-31",
+   "to": "2016-11-04",
+   "foreign": -605,
+   "individual": 1252,
+   "trustbank": -259,
+   "era": "old"
+  },
+  {
+   "from": "2016-11-07",
+   "to": "2016-11-11",
+   "foreign": 4003,
+   "individual": -4154,
+   "trustbank": -775,
+   "era": "old"
+  },
+  {
+   "from": "2016-11-14",
+   "to": "2016-11-18",
+   "foreign": 4903,
+   "individual": -4451,
+   "trustbank": -762,
+   "era": "old"
+  },
+  {
+   "from": "2016-11-21",
+   "to": "2016-11-25",
+   "foreign": 3026,
+   "individual": -4330,
+   "trustbank": -824,
+   "era": "old"
+  },
+  {
+   "from": "2016-11-28",
+   "to": "2016-12-02",
+   "foreign": 4148,
+   "individual": -3023,
+   "trustbank": -40,
+   "era": "old"
+  },
+  {
+   "from": "2016-12-05",
+   "to": "2016-12-09",
+   "foreign": 5625,
+   "individual": -3707,
+   "trustbank": 2997,
+   "era": "old"
+  },
+  {
+   "from": "2016-12-12",
+   "to": "2016-12-16",
+   "foreign": 821,
+   "individual": -4812,
+   "trustbank": -539,
+   "era": "old"
+  },
+  {
+   "from": "2016-12-19",
+   "to": "2016-12-22",
+   "foreign": -1947,
+   "individual": -1980,
+   "trustbank": -607,
+   "era": "old"
+  },
+  {
+   "from": "2016-12-26",
+   "to": "2016-12-30",
+   "foreign": 325,
+   "individual": -2156,
+   "trustbank": -1827,
+   "era": "old"
+  },
+  {
+   "from": "2017-01-02",
+   "to": "2017-01-06",
+   "foreign": 2326,
+   "individual": -2423,
+   "trustbank": -461,
+   "era": "old"
+  },
+  {
+   "from": "2017-01-09",
+   "to": "2017-01-13",
+   "foreign": 1102,
+   "individual": 66,
+   "trustbank": -256,
+   "era": "old"
+  },
+  {
+   "from": "2017-01-16",
+   "to": "2017-01-20",
+   "foreign": -1040,
+   "individual": 106,
+   "trustbank": 507,
+   "era": "old"
+  },
+  {
+   "from": "2017-01-23",
+   "to": "2017-01-27",
+   "foreign": -2067,
+   "individual": -1317,
+   "trustbank": 638,
+   "era": "old"
+  },
+  {
+   "from": "2017-01-30",
+   "to": "2017-02-03",
+   "foreign": -2448,
+   "individual": 2042,
+   "trustbank": -596,
+   "era": "old"
+  },
+  {
+   "from": "2017-02-06",
+   "to": "2017-02-10",
+   "foreign": 1371,
+   "individual": -1751,
+   "trustbank": -393,
+   "era": "old"
+  },
+  {
+   "from": "2017-02-13",
+   "to": "2017-02-17",
+   "foreign": -765,
+   "individual": 123,
+   "trustbank": -539,
+   "era": "old"
+  },
+  {
+   "from": "2017-02-20",
+   "to": "2017-02-24",
+   "foreign": -728,
+   "individual": -408,
+   "trustbank": -220,
+   "era": "old"
+  },
+  {
+   "from": "2017-02-27",
+   "to": "2017-03-03",
+   "foreign": -796,
+   "individual": -839,
+   "trustbank": -377,
+   "era": "old"
+  },
+  {
+   "from": "2017-03-06",
+   "to": "2017-03-10",
+   "foreign": -987,
+   "individual": -975,
+   "trustbank": -255,
+   "era": "old"
+  },
+  {
+   "from": "2017-03-13",
+   "to": "2017-03-17",
+   "foreign": -4069,
+   "individual": 1329,
+   "trustbank": -1389,
+   "era": "old"
+  },
+  {
+   "from": "2017-03-20",
+   "to": "2017-03-24",
+   "foreign": -3741,
+   "individual": 3267,
+   "trustbank": -790,
+   "era": "old"
+  },
+  {
+   "from": "2017-03-27",
+   "to": "2017-03-31",
+   "foreign": -549,
+   "individual": 595,
+   "trustbank": 30,
+   "era": "old"
+  },
+  {
+   "from": "2017-04-03",
+   "to": "2017-04-07",
+   "foreign": 908,
+   "individual": 4,
+   "trustbank": -633,
+   "era": "old"
+  },
+  {
+   "from": "2017-04-10",
+   "to": "2017-04-14",
+   "foreign": 1027,
+   "individual": -508,
+   "trustbank": -11,
+   "era": "old"
+  },
+  {
+   "from": "2017-04-17",
+   "to": "2017-04-21",
+   "foreign": 2770,
+   "individual": -883,
+   "trustbank": -193,
+   "era": "old"
+  },
+  {
+   "from": "2017-04-24",
+   "to": "2017-04-28",
+   "foreign": 2849,
+   "individual": -4448,
+   "trustbank": -6,
+   "era": "old"
+  },
+  {
+   "from": "2017-05-01",
+   "to": "2017-05-02",
+   "foreign": 1583,
+   "individual": -1877,
+   "trustbank": -145,
+   "era": "old"
+  },
+  {
+   "from": "2017-05-08",
+   "to": "2017-05-12",
+   "foreign": 5601,
+   "individual": -5100,
+   "trustbank": -1288,
+   "era": "old"
+  },
+  {
+   "from": "2017-05-15",
+   "to": "2017-05-19",
+   "foreign": 303,
+   "individual": 205,
+   "trustbank": 18,
+   "era": "old"
+  },
+  {
+   "from": "2017-05-22",
+   "to": "2017-05-26",
+   "foreign": 221,
+   "individual": -792,
+   "trustbank": 406,
+   "era": "old"
+  },
+  {
+   "from": "2017-05-29",
+   "to": "2017-06-02",
+   "foreign": 4282,
+   "individual": -3217,
+   "trustbank": -522,
+   "era": "old"
+  },
+  {
+   "from": "2017-06-05",
+   "to": "2017-06-09",
+   "foreign": -355,
+   "individual": -44,
+   "trustbank": -558,
+   "era": "old"
+  },
+  {
+   "from": "2017-06-12",
+   "to": "2017-06-16",
+   "foreign": -2069,
+   "individual": 552,
+   "trustbank": 47,
+   "era": "old"
+  },
+  {
+   "from": "2017-06-19",
+   "to": "2017-06-23",
+   "foreign": -93,
+   "individual": -2187,
+   "trustbank": 1259,
+   "era": "old"
+  },
+  {
+   "from": "2017-06-26",
+   "to": "2017-06-30",
+   "foreign": 115,
+   "individual": -1513,
+   "trustbank": 1616,
+   "era": "old"
+  },
+  {
+   "from": "2017-07-03",
+   "to": "2017-07-07",
+   "foreign": -16,
+   "individual": -708,
+   "trustbank": 2124,
+   "era": "old"
+  },
+  {
+   "from": "2017-07-10",
+   "to": "2017-07-14",
+   "foreign": 1730,
+   "individual": -1487,
+   "trustbank": 273,
+   "era": "old"
+  },
+  {
+   "from": "2017-07-17",
+   "to": "2017-07-21",
+   "foreign": 861,
+   "individual": -952,
+   "trustbank": 518,
+   "era": "old"
+  },
+  {
+   "from": "2017-07-24",
+   "to": "2017-07-28",
+   "foreign": -1284,
+   "individual": 532,
+   "trustbank": -80,
+   "era": "old"
+  },
+  {
+   "from": "2017-07-31",
+   "to": "2017-08-04",
+   "foreign": -297,
+   "individual": -1400,
+   "trustbank": -65,
+   "era": "old"
+  },
+  {
+   "from": "2017-08-07",
+   "to": "2017-08-10",
+   "foreign": -2747,
+   "individual": 445,
+   "trustbank": 265,
+   "era": "old"
+  },
+  {
+   "from": "2017-08-14",
+   "to": "2017-08-18",
+   "foreign": -2058,
+   "individual": 1161,
+   "trustbank": 465,
+   "era": "old"
+  },
+  {
+   "from": "2017-08-21",
+   "to": "2017-08-25",
+   "foreign": -1529,
+   "individual": 127,
+   "trustbank": 256,
+   "era": "old"
+  },
+  {
+   "from": "2017-08-28",
+   "to": "2017-09-01",
+   "foreign": -614,
+   "individual": -861,
+   "trustbank": 87,
+   "era": "old"
+  },
+  {
+   "from": "2017-09-04",
+   "to": "2017-09-08",
+   "foreign": -2949,
+   "individual": 663,
+   "trustbank": 1073,
+   "era": "old"
+  },
+  {
+   "from": "2017-09-11",
+   "to": "2017-09-15",
+   "foreign": -4173,
+   "individual": -4252,
+   "trustbank": -1044,
+   "era": "old"
+  },
+  {
+   "from": "2017-09-18",
+   "to": "2017-09-22",
+   "foreign": -611,
+   "individual": -3180,
+   "trustbank": -1009,
+   "era": "old"
+  },
+  {
+   "from": "2017-09-25",
+   "to": "2017-09-29",
+   "foreign": 2017,
+   "individual": -2325,
+   "trustbank": -207,
+   "era": "old"
+  },
+  {
+   "from": "2017-10-02",
+   "to": "2017-10-06",
+   "foreign": 6574,
+   "individual": -3750,
+   "trustbank": 255,
+   "era": "old"
+  },
+  {
+   "from": "2017-10-09",
+   "to": "2017-10-13",
+   "foreign": 4594,
+   "individual": -3475,
+   "trustbank": -441,
+   "era": "old"
+  },
+  {
+   "from": "2017-10-16",
+   "to": "2017-10-20",
+   "foreign": 4452,
+   "individual": -4954,
+   "trustbank": -648,
+   "era": "old"
+  },
+  {
+   "from": "2017-10-23",
+   "to": "2017-10-27",
+   "foreign": 6703,
+   "individual": -5949,
+   "trustbank": -299,
+   "era": "old"
+  },
+  {
+   "from": "2017-10-30",
+   "to": "2017-11-02",
+   "foreign": 527,
+   "individual": -1324,
+   "trustbank": -953,
+   "era": "old"
+  },
+  {
+   "from": "2017-11-06",
+   "to": "2017-11-10",
+   "foreign": 669,
+   "individual": -1313,
+   "trustbank": 118,
+   "era": "old"
+  },
+  {
+   "from": "2017-11-13",
+   "to": "2017-11-17",
+   "foreign": -3176,
+   "individual": 2355,
+   "trustbank": -103,
+   "era": "old"
+  },
+  {
+   "from": "2017-11-20",
+   "to": "2017-11-24",
+   "foreign": -2821,
+   "individual": -431,
+   "trustbank": 918,
+   "era": "old"
+  },
+  {
+   "from": "2017-11-27",
+   "to": "2017-12-01",
+   "foreign": -1986,
+   "individual": -671,
+   "trustbank": -304,
+   "era": "old"
+  },
+  {
+   "from": "2017-12-04",
+   "to": "2017-12-08",
+   "foreign": -2160,
+   "individual": -748,
+   "trustbank": 2730,
+   "era": "old"
+  },
+  {
+   "from": "2017-12-11",
+   "to": "2017-12-15",
+   "foreign": -123,
+   "individual": -825,
+   "trustbank": 992,
+   "era": "old"
+  },
+  {
+   "from": "2017-12-18",
+   "to": "2017-12-22",
+   "foreign": 1224,
+   "individual": -3340,
+   "trustbank": 240,
+   "era": "old"
+  },
+  {
+   "from": "2017-12-25",
+   "to": "2017-12-29",
+   "foreign": -23,
+   "individual": -1183,
+   "trustbank": -66,
+   "era": "old"
+  },
+  {
+   "from": "2018-01-01",
+   "to": "2018-01-05",
+   "foreign": 4851,
+   "individual": -5745,
+   "trustbank": 36,
+   "era": "old"
+  },
+  {
+   "from": "2018-01-08",
+   "to": "2018-01-12",
+   "foreign": -317,
+   "individual": 1776,
+   "trustbank": -121,
+   "era": "old"
+  },
+  {
+   "from": "2018-01-15",
+   "to": "2018-01-19",
+   "foreign": -2223,
+   "individual": -229,
+   "trustbank": 505,
+   "era": "old"
+  },
+  {
+   "from": "2018-01-22",
+   "to": "2018-01-26",
+   "foreign": -3561,
+   "individual": 1814,
+   "trustbank": 314,
+   "era": "old"
+  },
+  {
+   "from": "2018-01-29",
+   "to": "2018-02-02",
+   "foreign": -3527,
+   "individual": 2733,
+   "trustbank": 1787,
+   "era": "old"
+  },
+  {
+   "from": "2018-02-05",
+   "to": "2018-02-09",
+   "foreign": -6449,
+   "individual": 7461,
+   "trustbank": 916,
+   "era": "old"
+  },
+  {
+   "from": "2018-02-12",
+   "to": "2018-02-16",
+   "foreign": -363,
+   "individual": 857,
+   "trustbank": 38,
+   "era": "old"
+  },
+  {
+   "from": "2018-02-19",
+   "to": "2018-02-23",
+   "foreign": -1132,
+   "individual": 808,
+   "trustbank": 1133,
+   "era": "old"
+  },
+  {
+   "from": "2018-02-26",
+   "to": "2018-03-02",
+   "foreign": -3484,
+   "individual": 3356,
+   "trustbank": -268,
+   "era": "old"
+  },
+  {
+   "from": "2018-03-05",
+   "to": "2018-03-09",
+   "foreign": -3755,
+   "individual": 713,
+   "trustbank": 414,
+   "era": "old"
+  },
+  {
+   "from": "2018-03-12",
+   "to": "2018-03-16",
+   "foreign": -1729,
+   "individual": -757,
+   "trustbank": -203,
+   "era": "old"
+  },
+  {
+   "from": "2018-03-19",
+   "to": "2018-03-23",
+   "foreign": -4541,
+   "individual": 4479,
+   "trustbank": 99,
+   "era": "old"
+  },
+  {
+   "from": "2018-03-26",
+   "to": "2018-03-30",
+   "foreign": 51,
+   "individual": -390,
+   "trustbank": 9,
+   "era": "old"
+  },
+  {
+   "from": "2018-04-02",
+   "to": "2018-04-06",
+   "foreign": 1584,
+   "individual": -1266,
+   "trustbank": 280,
+   "era": "old"
+  },
+  {
+   "from": "2018-04-09",
+   "to": "2018-04-13",
+   "foreign": 842,
+   "individual": -1560,
+   "trustbank": -72,
+   "era": "old"
+  },
+  {
+   "from": "2018-04-16",
+   "to": "2018-04-20",
+   "foreign": 1152,
+   "individual": -2441,
+   "trustbank": 19,
+   "era": "old"
+  },
+  {
+   "from": "2018-04-23",
+   "to": "2018-04-27",
+   "foreign": -1509,
+   "individual": -2595,
+   "trustbank": -259,
+   "era": "old"
+  },
+  {
+   "from": "2018-04-30",
+   "to": "2018-05-02",
+   "foreign": 18,
+   "individual": -539,
+   "trustbank": -480,
+   "era": "old"
+  },
+  {
+   "from": "2018-05-07",
+   "to": "2018-05-11",
+   "foreign": -12,
+   "individual": -2938,
+   "trustbank": -829,
+   "era": "old"
+  },
+  {
+   "from": "2018-05-14",
+   "to": "2018-05-18",
+   "foreign": -939,
+   "individual": -3639,
+   "trustbank": 44,
+   "era": "old"
+  },
+  {
+   "from": "2018-05-21",
+   "to": "2018-05-25",
+   "foreign": -3404,
+   "individual": 1442,
+   "trustbank": -404,
+   "era": "old"
+  },
+  {
+   "from": "2018-05-28",
+   "to": "2018-06-01",
+   "foreign": -3067,
+   "individual": 2062,
+   "trustbank": 697,
+   "era": "old"
+  },
+  {
+   "from": "2018-06-04",
+   "to": "2018-06-08",
+   "foreign": 201,
+   "individual": -3055,
+   "trustbank": 1119,
+   "era": "old"
+  },
+  {
+   "from": "2018-06-11",
+   "to": "2018-06-15",
+   "foreign": 317,
+   "individual": -1430,
+   "trustbank": -307,
+   "era": "old"
+  },
+  {
+   "from": "2018-06-18",
+   "to": "2018-06-22",
+   "foreign": -4311,
+   "individual": 2110,
+   "trustbank": 1452,
+   "era": "old"
+  },
+  {
+   "from": "2018-06-25",
+   "to": "2018-06-29",
+   "foreign": -2863,
+   "individual": 703,
+   "trustbank": 2156,
+   "era": "old"
+  },
+  {
+   "from": "2018-07-02",
+   "to": "2018-07-06",
+   "foreign": -318,
+   "individual": 636,
+   "trustbank": 998,
+   "era": "old"
+  },
+  {
+   "from": "2018-07-09",
+   "to": "2018-07-13",
+   "foreign": 3249,
+   "individual": -2460,
+   "trustbank": -22,
+   "era": "old"
+  },
+  {
+   "from": "2018-07-16",
+   "to": "2018-07-20",
+   "foreign": 320,
+   "individual": -863,
+   "trustbank": 301,
+   "era": "old"
+  },
+  {
+   "from": "2018-07-23",
+   "to": "2018-07-27",
+   "foreign": 850,
+   "individual": -2183,
+   "trustbank": 52,
+   "era": "old"
+  },
+  {
+   "from": "2018-07-30",
+   "to": "2018-08-03",
+   "foreign": -672,
+   "individual": 675,
+   "trustbank": 970,
+   "era": "old"
+  },
+  {
+   "from": "2018-08-06",
+   "to": "2018-08-10",
+   "foreign": -347,
+   "individual": 289,
+   "trustbank": 394,
+   "era": "old"
+  },
+  {
+   "from": "2018-08-13",
+   "to": "2018-08-17",
+   "foreign": -3452,
+   "individual": 2253,
+   "trustbank": -146,
+   "era": "old"
+  },
+  {
+   "from": "2018-08-20",
+   "to": "2018-08-24",
+   "foreign": -841,
+   "individual": -439,
+   "trustbank": -160,
+   "era": "old"
+  },
+  {
+   "from": "2018-08-27",
+   "to": "2018-08-31",
+   "foreign": 485,
+   "individual": -2364,
+   "trustbank": -476,
+   "era": "old"
+  },
+  {
+   "from": "2018-09-03",
+   "to": "2018-09-07",
+   "foreign": -5280,
+   "individual": 3698,
+   "trustbank": 288,
+   "era": "old"
+  },
+  {
+   "from": "2018-09-10",
+   "to": "2018-09-14",
+   "foreign": -2821,
+   "individual": -2202,
+   "trustbank": 276,
+   "era": "old"
+  },
+  {
+   "from": "2018-09-17",
+   "to": "2018-09-21",
+   "foreign": 2780,
+   "individual": -6696,
+   "trustbank": -644,
+   "era": "old"
+  },
+  {
+   "from": "2018-09-24",
+   "to": "2018-09-28",
+   "foreign": 3771,
+   "individual": -3363,
+   "trustbank": -583,
+   "era": "old"
+  },
+  {
+   "from": "2018-10-01",
+   "to": "2018-10-05",
+   "foreign": 5756,
+   "individual": 211,
+   "trustbank": -1505,
+   "era": "old"
+  },
+  {
+   "from": "2018-10-08",
+   "to": "2018-10-12",
+   "foreign": -3290,
+   "individual": 6022,
+   "trustbank": -732,
+   "era": "old"
+  },
+  {
+   "from": "2018-10-15",
+   "to": "2018-10-19",
+   "foreign": -2122,
+   "individual": 2759,
+   "trustbank": 340,
+   "era": "old"
+  },
+  {
+   "from": "2018-10-22",
+   "to": "2018-10-26",
+   "foreign": -3176,
+   "individual": 3259,
+   "trustbank": 413,
+   "era": "old"
+  },
+  {
+   "from": "2018-10-29",
+   "to": "2018-11-02",
+   "foreign": 262,
+   "individual": -1662,
+   "trustbank": 1426,
+   "era": "old"
+  },
+  {
+   "from": "2018-11-05",
+   "to": "2018-11-09",
+   "foreign": 2441,
+   "individual": -1770,
+   "trustbank": -1359,
+   "era": "old"
+  },
+  {
+   "from": "2018-11-12",
+   "to": "2018-11-16",
+   "foreign": -1382,
+   "individual": 1072,
+   "trustbank": -670,
+   "era": "old"
+  },
+  {
+   "from": "2018-11-19",
+   "to": "2018-11-22",
+   "foreign": -1976,
+   "individual": -359,
+   "trustbank": 402,
+   "era": "old"
+  },
+  {
+   "from": "2018-11-26",
+   "to": "2018-11-30",
+   "foreign": -2103,
+   "individual": -3582,
+   "trustbank": 1451,
+   "era": "old"
+  },
+  {
+   "from": "2018-12-03",
+   "to": "2018-12-07",
+   "foreign": -5956,
+   "individual": 2224,
+   "trustbank": 2031,
+   "era": "old"
+  },
+  {
+   "from": "2018-12-10",
+   "to": "2018-12-14",
+   "foreign": -1615,
+   "individual": 220,
+   "trustbank": 1417,
+   "era": "old"
+  },
+  {
+   "from": "2018-12-17",
+   "to": "2018-12-21",
+   "foreign": -3265,
+   "individual": -1063,
+   "trustbank": 1121,
+   "era": "old"
+  },
+  {
+   "from": "2018-12-24",
+   "to": "2018-12-28",
+   "foreign": -579,
+   "individual": -1702,
+   "trustbank": 1410,
+   "era": "old"
+  },
+  {
+   "from": "2018-12-31",
+   "to": "2019-01-04",
+   "foreign": -2086,
+   "individual": 417,
+   "trustbank": 209,
+   "era": "old"
+  },
+  {
+   "from": "2019-01-07",
+   "to": "2019-01-11",
+   "foreign": -2946,
+   "individual": -1743,
+   "trustbank": 385,
+   "era": "old"
+  },
+  {
+   "from": "2019-01-14",
+   "to": "2019-01-18",
+   "foreign": -543,
+   "individual": -995,
+   "trustbank": 259,
+   "era": "old"
+  },
+  {
+   "from": "2019-01-21",
+   "to": "2019-01-25",
+   "foreign": 1202,
+   "individual": -758,
+   "trustbank": -153,
+   "era": "old"
+  },
+  {
+   "from": "2019-01-28",
+   "to": "2019-02-01",
+   "foreign": -1294,
+   "individual": -77,
+   "trustbank": 1064,
+   "era": "old"
+  },
+  {
+   "from": "2019-02-04",
+   "to": "2019-02-08",
+   "foreign": -1536,
+   "individual": 270,
+   "trustbank": -199,
+   "era": "old"
+  },
+  {
+   "from": "2019-02-11",
+   "to": "2019-02-15",
+   "foreign": -656,
+   "individual": -2485,
+   "trustbank": 1026,
+   "era": "old"
+  },
+  {
+   "from": "2019-02-18",
+   "to": "2019-02-22",
+   "foreign": -34,
+   "individual": -2423,
+   "trustbank": -735,
+   "era": "old"
+  },
+  {
+   "from": "2019-02-25",
+   "to": "2019-03-01",
+   "foreign": -1949,
+   "individual": -898,
+   "trustbank": 224,
+   "era": "old"
+  },
+  {
+   "from": "2019-03-04",
+   "to": "2019-03-08",
+   "foreign": -5689,
+   "individual": 1778,
+   "trustbank": -425,
+   "era": "old"
+  },
+  {
+   "from": "2019-03-11",
+   "to": "2019-03-15",
+   "foreign": -5062,
+   "individual": -1281,
+   "trustbank": -795,
+   "era": "old"
+  },
+  {
+   "from": "2019-03-18",
+   "to": "2019-03-22",
+   "foreign": -3785,
+   "individual": -61,
+   "trustbank": -328,
+   "era": "old"
+  },
+  {
+   "from": "2019-03-25",
+   "to": "2019-03-29",
+   "foreign": -744,
+   "individual": 743,
+   "trustbank": 49,
+   "era": "old"
+  },
+  {
+   "from": "2019-04-01",
+   "to": "2019-04-05",
+   "foreign": 6228,
+   "individual": -5577,
+   "trustbank": 617,
+   "era": "old"
+  },
+  {
+   "from": "2019-04-08",
+   "to": "2019-04-12",
+   "foreign": 1214,
+   "individual": -45,
+   "trustbank": 344,
+   "era": "old"
+  },
+  {
+   "from": "2019-04-15",
+   "to": "2019-04-19",
+   "foreign": 5534,
+   "individual": -3118,
+   "trustbank": 240,
+   "era": "old"
+  },
+  {
+   "from": "2019-04-22",
+   "to": "2019-04-26",
+   "foreign": 3079,
+   "individual": -418,
+   "trustbank": -437,
+   "era": "old"
+  },
+  {
+   "from": "2019-05-06",
+   "to": "2019-05-10",
+   "foreign": -192,
+   "individual": 3691,
+   "trustbank": -659,
+   "era": "old"
+  },
+  {
+   "from": "2019-05-13",
+   "to": "2019-05-17",
+   "foreign": -1176,
+   "individual": -395,
+   "trustbank": 57,
+   "era": "old"
+  },
+  {
+   "from": "2019-05-20",
+   "to": "2019-05-24",
+   "foreign": -801,
+   "individual": 587,
+   "trustbank": -424,
+   "era": "old"
+  },
+  {
+   "from": "2019-05-27",
+   "to": "2019-05-31",
+   "foreign": -2838,
+   "individual": 1124,
+   "trustbank": 692,
+   "era": "old"
+  },
+  {
+   "from": "2019-06-03",
+   "to": "2019-06-07",
+   "foreign": -1144,
+   "individual": -971,
+   "trustbank": 153,
+   "era": "old"
+  },
+  {
+   "from": "2019-06-10",
+   "to": "2019-06-14",
+   "foreign": -1992,
+   "individual": -758,
+   "trustbank": 328,
+   "era": "old"
+  },
+  {
+   "from": "2019-06-17",
+   "to": "2019-06-21",
+   "foreign": -1124,
+   "individual": -890,
+   "trustbank": -235,
+   "era": "old"
+  },
+  {
+   "from": "2019-06-24",
+   "to": "2019-06-28",
+   "foreign": -6,
+   "individual": 17,
+   "trustbank": 2587,
+   "era": "old"
+  },
+  {
+   "from": "2019-07-01",
+   "to": "2019-07-05",
+   "foreign": 449,
+   "individual": -3071,
+   "trustbank": 1772,
+   "era": "old"
+  },
+  {
+   "from": "2019-07-08",
+   "to": "2019-07-12",
+   "foreign": -238,
+   "individual": 552,
+   "trustbank": 420,
+   "era": "old"
+  },
+  {
+   "from": "2019-07-15",
+   "to": "2019-07-19",
+   "foreign": -1443,
+   "individual": 501,
+   "trustbank": 521,
+   "era": "old"
+  },
+  {
+   "from": "2019-07-22",
+   "to": "2019-07-26",
+   "foreign": 1202,
+   "individual": -1183,
+   "trustbank": -578,
+   "era": "old"
+  },
+  {
+   "from": "2019-07-29",
+   "to": "2019-08-02",
+   "foreign": -2092,
+   "individual": 2369,
+   "trustbank": 456,
+   "era": "old"
+  },
+  {
+   "from": "2019-08-05",
+   "to": "2019-08-09",
+   "foreign": -1882,
+   "individual": 2447,
+   "trustbank": -268,
+   "era": "old"
+  },
+  {
+   "from": "2019-08-12",
+   "to": "2019-08-16",
+   "foreign": -3035,
+   "individual": 843,
+   "trustbank": 366,
+   "era": "old"
+  },
+  {
+   "from": "2019-08-19",
+   "to": "2019-08-23",
+   "foreign": -405,
+   "individual": -1313,
+   "trustbank": 12,
+   "era": "old"
+  },
+  {
+   "from": "2019-08-26",
+   "to": "2019-08-30",
+   "foreign": -34,
+   "individual": -648,
+   "trustbank": -64,
+   "era": "old"
+  },
+  {
+   "from": "2019-09-02",
+   "to": "2019-09-06",
+   "foreign": 1285,
+   "individual": -2272,
+   "trustbank": -157,
+   "era": "old"
+  },
+  {
+   "from": "2019-09-09",
+   "to": "2019-09-13",
+   "foreign": -3091,
+   "individual": -4956,
+   "trustbank": 571,
+   "era": "old"
+  },
+  {
+   "from": "2019-09-16",
+   "to": "2019-09-20",
+   "foreign": -621,
+   "individual": -2566,
+   "trustbank": 118,
+   "era": "old"
+  },
+  {
+   "from": "2019-09-23",
+   "to": "2019-09-27",
+   "foreign": -2821,
+   "individual": 723,
+   "trustbank": -877,
+   "era": "old"
+  },
+  {
+   "from": "2019-09-30",
+   "to": "2019-10-04",
+   "foreign": 1149,
+   "individual": 1319,
+   "trustbank": -590,
+   "era": "old"
+  },
+  {
+   "from": "2019-10-07",
+   "to": "2019-10-11",
+   "foreign": 532,
+   "individual": -1084,
+   "trustbank": 285,
+   "era": "old"
+  },
+  {
+   "from": "2019-10-14",
+   "to": "2019-10-18",
+   "foreign": 5564,
+   "individual": -3531,
+   "trustbank": -1706,
+   "era": "old"
+  },
+  {
+   "from": "2019-10-21",
+   "to": "2019-10-25",
+   "foreign": 1522,
+   "individual": -1751,
+   "trustbank": -1055,
+   "era": "old"
+  },
+  {
+   "from": "2019-10-28",
+   "to": "2019-11-01",
+   "foreign": 2582,
+   "individual": -2887,
+   "trustbank": -168,
+   "era": "old"
+  },
+  {
+   "from": "2019-11-04",
+   "to": "2019-11-08",
+   "foreign": 4603,
+   "individual": -3633,
+   "trustbank": -1548,
+   "era": "old"
+  },
+  {
+   "from": "2019-11-11",
+   "to": "2019-11-15",
+   "foreign": 2047,
+   "individual": -1451,
+   "trustbank": -1743,
+   "era": "old"
+  },
+  {
+   "from": "2019-11-18",
+   "to": "2019-11-22",
+   "foreign": -160,
+   "individual": 124,
+   "trustbank": -983,
+   "era": "old"
+  },
+  {
+   "from": "2019-11-25",
+   "to": "2019-11-29",
+   "foreign": 4041,
+   "individual": -2109,
+   "trustbank": 12,
+   "era": "old"
+  },
+  {
+   "from": "2019-12-02",
+   "to": "2019-12-06",
+   "foreign": -2661,
+   "individual": -464,
+   "trustbank": 2799,
+   "era": "old"
+  },
+  {
+   "from": "2019-12-09",
+   "to": "2019-12-13",
+   "foreign": 2852,
+   "individual": -3712,
+   "trustbank": -59,
+   "era": "old"
+  },
+  {
+   "from": "2019-12-16",
+   "to": "2019-12-20",
+   "foreign": 178,
+   "individual": -704,
+   "trustbank": -841,
+   "era": "old"
+  },
+  {
+   "from": "2019-12-23",
+   "to": "2019-12-27",
+   "foreign": 1553,
+   "individual": -1192,
+   "trustbank": -730,
+   "era": "old"
+  },
+  {
+   "from": "2019-12-30",
+   "to": "2019-12-30",
+   "foreign": -727,
+   "individual": 802,
+   "trustbank": -1,
+   "era": "old"
+  },
+  {
+   "from": "2020-01-06",
+   "to": "2020-01-10",
+   "foreign": -454,
+   "individual": -89,
+   "trustbank": -173,
+   "era": "old"
+  },
+  {
+   "from": "2020-01-13",
+   "to": "2020-01-17",
+   "foreign": 752,
+   "individual": 1634,
+   "trustbank": -491,
+   "era": "old"
+  },
+  {
+   "from": "2020-01-20",
+   "to": "2020-01-24",
+   "foreign": -715,
+   "individual": 1953,
+   "trustbank": -482,
+   "era": "old"
+  },
+  {
+   "from": "2020-01-27",
+   "to": "2020-01-31",
+   "foreign": -2401,
+   "individual": 3165,
+   "trustbank": -449,
+   "era": "old"
+  },
+  {
+   "from": "2020-02-03",
+   "to": "2020-02-07",
+   "foreign": 2820,
+   "individual": -3188,
+   "trustbank": -1314,
+   "era": "old"
+  },
+  {
+   "from": "2020-02-10",
+   "to": "2020-02-14",
+   "foreign": -496,
+   "individual": 580,
+   "trustbank": -468,
+   "era": "old"
+  },
+  {
+   "from": "2020-02-17",
+   "to": "2020-02-21",
+   "foreign": -353,
+   "individual": 974,
+   "trustbank": -1385,
+   "era": "old"
+  },
+  {
+   "from": "2020-02-24",
+   "to": "2020-02-28",
+   "foreign": -3648,
+   "individual": 3164,
+   "trustbank": -115,
+   "era": "old"
+  },
+  {
+   "from": "2020-03-02",
+   "to": "2020-03-06",
+   "foreign": -1535,
+   "individual": 5553,
+   "trustbank": 236,
+   "era": "old"
+  },
+  {
+   "from": "2020-03-09",
+   "to": "2020-03-13",
+   "foreign": -6795,
+   "individual": 1709,
+   "trustbank": 286,
+   "era": "old"
+  },
+  {
+   "from": "2020-03-16",
+   "to": "2020-03-19",
+   "foreign": -4134,
+   "individual": 2424,
+   "trustbank": 2459,
+   "era": "old"
+  },
+  {
+   "from": "2020-03-23",
+   "to": "2020-03-27",
+   "foreign": -9518,
+   "individual": -1232,
+   "trustbank": 4451,
+   "era": "old"
+  },
+  {
+   "from": "2020-03-30",
+   "to": "2020-04-03",
+   "foreign": -654,
+   "individual": 256,
+   "trustbank": 2791,
+   "era": "old"
+  },
+  {
+   "from": "2020-04-06",
+   "to": "2020-04-10",
+   "foreign": 544,
+   "individual": -1585,
+   "trustbank": 2682,
+   "era": "old"
+  },
+  {
+   "from": "2020-04-13",
+   "to": "2020-04-17",
+   "foreign": -3019,
+   "individual": -44,
+   "trustbank": 1250,
+   "era": "old"
+  },
+  {
+   "from": "2020-04-20",
+   "to": "2020-04-24",
+   "foreign": -3484,
+   "individual": 1867,
+   "trustbank": 24,
+   "era": "old"
+  },
+  {
+   "from": "2020-04-27",
+   "to": "2020-05-01",
+   "foreign": -1483,
+   "individual": 66,
+   "trustbank": 113,
+   "era": "old"
+  },
+  {
+   "from": "2020-05-04",
+   "to": "2020-05-08",
+   "foreign": -1206,
+   "individual": 171,
+   "trustbank": 92,
+   "era": "old"
+  },
+  {
+   "from": "2020-05-11",
+   "to": "2020-05-15",
+   "foreign": -1297,
+   "individual": 1882,
+   "trustbank": -429,
+   "era": "old"
+  },
+  {
+   "from": "2020-05-18",
+   "to": "2020-05-22",
+   "foreign": 773,
+   "individual": -800,
+   "trustbank": -497,
+   "era": "old"
+  },
+  {
+   "from": "2020-05-25",
+   "to": "2020-05-29",
+   "foreign": -216,
+   "individual": -3316,
+   "trustbank": -185,
+   "era": "old"
+  },
+  {
+   "from": "2020-06-01",
+   "to": "2020-06-05",
+   "foreign": 2614,
+   "individual": -2980,
+   "trustbank": -24,
+   "era": "old"
+  },
+  {
+   "from": "2020-06-08",
+   "to": "2020-06-12",
+   "foreign": -2848,
+   "individual": 949,
+   "trustbank": 745,
+   "era": "old"
+  },
+  {
+   "from": "2020-06-15",
+   "to": "2020-06-19",
+   "foreign": -3332,
+   "individual": 316,
+   "trustbank": 677,
+   "era": "old"
+  },
+  {
+   "from": "2020-06-22",
+   "to": "2020-06-26",
+   "foreign": -4851,
+   "individual": 1625,
+   "trustbank": 1921,
+   "era": "old"
+  },
+  {
+   "from": "2020-06-29",
+   "to": "2020-07-03",
+   "foreign": -1086,
+   "individual": 786,
+   "trustbank": 2733,
+   "era": "old"
+  },
+  {
+   "from": "2020-07-06",
+   "to": "2020-07-10",
+   "foreign": 1110,
+   "individual": 1065,
+   "trustbank": 812,
+   "era": "old"
+  },
+  {
+   "from": "2020-07-13",
+   "to": "2020-07-17",
+   "foreign": -620,
+   "individual": -1931,
+   "trustbank": 751,
+   "era": "old"
+  },
+  {
+   "from": "2020-07-20",
+   "to": "2020-07-22",
+   "foreign": 850,
+   "individual": -248,
+   "trustbank": -136,
+   "era": "old"
+  },
+  {
+   "from": "2020-07-27",
+   "to": "2020-07-31",
+   "foreign": -4624,
+   "individual": 2832,
+   "trustbank": 283,
+   "era": "old"
+  },
+  {
+   "from": "2020-08-03",
+   "to": "2020-08-07",
+   "foreign": 1792,
+   "individual": -1219,
+   "trustbank": 57,
+   "era": "old"
+  },
+  {
+   "from": "2020-08-10",
+   "to": "2020-08-14",
+   "foreign": 3664,
+   "individual": -5186,
+   "trustbank": -523,
+   "era": "old"
+  },
+  {
+   "from": "2020-08-17",
+   "to": "2020-08-21",
+   "foreign": -299,
+   "individual": 1009,
+   "trustbank": -819,
+   "era": "old"
+  },
+  {
+   "from": "2020-08-24",
+   "to": "2020-08-28",
+   "foreign": -1597,
+   "individual": 123,
+   "trustbank": -193,
+   "era": "old"
+  },
+  {
+   "from": "2020-08-31",
+   "to": "2020-09-04",
+   "foreign": 126,
+   "individual": 502,
+   "trustbank": 314,
+   "era": "old"
+  },
+  {
+   "from": "2020-09-07",
+   "to": "2020-09-11",
+   "foreign": -4441,
+   "individual": -527,
+   "trustbank": -117,
+   "era": "old"
+  },
+  {
+   "from": "2020-09-14",
+   "to": "2020-09-18",
+   "foreign": -5275,
+   "individual": -445,
+   "trustbank": 1163,
+   "era": "old"
+  },
+  {
+   "from": "2020-09-21",
+   "to": "2020-09-25",
+   "foreign": -1848,
+   "individual": 1184,
+   "trustbank": -30,
+   "era": "old"
+  },
+  {
+   "from": "2020-09-28",
+   "to": "2020-10-02",
+   "foreign": -571,
+   "individual": 393,
+   "trustbank": -102,
+   "era": "old"
+  },
+  {
+   "from": "2020-10-05",
+   "to": "2020-10-09",
+   "foreign": 4171,
+   "individual": -2578,
+   "trustbank": -181,
+   "era": "old"
+  },
+  {
+   "from": "2020-10-12",
+   "to": "2020-10-16",
+   "foreign": 696,
+   "individual": 1555,
+   "trustbank": -88,
+   "era": "old"
+  },
+  {
+   "from": "2020-10-19",
+   "to": "2020-10-23",
+   "foreign": -27,
+   "individual": 23,
+   "trustbank": 21,
+   "era": "old"
+  },
+  {
+   "from": "2020-10-26",
+   "to": "2020-10-30",
+   "foreign": -1061,
+   "individual": 876,
+   "trustbank": -231,
+   "era": "old"
+  },
+  {
+   "from": "2020-11-02",
+   "to": "2020-11-06",
+   "foreign": 3573,
+   "individual": -4311,
+   "trustbank": -104,
+   "era": "old"
+  },
+  {
+   "from": "2020-11-09",
+   "to": "2020-11-13",
+   "foreign": 3842,
+   "individual": -6884,
+   "trustbank": -1334,
+   "era": "old"
+  },
+  {
+   "from": "2020-11-16",
+   "to": "2020-11-20",
+   "foreign": 3332,
+   "individual": -2342,
+   "trustbank": -1507,
+   "era": "old"
+  },
+  {
+   "from": "2020-11-23",
+   "to": "2020-11-27",
+   "foreign": 4366,
+   "individual": -4966,
+   "trustbank": 600,
+   "era": "old"
+  },
+  {
+   "from": "2020-11-30",
+   "to": "2020-12-04",
+   "foreign": 1599,
+   "individual": 1351,
+   "trustbank": 1231,
+   "era": "old"
+  },
+  {
+   "from": "2020-12-07",
+   "to": "2020-12-11",
+   "foreign": 2558,
+   "individual": -912,
+   "trustbank": 1747,
+   "era": "old"
+  },
+  {
+   "from": "2020-12-14",
+   "to": "2020-12-18",
+   "foreign": 1655,
+   "individual": -1238,
+   "trustbank": 62,
+   "era": "old"
+  },
+  {
+   "from": "2020-12-21",
+   "to": "2020-12-25",
+   "foreign": -500,
+   "individual": -197,
+   "trustbank": 365,
+   "era": "old"
+  },
+  {
+   "from": "2020-12-28",
+   "to": "2020-12-30",
+   "foreign": -74,
+   "individual": -2541,
+   "trustbank": -95,
+   "era": "old"
+  },
+  {
+   "from": "2021-01-04",
+   "to": "2021-01-08",
+   "foreign": 3648,
+   "individual": -2823,
+   "trustbank": 528,
+   "era": "old"
+  },
+  {
+   "from": "2021-01-11",
+   "to": "2021-01-15",
+   "foreign": 2614,
+   "individual": 538,
+   "trustbank": -2170,
+   "era": "old"
+  },
+  {
+   "from": "2021-01-18",
+   "to": "2021-01-22",
+   "foreign": -1340,
+   "individual": 1721,
+   "trustbank": -1718,
+   "era": "old"
+  },
+  {
+   "from": "2021-01-25",
+   "to": "2021-01-29",
+   "foreign": -749,
+   "individual": 4301,
+   "trustbank": -1029,
+   "era": "old"
+  },
+  {
+   "from": "2021-02-01",
+   "to": "2021-02-05",
+   "foreign": 4216,
+   "individual": -4042,
+   "trustbank": -1538,
+   "era": "old"
+  },
+  {
+   "from": "2021-02-08",
+   "to": "2021-02-12",
+   "foreign": 3444,
+   "individual": -4306,
+   "trustbank": -741,
+   "era": "old"
+  },
+  {
+   "from": "2021-02-15",
+   "to": "2021-02-19",
+   "foreign": -384,
+   "individual": -28,
+   "trustbank": -1929,
+   "era": "old"
+  },
+  {
+   "from": "2021-02-22",
+   "to": "2021-02-26",
+   "foreign": -3812,
+   "individual": 4726,
+   "trustbank": -2098,
+   "era": "old"
+  },
+  {
+   "from": "2021-03-01",
+   "to": "2021-03-05",
+   "foreign": 417,
+   "individual": 721,
+   "trustbank": -4524,
+   "era": "old"
+  },
+  {
+   "from": "2021-03-08",
+   "to": "2021-03-12",
+   "foreign": 3008,
+   "individual": -3052,
+   "trustbank": -2718,
+   "era": "old"
+  },
+  {
+   "from": "2021-03-15",
+   "to": "2021-03-19",
+   "foreign": 4088,
+   "individual": -3187,
+   "trustbank": -2223,
+   "era": "old"
+  },
+  {
+   "from": "2021-03-22",
+   "to": "2021-03-26",
+   "foreign": -3731,
+   "individual": 3070,
+   "trustbank": -5019,
+   "era": "old"
+  },
+  {
+   "from": "2021-03-29",
+   "to": "2021-04-02",
+   "foreign": 896,
+   "individual": -581,
+   "trustbank": -1637,
+   "era": "old"
+  },
+  {
+   "from": "2021-04-05",
+   "to": "2021-04-09",
+   "foreign": 4355,
+   "individual": 1231,
+   "trustbank": -2265,
+   "era": "old"
+  },
+  {
+   "from": "2021-04-12",
+   "to": "2021-04-16",
+   "foreign": -312,
+   "individual": 295,
+   "trustbank": 417,
+   "era": "old"
+  },
+  {
+   "from": "2021-04-19",
+   "to": "2021-04-23",
+   "foreign": -172,
+   "individual": 4048,
+   "trustbank": 257,
+   "era": "old"
+  },
+  {
+   "from": "2021-04-26",
+   "to": "2021-04-30",
+   "foreign": 185,
+   "individual": 1372,
+   "trustbank": 157,
+   "era": "old"
+  },
+  {
+   "from": "2021-05-03",
+   "to": "2021-05-07",
+   "foreign": 2153,
+   "individual": -1515,
+   "trustbank": 478,
+   "era": "old"
+  },
+  {
+   "from": "2021-05-10",
+   "to": "2021-05-14",
+   "foreign": -4215,
+   "individual": 4453,
+   "trustbank": 423,
+   "era": "old"
+  },
+  {
+   "from": "2021-05-17",
+   "to": "2021-05-21",
+   "foreign": -2269,
+   "individual": -1172,
+   "trustbank": 2757,
+   "era": "old"
+  },
+  {
+   "from": "2021-05-24",
+   "to": "2021-05-28",
+   "foreign": 3738,
+   "individual": -3357,
+   "trustbank": -283,
+   "era": "old"
+  },
+  {
+   "from": "2021-05-31",
+   "to": "2021-06-04",
+   "foreign": 606,
+   "individual": 945,
+   "trustbank": -49,
+   "era": "old"
+  },
+  {
+   "from": "2021-06-07",
+   "to": "2021-06-11",
+   "foreign": -2260,
+   "individual": 1483,
+   "trustbank": 427,
+   "era": "old"
+  },
+  {
+   "from": "2021-06-14",
+   "to": "2021-06-18",
+   "foreign": 1395,
+   "individual": 1110,
+   "trustbank": -686,
+   "era": "old"
+  },
+  {
+   "from": "2021-06-21",
+   "to": "2021-06-25",
+   "foreign": -1113,
+   "individual": -252,
+   "trustbank": 887,
+   "era": "old"
+  },
+  {
+   "from": "2021-06-28",
+   "to": "2021-07-02",
+   "foreign": -2736,
+   "individual": 1611,
+   "trustbank": 1578,
+   "era": "old"
+  },
+  {
+   "from": "2021-07-05",
+   "to": "2021-07-09",
+   "foreign": 138,
+   "individual": 4669,
+   "trustbank": -3,
+   "era": "old"
+  },
+  {
+   "from": "2021-07-12",
+   "to": "2021-07-16",
+   "foreign": 1102,
+   "individual": -2168,
+   "trustbank": 266,
+   "era": "old"
+  },
+  {
+   "from": "2021-07-19",
+   "to": "2021-07-21",
+   "foreign": -3134,
+   "individual": 2426,
+   "trustbank": 136,
+   "era": "old"
+  },
+  {
+   "from": "2021-07-26",
+   "to": "2021-07-30",
+   "foreign": -579,
+   "individual": -3,
+   "trustbank": 18,
+   "era": "old"
+  },
+  {
+   "from": "2021-08-02",
+   "to": "2021-08-06",
+   "foreign": 710,
+   "individual": -1904,
+   "trustbank": 510,
+   "era": "old"
+  },
+  {
+   "from": "2021-08-09",
+   "to": "2021-08-13",
+   "foreign": 1577,
+   "individual": -1580,
+   "trustbank": -444,
+   "era": "old"
+  },
+  {
+   "from": "2021-08-16",
+   "to": "2021-08-20",
+   "foreign": -3633,
+   "individual": 4058,
+   "trustbank": 112,
+   "era": "old"
+  },
+  {
+   "from": "2021-08-23",
+   "to": "2021-08-27",
+   "foreign": -45,
+   "individual": -2483,
+   "trustbank": 798,
+   "era": "old"
+  },
+  {
+   "from": "2021-08-30",
+   "to": "2021-09-03",
+   "foreign": 3670,
+   "individual": -4918,
+   "trustbank": -292,
+   "era": "old"
+  },
+  {
+   "from": "2021-09-06",
+   "to": "2021-09-10",
+   "foreign": 3011,
+   "individual": -5807,
+   "trustbank": -2120,
+   "era": "old"
+  },
+  {
+   "from": "2021-09-13",
+   "to": "2021-09-17",
+   "foreign": -499,
+   "individual": -521,
+   "trustbank": -3775,
+   "era": "old"
+  },
+  {
+   "from": "2021-09-20",
+   "to": "2021-09-24",
+   "foreign": -2692,
+   "individual": -162,
+   "trustbank": -2502,
+   "era": "old"
+  },
+  {
+   "from": "2021-09-27",
+   "to": "2021-10-01",
+   "foreign": -4890,
+   "individual": 5516,
+   "trustbank": -3476,
+   "era": "old"
+  },
+  {
+   "from": "2021-10-04",
+   "to": "2021-10-08",
+   "foreign": 4654,
+   "individual": 2160,
+   "trustbank": -1611,
+   "era": "old"
+  },
+  {
+   "from": "2021-10-11",
+   "to": "2021-10-15",
+   "foreign": 4788,
+   "individual": -1606,
+   "trustbank": -2569,
+   "era": "old"
+  },
+  {
+   "from": "2021-10-18",
+   "to": "2021-10-22",
+   "foreign": -1089,
+   "individual": 416,
+   "trustbank": 547,
+   "era": "old"
+  },
+  {
+   "from": "2021-10-25",
+   "to": "2021-10-29",
+   "foreign": -1415,
+   "individual": 187,
+   "trustbank": 646,
+   "era": "old"
+  },
+  {
+   "from": "2021-11-01",
+   "to": "2021-11-05",
+   "foreign": 1454,
+   "individual": -3387,
+   "trustbank": 2182,
+   "era": "old"
+  },
+  {
+   "from": "2021-11-08",
+   "to": "2021-11-12",
+   "foreign": -373,
+   "individual": -542,
+   "trustbank": 653,
+   "era": "old"
+  },
+  {
+   "from": "2021-11-15",
+   "to": "2021-11-19",
+   "foreign": -1475,
+   "individual": 1281,
+   "trustbank": 1311,
+   "era": "old"
+  },
+  {
+   "from": "2021-11-22",
+   "to": "2021-11-26",
+   "foreign": -2483,
+   "individual": 4099,
+   "trustbank": 73,
+   "era": "old"
+  },
+  {
+   "from": "2021-11-29",
+   "to": "2021-12-03",
+   "foreign": -1211,
+   "individual": 2039,
+   "trustbank": 3444,
+   "era": "old"
+  },
+  {
+   "from": "2021-12-06",
+   "to": "2021-12-10",
+   "foreign": -2740,
+   "individual": -977,
+   "trustbank": 2541,
+   "era": "old"
+  },
+  {
+   "from": "2021-12-13",
+   "to": "2021-12-17",
+   "foreign": -4659,
+   "individual": -1799,
+   "trustbank": 3692,
+   "era": "old"
+  },
+  {
+   "from": "2021-12-20",
+   "to": "2021-12-24",
+   "foreign": 540,
+   "individual": -2278,
+   "trustbank": 218,
+   "era": "old"
+  },
+  {
+   "from": "2021-12-27",
+   "to": "2021-12-30",
+   "foreign": 1022,
+   "individual": -1175,
+   "trustbank": -456,
+   "era": "old"
+  },
+  {
+   "from": "2022-01-03",
+   "to": "2022-01-07",
+   "foreign": 2990,
+   "individual": -4,
+   "trustbank": -573,
+   "era": "old"
+  },
+  {
+   "from": "2022-01-10",
+   "to": "2022-01-14",
+   "foreign": -727,
+   "individual": 1728,
+   "trustbank": -2248,
+   "era": "old"
+  },
+  {
+   "from": "2022-01-17",
+   "to": "2022-01-21",
+   "foreign": -3046,
+   "individual": 3194,
+   "trustbank": -446,
+   "era": "old"
+  },
+  {
+   "from": "2022-01-24",
+   "to": "2022-01-28",
+   "foreign": -2010,
+   "individual": 1818,
+   "trustbank": 729,
+   "era": "old"
+  },
+  {
+   "from": "2022-01-31",
+   "to": "2022-02-04",
+   "foreign": -1705,
+   "individual": -469,
+   "trustbank": 2279,
+   "era": "old"
+  },
+  {
+   "from": "2022-02-07",
+   "to": "2022-02-10",
+   "foreign": -155,
+   "individual": -1707,
+   "trustbank": 1327,
+   "era": "old"
+  },
+  {
+   "from": "2022-02-14",
+   "to": "2022-02-18",
+   "foreign": 24,
+   "individual": 25,
+   "trustbank": 1894,
+   "era": "old"
+  },
+  {
+   "from": "2022-02-21",
+   "to": "2022-02-25",
+   "foreign": -2683,
+   "individual": 1654,
+   "trustbank": 504,
+   "era": "old"
+  },
+  {
+   "from": "2022-02-28",
+   "to": "2022-03-04",
+   "foreign": -2692,
+   "individual": 2943,
+   "trustbank": -1407,
+   "era": "old"
+  },
+  {
+   "from": "2022-03-07",
+   "to": "2022-03-11",
+   "foreign": -9937,
+   "individual": 1858,
+   "trustbank": -287,
+   "era": "old"
+  },
+  {
+   "from": "2022-03-14",
+   "to": "2022-03-18",
+   "foreign": -2003,
+   "individual": -3552,
+   "trustbank": 46,
+   "era": "old"
+  },
+  {
+   "from": "2022-03-21",
+   "to": "2022-03-25",
+   "foreign": -1647,
+   "individual": -3470,
+   "trustbank": 278,
+   "era": "old"
+  },
+  {
+   "from": "2022-03-28",
+   "to": "2022-04-01",
+   "foreign": 3601,
+   "individual": 918,
+   "trustbank": -1788,
+   "era": "old"
+  },
+  {
+   "from": "2022-04-04",
+   "to": "2022-04-08",
+   "foreign": 6856,
+   "individual": 2951,
+   "trustbank": -4930,
+   "era": "new"
+  },
+  {
+   "from": "2022-04-11",
+   "to": "2022-04-15",
+   "foreign": 863,
+   "individual": 178,
+   "trustbank": -2699,
+   "era": "new"
+  },
+  {
+   "from": "2022-04-18",
+   "to": "2022-04-22",
+   "foreign": 2381,
+   "individual": 403,
+   "trustbank": -114,
+   "era": "new"
+  },
+  {
+   "from": "2022-04-25",
+   "to": "2022-04-28",
+   "foreign": 1514,
+   "individual": 562,
+   "trustbank": 609,
+   "era": "new"
+  },
+  {
+   "from": "2022-05-02",
+   "to": "2022-05-06",
+   "foreign": 514,
+   "individual": -1295,
+   "trustbank": 885,
+   "era": "new"
+  },
+  {
+   "from": "2022-05-09",
+   "to": "2022-05-13",
+   "foreign": -3534,
+   "individual": 2832,
+   "trustbank": 818,
+   "era": "new"
+  },
+  {
+   "from": "2022-05-16",
+   "to": "2022-05-20",
+   "foreign": 337,
+   "individual": -390,
+   "trustbank": 567,
+   "era": "new"
+  },
+  {
+   "from": "2022-05-23",
+   "to": "2022-05-27",
+   "foreign": -369,
+   "individual": -1496,
+   "trustbank": -85,
+   "era": "new"
+  },
+  {
+   "from": "2022-05-30",
+   "to": "2022-06-03",
+   "foreign": -411,
+   "individual": -2081,
+   "trustbank": -864,
+   "era": "new"
+  },
+  {
+   "from": "2022-06-06",
+   "to": "2022-06-10",
+   "foreign": 1823,
+   "individual": -15,
+   "trustbank": -119,
+   "era": "new"
+  },
+  {
+   "from": "2022-06-13",
+   "to": "2022-06-17",
+   "foreign": -8045,
+   "individual": 7069,
+   "trustbank": 644,
+   "era": "new"
+  },
+  {
+   "from": "2022-06-20",
+   "to": "2022-06-24",
+   "foreign": -1656,
+   "individual": -1018,
+   "trustbank": 746,
+   "era": "new"
+  },
+  {
+   "from": "2022-06-27",
+   "to": "2022-07-01",
+   "foreign": -3673,
+   "individual": 1518,
+   "trustbank": 3522,
+   "era": "new"
+  },
+  {
+   "from": "2022-07-04",
+   "to": "2022-07-08",
+   "foreign": 4308,
+   "individual": -3049,
+   "trustbank": 1363,
+   "era": "new"
+  },
+  {
+   "from": "2022-07-11",
+   "to": "2022-07-15",
+   "foreign": -1443,
+   "individual": -109,
+   "trustbank": 1158,
+   "era": "new"
+  },
+  {
+   "from": "2022-07-18",
+   "to": "2022-07-22",
+   "foreign": 1920,
+   "individual": -5699,
+   "trustbank": 829,
+   "era": "new"
+  },
+  {
+   "from": "2022-07-25",
+   "to": "2022-07-29",
+   "foreign": -3081,
+   "individual": 140,
+   "trustbank": 117,
+   "era": "new"
+  },
+  {
+   "from": "2022-08-01",
+   "to": "2022-08-05",
+   "foreign": -820,
+   "individual": -60,
+   "trustbank": -1649,
+   "era": "new"
+  },
+  {
+   "from": "2022-08-08",
+   "to": "2022-08-12",
+   "foreign": 1230,
+   "individual": -2749,
+   "trustbank": -97,
+   "era": "new"
+  },
+  {
+   "from": "2022-08-15",
+   "to": "2022-08-19",
+   "foreign": -222,
+   "individual": -1872,
+   "trustbank": 52,
+   "era": "new"
+  },
+  {
+   "from": "2022-08-22",
+   "to": "2022-08-26",
+   "foreign": -1212,
+   "individual": 1839,
+   "trustbank": -20,
+   "era": "new"
+  },
+  {
+   "from": "2022-08-29",
+   "to": "2022-09-02",
+   "foreign": -4273,
+   "individual": 6910,
+   "trustbank": -587,
+   "era": "new"
+  },
+  {
+   "from": "2022-09-05",
+   "to": "2022-09-09",
+   "foreign": -213,
+   "individual": -1091,
+   "trustbank": -2651,
+   "era": "new"
+  },
+  {
+   "from": "2022-09-12",
+   "to": "2022-09-16",
+   "foreign": -670,
+   "individual": 2783,
+   "trustbank": -1195,
+   "era": "new"
+  },
+  {
+   "from": "2022-09-19",
+   "to": "2022-09-22",
+   "foreign": -1755,
+   "individual": 2035,
+   "trustbank": -818,
+   "era": "new"
+  },
+  {
+   "from": "2022-09-26",
+   "to": "2022-09-30",
+   "foreign": -5640,
+   "individual": 6202,
+   "trustbank": 642,
+   "era": "new"
+  },
+  {
+   "from": "2022-10-03",
+   "to": "2022-10-07",
+   "foreign": 4037,
+   "individual": -4546,
+   "trustbank": 2302,
+   "era": "new"
+  },
+  {
+   "from": "2022-10-10",
+   "to": "2022-10-14",
+   "foreign": 1525,
+   "individual": -137,
+   "trustbank": 1459,
+   "era": "new"
+  },
+  {
+   "from": "2022-10-17",
+   "to": "2022-10-21",
+   "foreign": -4931,
+   "individual": 1482,
+   "trustbank": 1330,
+   "era": "new"
+  },
+  {
+   "from": "2022-10-24",
+   "to": "2022-10-28",
+   "foreign": 836,
+   "individual": -1042,
+   "trustbank": 1101,
+   "era": "new"
+  },
+  {
+   "from": "2022-10-31",
+   "to": "2022-11-04",
+   "foreign": 3905,
+   "individual": -934,
+   "trustbank": -98,
+   "era": "new"
+  },
+  {
+   "from": "2022-11-07",
+   "to": "2022-11-11",
+   "foreign": 5210,
+   "individual": -6505,
+   "trustbank": 1072,
+   "era": "new"
+  },
+  {
+   "from": "2022-11-14",
+   "to": "2022-11-18",
+   "foreign": -170,
+   "individual": -186,
+   "trustbank": -670,
+   "era": "new"
+  },
+  {
+   "from": "2022-11-21",
+   "to": "2022-11-25",
+   "foreign": 4030,
+   "individual": -5368,
+   "trustbank": -201,
+   "era": "new"
+  },
+  {
+   "from": "2022-11-28",
+   "to": "2022-12-02",
+   "foreign": -102,
+   "individual": 5245,
+   "trustbank": -3628,
+   "era": "new"
+  },
+  {
+   "from": "2022-12-05",
+   "to": "2022-12-09",
+   "foreign": -798,
+   "individual": 572,
+   "trustbank": -1478,
+   "era": "new"
+  },
+  {
+   "from": "2022-12-12",
+   "to": "2022-12-16",
+   "foreign": -165,
+   "individual": 1288,
+   "trustbank": -1004,
+   "era": "new"
+  },
+  {
+   "from": "2022-12-19",
+   "to": "2022-12-23",
+   "foreign": -2418,
+   "individual": 2789,
+   "trustbank": -420,
+   "era": "new"
+  },
+  {
+   "from": "2022-12-26",
+   "to": "2022-12-30",
+   "foreign": 1782,
+   "individual": -307,
+   "trustbank": -63,
+   "era": "new"
+  },
+  {
+   "from": "2023-01-02",
+   "to": "2023-01-06",
+   "foreign": -641,
+   "individual": 2411,
+   "trustbank": -50,
+   "era": "new"
+  },
+  {
+   "from": "2023-01-09",
+   "to": "2023-01-13",
+   "foreign": 1705,
+   "individual": -598,
+   "trustbank": -1197,
+   "era": "new"
+  },
+  {
+   "from": "2023-01-16",
+   "to": "2023-01-20",
+   "foreign": 988,
+   "individual": -129,
+   "trustbank": -1201,
+   "era": "new"
+  },
+  {
+   "from": "2023-01-23",
+   "to": "2023-01-27",
+   "foreign": 3038,
+   "individual": -3991,
+   "trustbank": -1934,
+   "era": "new"
+  },
+  {
+   "from": "2023-01-30",
+   "to": "2023-02-03",
+   "foreign": -68,
+   "individual": 683,
+   "trustbank": -1739,
+   "era": "new"
+  },
+  {
+   "from": "2023-02-06",
+   "to": "2023-02-10",
+   "foreign": 1865,
+   "individual": -704,
+   "trustbank": -1759,
+   "era": "new"
+  },
+  {
+   "from": "2023-02-13",
+   "to": "2023-02-17",
+   "foreign": 2331,
+   "individual": -688,
+   "trustbank": -1519,
+   "era": "new"
+  },
+  {
+   "from": "2023-02-20",
+   "to": "2023-02-24",
+   "foreign": -2264,
+   "individual": 887,
+   "trustbank": -1339,
+   "era": "new"
+  },
+  {
+   "from": "2023-02-27",
+   "to": "2023-03-03",
+   "foreign": -995,
+   "individual": -2082,
+   "trustbank": -515,
+   "era": "new"
+  },
+  {
+   "from": "2023-03-06",
+   "to": "2023-03-10",
+   "foreign": -11276,
+   "individual": -2010,
+   "trustbank": -1493,
+   "era": "new"
+  },
+  {
+   "from": "2023-03-13",
+   "to": "2023-03-17",
+   "foreign": -5686,
+   "individual": 7542,
+   "trustbank": -2023,
+   "era": "new"
+  },
+  {
+   "from": "2023-03-20",
+   "to": "2023-03-24",
+   "foreign": -4617,
+   "individual": 2217,
+   "trustbank": 206,
+   "era": "new"
+  },
+  {
+   "from": "2023-03-27",
+   "to": "2023-03-31",
+   "foreign": 71,
+   "individual": -2721,
+   "trustbank": -180,
+   "era": "new"
+  },
+  {
+   "from": "2023-04-03",
+   "to": "2023-04-07",
+   "foreign": 6796,
+   "individual": 2103,
+   "trustbank": -4032,
+   "era": "new"
+  },
+  {
+   "from": "2023-04-10",
+   "to": "2023-04-14",
+   "foreign": 10495,
+   "individual": -4231,
+   "trustbank": -2170,
+   "era": "new"
+  },
+  {
+   "from": "2023-04-17",
+   "to": "2023-04-21",
+   "foreign": 2761,
+   "individual": -2578,
+   "trustbank": -623,
+   "era": "new"
+  },
+  {
+   "from": "2023-04-24",
+   "to": "2023-04-28",
+   "foreign": 1459,
+   "individual": -1049,
+   "trustbank": -994,
+   "era": "new"
+  },
+  {
+   "from": "2023-05-01",
+   "to": "2023-05-02",
+   "foreign": 1604,
+   "individual": -2815,
+   "trustbank": -346,
+   "era": "new"
+  },
+  {
+   "from": "2023-05-08",
+   "to": "2023-05-12",
+   "foreign": 5659,
+   "individual": -3055,
+   "trustbank": -1473,
+   "era": "new"
+  },
+  {
+   "from": "2023-05-15",
+   "to": "2023-05-19",
+   "foreign": 7477,
+   "individual": -9270,
+   "trustbank": -937,
+   "era": "new"
+  },
+  {
+   "from": "2023-05-22",
+   "to": "2023-05-26",
+   "foreign": 3817,
+   "individual": -444,
+   "trustbank": -2421,
+   "era": "new"
+  },
+  {
+   "from": "2023-05-29",
+   "to": "2023-06-02",
+   "foreign": 5353,
+   "individual": 387,
+   "trustbank": -7344,
+   "era": "new"
+  },
+  {
+   "from": "2023-06-05",
+   "to": "2023-06-09",
+   "foreign": 9856,
+   "individual": -4821,
+   "trustbank": -536,
+   "era": "new"
+  },
+  {
+   "from": "2023-06-12",
+   "to": "2023-06-16",
+   "foreign": 6415,
+   "individual": -5777,
+   "trustbank": -821,
+   "era": "new"
+  },
+  {
+   "from": "2023-06-19",
+   "to": "2023-06-23",
+   "foreign": -3605,
+   "individual": 3446,
+   "trustbank": -4075,
+   "era": "new"
+  },
+  {
+   "from": "2023-06-26",
+   "to": "2023-06-30",
+   "foreign": 3042,
+   "individual": -1027,
+   "trustbank": -1331,
+   "era": "new"
+  },
+  {
+   "from": "2023-07-03",
+   "to": "2023-07-07",
+   "foreign": 314,
+   "individual": 3688,
+   "trustbank": -387,
+   "era": "new"
+  },
+  {
+   "from": "2023-07-10",
+   "to": "2023-07-14",
+   "foreign": 2794,
+   "individual": 1802,
+   "trustbank": -2604,
+   "era": "new"
+  },
+  {
+   "from": "2023-07-17",
+   "to": "2023-07-21",
+   "foreign": 197,
+   "individual": 127,
+   "trustbank": 473,
+   "era": "new"
+  },
+  {
+   "from": "2023-07-24",
+   "to": "2023-07-28",
+   "foreign": 738,
+   "individual": -1303,
+   "trustbank": -944,
+   "era": "new"
+  },
+  {
+   "from": "2023-07-31",
+   "to": "2023-08-04",
+   "foreign": 188,
+   "individual": 2661,
+   "trustbank": -1823,
+   "era": "new"
+  },
+  {
+   "from": "2023-08-07",
+   "to": "2023-08-10",
+   "foreign": 1799,
+   "individual": -2396,
+   "trustbank": -2720,
+   "era": "new"
+  },
+  {
+   "from": "2023-08-14",
+   "to": "2023-08-18",
+   "foreign": -7415,
+   "individual": 3557,
+   "trustbank": -1068,
+   "era": "new"
+  },
+  {
+   "from": "2023-08-21",
+   "to": "2023-08-25",
+   "foreign": -2047,
+   "individual": -1161,
+   "trustbank": 219,
+   "era": "new"
+  },
+  {
+   "from": "2023-08-28",
+   "to": "2023-09-01",
+   "foreign": 3393,
+   "individual": -9227,
+   "trustbank": 617,
+   "era": "new"
+  },
+  {
+   "from": "2023-09-04",
+   "to": "2023-09-08",
+   "foreign": -7625,
+   "individual": 1933,
+   "trustbank": -1853,
+   "era": "new"
+  },
+  {
+   "from": "2023-09-11",
+   "to": "2023-09-15",
+   "foreign": -2781,
+   "individual": -3460,
+   "trustbank": -1721,
+   "era": "new"
+  },
+  {
+   "from": "2023-09-18",
+   "to": "2023-09-22",
+   "foreign": -9132,
+   "individual": 6612,
+   "trustbank": -3401,
+   "era": "new"
+  },
+  {
+   "from": "2023-09-25",
+   "to": "2023-09-29",
+   "foreign": -776,
+   "individual": 5738,
+   "trustbank": -3678,
+   "era": "new"
+  },
+  {
+   "from": "2023-10-02",
+   "to": "2023-10-06",
+   "foreign": 5263,
+   "individual": 4011,
+   "trustbank": -577,
+   "era": "new"
+  },
+  {
+   "from": "2023-10-09",
+   "to": "2023-10-13",
+   "foreign": 4558,
+   "individual": -1506,
+   "trustbank": -607,
+   "era": "new"
+  },
+  {
+   "from": "2023-10-16",
+   "to": "2023-10-20",
+   "foreign": -766,
+   "individual": 3237,
+   "trustbank": -1344,
+   "era": "new"
+  },
+  {
+   "from": "2023-10-23",
+   "to": "2023-10-27",
+   "foreign": 594,
+   "individual": 1424,
+   "trustbank": 888,
+   "era": "new"
+  },
+  {
+   "from": "2023-10-30",
+   "to": "2023-11-02",
+   "foreign": 577,
+   "individual": -3868,
+   "trustbank": 2135,
+   "era": "new"
+  },
+  {
+   "from": "2023-11-06",
+   "to": "2023-11-10",
+   "foreign": 784,
+   "individual": -2545,
+   "trustbank": -547,
+   "era": "new"
+  },
+  {
+   "from": "2023-11-13",
+   "to": "2023-11-17",
+   "foreign": 3632,
+   "individual": -5722,
+   "trustbank": -239,
+   "era": "new"
+  },
+  {
+   "from": "2023-11-20",
+   "to": "2023-11-24",
+   "foreign": -10,
+   "individual": -894,
+   "trustbank": 2371,
+   "era": "new"
+  },
+  {
+   "from": "2023-11-27",
+   "to": "2023-12-01",
+   "foreign": -3688,
+   "individual": 456,
+   "trustbank": -112,
+   "era": "new"
+  },
+  {
+   "from": "2023-12-04",
+   "to": "2023-12-08",
+   "foreign": -5869,
+   "individual": 4195,
+   "trustbank": 1271,
+   "era": "new"
+  },
+  {
+   "from": "2023-12-11",
+   "to": "2023-12-15",
+   "foreign": 2380,
+   "individual": -3298,
+   "trustbank": 258,
+   "era": "new"
+  },
+  {
+   "from": "2023-12-18",
+   "to": "2023-12-22",
+   "foreign": 567,
+   "individual": -2105,
+   "trustbank": -2035,
+   "era": "new"
+  },
+  {
+   "from": "2023-12-25",
+   "to": "2023-12-29",
+   "foreign": -2020,
+   "individual": -2834,
+   "trustbank": -891,
+   "era": "new"
+  },
+  {
+   "from": "2024-01-01",
+   "to": "2024-01-05",
+   "foreign": 1406,
+   "individual": -336,
+   "trustbank": 49,
+   "era": "new"
+  },
+  {
+   "from": "2024-01-08",
+   "to": "2024-01-12",
+   "foreign": 9557,
+   "individual": -10695,
+   "trustbank": -105,
+   "era": "new"
+  },
+  {
+   "from": "2024-01-15",
+   "to": "2024-01-19",
+   "foreign": 3841,
+   "individual": -1856,
+   "trustbank": -1915,
+   "era": "new"
+  },
+  {
+   "from": "2024-01-22",
+   "to": "2024-01-26",
+   "foreign": 4105,
+   "individual": 2946,
+   "trustbank": -3693,
+   "era": "new"
+  },
+  {
+   "from": "2024-01-29",
+   "to": "2024-02-02",
+   "foreign": 1784,
+   "individual": 570,
+   "trustbank": -1421,
+   "era": "new"
+  },
+  {
+   "from": "2024-02-05",
+   "to": "2024-02-09",
+   "foreign": 3664,
+   "individual": 2277,
+   "trustbank": -5491,
+   "era": "new"
+  },
+  {
+   "from": "2024-02-12",
+   "to": "2024-02-16",
+   "foreign": 3014,
+   "individual": -3165,
+   "trustbank": -4555,
+   "era": "new"
+  },
+  {
+   "from": "2024-02-19",
+   "to": "2024-02-22",
+   "foreign": -786,
+   "individual": -919,
+   "trustbank": -2236,
+   "era": "new"
+  },
+  {
+   "from": "2024-02-26",
+   "to": "2024-03-01",
+   "foreign": 3835,
+   "individual": -906,
+   "trustbank": -2590,
+   "era": "new"
+  },
+  {
+   "from": "2024-03-04",
+   "to": "2024-03-08",
+   "foreign": 1765,
+   "individual": 3273,
+   "trustbank": -6866,
+   "era": "new"
+  },
+  {
+   "from": "2024-03-11",
+   "to": "2024-03-15",
+   "foreign": -875,
+   "individual": 4941,
+   "trustbank": -6851,
+   "era": "new"
+  },
+  {
+   "from": "2024-03-18",
+   "to": "2024-03-22",
+   "foreign": 961,
+   "individual": -8728,
+   "trustbank": -723,
+   "era": "new"
+  },
+  {
+   "from": "2024-03-25",
+   "to": "2024-03-29",
+   "foreign": -2126,
+   "individual": 4436,
+   "trustbank": -5555,
+   "era": "new"
+  },
+  {
+   "from": "2024-04-01",
+   "to": "2024-04-05",
+   "foreign": 11822,
+   "individual": 6345,
+   "trustbank": -7887,
+   "era": "new"
+  },
+  {
+   "from": "2024-04-08",
+   "to": "2024-04-12",
+   "foreign": 5956,
+   "individual": -2055,
+   "trustbank": 366,
+   "era": "new"
+  },
+  {
+   "from": "2024-04-15",
+   "to": "2024-04-19",
+   "foreign": -5918,
+   "individual": 9086,
+   "trustbank": -53,
+   "era": "new"
+  },
+  {
+   "from": "2024-04-22",
+   "to": "2024-04-26",
+   "foreign": 2160,
+   "individual": -1873,
+   "trustbank": 1667,
+   "era": "new"
+  },
+  {
+   "from": "2024-04-29",
+   "to": "2024-05-02",
+   "foreign": 1748,
+   "individual": -2741,
+   "trustbank": 250,
+   "era": "new"
+  },
+  {
+   "from": "2024-05-06",
+   "to": "2024-05-10",
+   "foreign": 2636,
+   "individual": -407,
+   "trustbank": 90,
+   "era": "new"
+  },
+  {
+   "from": "2024-05-13",
+   "to": "2024-05-17",
+   "foreign": 384,
+   "individual": -1205,
+   "trustbank": 472,
+   "era": "new"
+  },
+  {
+   "from": "2024-05-20",
+   "to": "2024-05-24",
+   "foreign": -1139,
+   "individual": 816,
+   "trustbank": -146,
+   "era": "new"
+  },
+  {
+   "from": "2024-05-27",
+   "to": "2024-05-31",
+   "foreign": -1126,
+   "individual": -887,
+   "trustbank": -1677,
+   "era": "new"
+  },
+  {
+   "from": "2024-06-03",
+   "to": "2024-06-07",
+   "foreign": -1985,
+   "individual": 2860,
+   "trustbank": -1304,
+   "era": "new"
+  },
+  {
+   "from": "2024-06-10",
+   "to": "2024-06-14",
+   "foreign": -2494,
+   "individual": 852,
+   "trustbank": 1562,
+   "era": "new"
+  },
+  {
+   "from": "2024-06-17",
+   "to": "2024-06-21",
+   "foreign": -213,
+   "individual": 1898,
+   "trustbank": -1915,
+   "era": "new"
+  },
+  {
+   "from": "2024-06-24",
+   "to": "2024-06-28",
+   "foreign": 1240,
+   "individual": -4886,
+   "trustbank": 16,
+   "era": "new"
+  },
+  {
+   "from": "2024-07-01",
+   "to": "2024-07-05",
+   "foreign": 1838,
+   "individual": -4967,
+   "trustbank": 518,
+   "era": "new"
+  },
+  {
+   "from": "2024-07-08",
+   "to": "2024-07-12",
+   "foreign": 1289,
+   "individual": -774,
+   "trustbank": -733,
+   "era": "new"
+  },
+  {
+   "from": "2024-07-15",
+   "to": "2024-07-19",
+   "foreign": -2459,
+   "individual": 2511,
+   "trustbank": -258,
+   "era": "new"
+  },
+  {
+   "from": "2024-07-22",
+   "to": "2024-07-26",
+   "foreign": -5659,
+   "individual": 5051,
+   "trustbank": 257,
+   "era": "new"
+  },
+  {
+   "from": "2024-07-29",
+   "to": "2024-08-02",
+   "foreign": -5523,
+   "individual": 4817,
+   "trustbank": 239,
+   "era": "new"
+  },
+  {
+   "from": "2024-08-05",
+   "to": "2024-08-09",
+   "foreign": 4954,
+   "individual": -554,
+   "trustbank": 2171,
+   "era": "new"
+  },
+  {
+   "from": "2024-08-12",
+   "to": "2024-08-16",
+   "foreign": 1872,
+   "individual": -4041,
+   "trustbank": 291,
+   "era": "new"
+  },
+  {
+   "from": "2024-08-19",
+   "to": "2024-08-23",
+   "foreign": -3988,
+   "individual": -367,
+   "trustbank": 1347,
+   "era": "new"
+  },
+  {
+   "from": "2024-08-26",
+   "to": "2024-08-30",
+   "foreign": -2451,
+   "individual": -1107,
+   "trustbank": 2075,
+   "era": "new"
+  },
+  {
+   "from": "2024-09-02",
+   "to": "2024-09-06",
+   "foreign": -8236,
+   "individual": 4672,
+   "trustbank": 1500,
+   "era": "new"
+  },
+  {
+   "from": "2024-09-09",
+   "to": "2024-09-13",
+   "foreign": -15425,
+   "individual": 2193,
+   "trustbank": -545,
+   "era": "new"
+  },
+  {
+   "from": "2024-09-16",
+   "to": "2024-09-20",
+   "foreign": -5122,
+   "individual": -3567,
+   "trustbank": -2963,
+   "era": "new"
+  },
+  {
+   "from": "2024-09-23",
+   "to": "2024-09-27",
+   "foreign": -567,
+   "individual": -5870,
+   "trustbank": 1333,
+   "era": "new"
+  },
+  {
+   "from": "2024-09-30",
+   "to": "2024-10-04",
+   "foreign": 3955,
+   "individual": 1777,
+   "trustbank": 2090,
+   "era": "new"
+  },
+  {
+   "from": "2024-10-07",
+   "to": "2024-10-11",
+   "foreign": 2474,
+   "individual": -1747,
+   "trustbank": -483,
+   "era": "new"
+  },
+  {
+   "from": "2024-10-14",
+   "to": "2024-10-18",
+   "foreign": -579,
+   "individual": 841,
+   "trustbank": -84,
+   "era": "new"
+  },
+  {
+   "from": "2024-10-21",
+   "to": "2024-10-25",
+   "foreign": -206,
+   "individual": 272,
+   "trustbank": -212,
+   "era": "new"
+  },
+  {
+   "from": "2024-10-28",
+   "to": "2024-11-01",
+   "foreign": -1885,
+   "individual": -438,
+   "trustbank": 1641,
+   "era": "new"
+  },
+  {
+   "from": "2024-11-04",
+   "to": "2024-11-08",
+   "foreign": 1938,
+   "individual": -7437,
+   "trustbank": 766,
+   "era": "new"
+  },
+  {
+   "from": "2024-11-11",
+   "to": "2024-11-15",
+   "foreign": 1520,
+   "individual": 16,
+   "trustbank": 154,
+   "era": "new"
+  },
+  {
+   "from": "2024-11-18",
+   "to": "2024-11-22",
+   "foreign": -3299,
+   "individual": 1783,
+   "trustbank": -137,
+   "era": "new"
+  },
+  {
+   "from": "2024-11-25",
+   "to": "2024-11-29",
+   "foreign": -1794,
+   "individual": 1409,
+   "trustbank": 855,
+   "era": "new"
+  },
+  {
+   "from": "2024-12-02",
+   "to": "2024-12-06",
+   "foreign": 1249,
+   "individual": -4806,
+   "trustbank": 2805,
+   "era": "new"
+  },
+  {
+   "from": "2024-12-09",
+   "to": "2024-12-13",
+   "foreign": -5092,
+   "individual": -3565,
+   "trustbank": 1780,
+   "era": "new"
+  },
+  {
+   "from": "2024-12-16",
+   "to": "2024-12-20",
+   "foreign": -4750,
+   "individual": 1561,
+   "trustbank": 60,
+   "era": "new"
+  },
+  {
+   "from": "2024-12-23",
+   "to": "2024-12-27",
+   "foreign": 4956,
+   "individual": -8790,
+   "trustbank": -1934,
+   "era": "new"
+  },
+  {
+   "from": "2024-12-30",
+   "to": "2024-12-30",
+   "foreign": -657,
+   "individual": 1316,
+   "trustbank": 313,
+   "era": "new"
+  },
+  {
+   "from": "2025-01-06",
+   "to": "2025-01-10",
+   "foreign": 3436,
+   "individual": 7277,
+   "trustbank": -5319,
+   "era": "new"
+  },
+  {
+   "from": "2025-01-13",
+   "to": "2025-01-17",
+   "foreign": -48,
+   "individual": 4513,
+   "trustbank": -1300,
+   "era": "new"
+  },
+  {
+   "from": "2025-01-20",
+   "to": "2025-01-24",
+   "foreign": 3911,
+   "individual": -4587,
+   "trustbank": -309,
+   "era": "new"
+  },
+  {
+   "from": "2025-01-27",
+   "to": "2025-01-31",
+   "foreign": -3134,
+   "individual": 1425,
+   "trustbank": -940,
+   "era": "new"
+  },
+  {
+   "from": "2025-02-03",
+   "to": "2025-02-07",
+   "foreign": -2678,
+   "individual": 4956,
+   "trustbank": 637,
+   "era": "new"
+  },
+  {
+   "from": "2025-02-10",
+   "to": "2025-02-14",
+   "foreign": 954,
+   "individual": -981,
+   "trustbank": -680,
+   "era": "new"
+  },
+  {
+   "from": "2025-02-17",
+   "to": "2025-02-21",
+   "foreign": -1636,
+   "individual": 1759,
+   "trustbank": -340,
+   "era": "new"
+  },
+  {
+   "from": "2025-02-24",
+   "to": "2025-02-28",
+   "foreign": -6074,
+   "individual": 5185,
+   "trustbank": -393,
+   "era": "new"
+  },
+  {
+   "from": "2025-03-03",
+   "to": "2025-03-07",
+   "foreign": -1018,
+   "individual": -4318,
+   "trustbank": 3345,
+   "era": "new"
+  },
+  {
+   "from": "2025-03-10",
+   "to": "2025-03-14",
+   "foreign": -8088,
+   "individual": -1307,
+   "trustbank": 556,
+   "era": "new"
+  },
+  {
+   "from": "2025-03-17",
+   "to": "2025-03-21",
+   "foreign": 2609,
+   "individual": -4727,
+   "trustbank": -756,
+   "era": "new"
+  },
+  {
+   "from": "2025-03-24",
+   "to": "2025-03-28",
+   "foreign": -8418,
+   "individual": 4784,
+   "trustbank": -7917,
+   "era": "new"
+  },
+  {
+   "from": "2025-03-31",
+   "to": "2025-04-04",
+   "foreign": 6011,
+   "individual": 7211,
+   "trustbank": -1942,
+   "era": "new"
+  },
+  {
+   "from": "2025-04-07",
+   "to": "2025-04-11",
+   "foreign": 1582,
+   "individual": -1175,
+   "trustbank": 1730,
+   "era": "new"
+  },
+  {
+   "from": "2025-04-14",
+   "to": "2025-04-18",
+   "foreign": 1504,
+   "individual": -2305,
+   "trustbank": 921,
+   "era": "new"
+  },
+  {
+   "from": "2025-04-21",
+   "to": "2025-04-25",
+   "foreign": 2881,
+   "individual": -3549,
+   "trustbank": -1085,
+   "era": "new"
+  },
+  {
+   "from": "2025-04-28",
+   "to": "2025-05-02",
+   "foreign": 3946,
+   "individual": -1673,
+   "trustbank": -2300,
+   "era": "new"
+  },
+  {
+   "from": "2025-05-05",
+   "to": "2025-05-09",
+   "foreign": 3570,
+   "individual": -3577,
+   "trustbank": -2680,
+   "era": "new"
+  },
+  {
+   "from": "2025-05-12",
+   "to": "2025-05-16",
+   "foreign": 6232,
+   "individual": -2581,
+   "trustbank": -2893,
+   "era": "new"
+  },
+  {
+   "from": "2025-05-19",
+   "to": "2025-05-23",
+   "foreign": 2849,
+   "individual": -550,
+   "trustbank": -360,
+   "era": "new"
+  },
+  {
+   "from": "2025-05-26",
+   "to": "2025-05-30",
+   "foreign": 6165,
+   "individual": -3568,
+   "trustbank": -981,
+   "era": "new"
+  },
+  {
+   "from": "2025-06-02",
+   "to": "2025-06-06",
+   "foreign": 3986,
+   "individual": 1618,
+   "trustbank": -4738,
+   "era": "new"
+  },
+  {
+   "from": "2025-06-09",
+   "to": "2025-06-13",
+   "foreign": 997,
+   "individual": -41,
+   "trustbank": -252,
+   "era": "new"
+  },
+  {
+   "from": "2025-06-16",
+   "to": "2025-06-20",
+   "foreign": 885,
+   "individual": -2326,
+   "trustbank": -1073,
+   "era": "new"
+  },
+  {
+   "from": "2025-06-23",
+   "to": "2025-06-27",
+   "foreign": 3398,
+   "individual": -5917,
+   "trustbank": -473,
+   "era": "new"
+  },
+  {
+   "from": "2025-06-30",
+   "to": "2025-07-04",
+   "foreign": 5456,
+   "individual": -602,
+   "trustbank": 849,
+   "era": "new"
+  },
+  {
+   "from": "2025-07-07",
+   "to": "2025-07-11",
+   "foreign": 4031,
+   "individual": -667,
+   "trustbank": -353,
+   "era": "new"
+  },
+  {
+   "from": "2025-07-14",
+   "to": "2025-07-18",
+   "foreign": 1875,
+   "individual": -880,
+   "trustbank": 108,
+   "era": "new"
+  },
+  {
+   "from": "2025-07-21",
+   "to": "2025-07-25",
+   "foreign": 6024,
+   "individual": -12191,
+   "trustbank": 386,
+   "era": "new"
+  },
+  {
+   "from": "2025-07-28",
+   "to": "2025-08-01",
+   "foreign": -1893,
+   "individual": 256,
+   "trustbank": -1002,
+   "era": "new"
+  },
+  {
+   "from": "2025-08-04",
+   "to": "2025-08-08",
+   "foreign": -53,
+   "individual": -5781,
+   "trustbank": -1165,
+   "era": "new"
+  },
+  {
+   "from": "2025-08-11",
+   "to": "2025-08-15",
+   "foreign": 5739,
+   "individual": -11253,
+   "trustbank": -2164,
+   "era": "new"
+  },
+  {
+   "from": "2025-08-18",
+   "to": "2025-08-22",
+   "foreign": -1990,
+   "individual": 1499,
+   "trustbank": 13,
+   "era": "new"
+  },
+  {
+   "from": "2025-08-25",
+   "to": "2025-08-29",
+   "foreign": -3033,
+   "individual": 4137,
+   "trustbank": -4461,
+   "era": "new"
+  },
+  {
+   "from": "2025-09-01",
+   "to": "2025-09-05",
+   "foreign": 1314,
+   "individual": 1657,
+   "trustbank": -4220,
+   "era": "new"
+  },
+  {
+   "from": "2025-09-08",
+   "to": "2025-09-12",
+   "foreign": -6924,
+   "individual": -4689,
+   "trustbank": -1298,
+   "era": "new"
+  },
+  {
+   "from": "2025-09-15",
+   "to": "2025-09-19",
+   "foreign": -2944,
+   "individual": -326,
+   "trustbank": -5310,
+   "era": "new"
+  },
+  {
+   "from": "2025-09-22",
+   "to": "2025-09-26",
+   "foreign": -5592,
+   "individual": 1294,
+   "trustbank": -3584,
+   "era": "new"
+  },
+  {
+   "from": "2025-09-29",
+   "to": "2025-10-03",
+   "foreign": 12398,
+   "individual": 4224,
+   "trustbank": -2137,
+   "era": "new"
+  },
+  {
+   "from": "2025-10-06",
+   "to": "2025-10-10",
+   "foreign": 10587,
+   "individual": -4292,
+   "trustbank": -4882,
+   "era": "new"
+  },
+  {
+   "from": "2025-10-13",
+   "to": "2025-10-17",
+   "foreign": 1530,
+   "individual": 3427,
+   "trustbank": -107,
+   "era": "new"
+  },
+  {
+   "from": "2025-10-20",
+   "to": "2025-10-24",
+   "foreign": 6436,
+   "individual": -5125,
+   "trustbank": -786,
+   "era": "new"
+  },
+  {
+   "from": "2025-10-27",
+   "to": "2025-10-31",
+   "foreign": 3458,
+   "individual": -1877,
+   "trustbank": 1388,
+   "era": "new"
+  },
+  {
+   "from": "2025-11-03",
+   "to": "2025-11-07",
+   "foreign": -3560,
+   "individual": 5558,
+   "trustbank": 756,
+   "era": "new"
+  },
+  {
+   "from": "2025-11-10",
+   "to": "2025-11-14",
+   "foreign": 5147,
+   "individual": -2366,
+   "trustbank": -5398,
+   "era": "new"
+  },
+  {
+   "from": "2025-11-17",
+   "to": "2025-11-21",
+   "foreign": -3837,
+   "individual": 1158,
+   "trustbank": -835,
+   "era": "new"
+  },
+  {
+   "from": "2025-11-24",
+   "to": "2025-11-28",
+   "foreign": -1164,
+   "individual": -4527,
+   "trustbank": 237,
+   "era": "new"
+  },
+  {
+   "from": "2025-12-01",
+   "to": "2025-12-05",
+   "foreign": 35,
+   "individual": 2077,
+   "trustbank": -2085,
+   "era": "new"
+  },
+  {
+   "from": "2025-12-08",
+   "to": "2025-12-12",
+   "foreign": 1897,
+   "individual": -2503,
+   "trustbank": 1294,
+   "era": "new"
+  },
+  {
+   "from": "2025-12-15",
+   "to": "2025-12-19",
+   "foreign": -4391,
+   "individual": 2565,
+   "trustbank": -1766,
+   "era": "new"
+  },
+  {
+   "from": "2025-12-22",
+   "to": "2025-12-26",
+   "foreign": -211,
+   "individual": -3852,
+   "trustbank": 308,
+   "era": "new"
+  },
+  {
+   "from": "2025-12-29",
+   "to": "2025-12-30",
+   "foreign": -150,
+   "individual": 1847,
+   "trustbank": 176,
+   "era": "new"
+  },
+  {
+   "from": "2026-01-05",
+   "to": "2026-01-09",
+   "foreign": 12247,
+   "individual": -5429,
+   "trustbank": -78,
+   "era": "new"
+  },
+  {
+   "from": "2026-01-12",
+   "to": "2026-01-16",
+   "foreign": 7804,
+   "individual": -6629,
+   "trustbank": -2459,
+   "era": "new"
+  },
+  {
+   "from": "2026-01-19",
+   "to": "2026-01-23",
+   "foreign": 1921,
+   "individual": 4792,
+   "trustbank": -4249,
+   "era": "new"
+  },
+  {
+   "from": "2026-01-26",
+   "to": "2026-01-30",
+   "foreign": 1599,
+   "individual": 8349,
+   "trustbank": -2899,
+   "era": "new"
+  },
+  {
+   "from": "2026-02-02",
+   "to": "2026-02-06",
+   "foreign": 2746,
+   "individual": -4409,
+   "trustbank": -3785,
+   "era": "new"
+  },
+  {
+   "from": "2026-02-09",
+   "to": "2026-02-13",
+   "foreign": 12323,
+   "individual": -11659,
+   "trustbank": -4440,
+   "era": "new"
+  },
+  {
+   "from": "2026-02-16",
+   "to": "2026-02-20",
+   "foreign": 5425,
+   "individual": 5465,
+   "trustbank": -9515,
+   "era": "new"
+  },
+  {
+   "from": "2026-02-23",
+   "to": "2026-02-27",
+   "foreign": 7909,
+   "individual": -4603,
+   "trustbank": -7497,
+   "era": "new"
+  },
+  {
+   "from": "2026-03-02",
+   "to": "2026-03-06",
+   "foreign": 2376,
+   "individual": 8333,
+   "trustbank": -10863,
+   "era": "new"
+  },
+  {
+   "from": "2026-03-09",
+   "to": "2026-03-13",
+   "foreign": -4908,
+   "individual": 4267,
+   "trustbank": -2701,
+   "era": "new"
+  },
+  {
+   "from": "2026-03-16",
+   "to": "2026-03-19",
+   "foreign": -5191,
+   "individual": 3381,
+   "trustbank": -599,
+   "era": "new"
+  },
+  {
+   "from": "2026-03-23",
+   "to": "2026-03-27",
+   "foreign": -15090,
+   "individual": -146,
+   "trustbank": -1035,
+   "era": "new"
+  },
+  {
+   "from": "2026-03-30",
+   "to": "2026-04-03",
+   "foreign": 19150,
+   "individual": -4397,
+   "trustbank": 1426,
+   "era": "new"
+  },
+  {
+   "from": "2026-04-06",
+   "to": "2026-04-10",
+   "foreign": 16418,
+   "individual": -7871,
+   "trustbank": -550,
+   "era": "new"
+  },
+  {
+   "from": "2026-04-13",
+   "to": "2026-04-17",
+   "foreign": 9976,
+   "individual": 3306,
+   "trustbank": -1855,
+   "era": "new"
+  },
+  {
+   "from": "2026-04-20",
+   "to": "2026-04-24",
+   "foreign": 7842,
+   "individual": 1616,
+   "trustbank": -74,
+   "era": "new"
+  },
+  {
+   "from": "2026-04-27",
+   "to": "2026-05-01",
+   "foreign": 3577,
+   "individual": 3033,
+   "trustbank": 1156,
+   "era": "new"
+  },
+  {
+   "from": "2026-05-04",
+   "to": "2026-05-08",
+   "foreign": 12351,
+   "individual": -4980,
+   "trustbank": -521,
+   "era": "new"
+  },
+  {
+   "from": "2026-05-11",
+   "to": "2026-05-15",
+   "foreign": 5570,
+   "individual": 1720,
+   "trustbank": -2421,
+   "era": "new"
+  },
+  {
+   "from": "2026-05-18",
+   "to": "2026-05-22",
+   "foreign": 4607,
+   "individual": -1402,
+   "trustbank": -2104,
+   "era": "new"
+  },
+  {
+   "from": "2026-05-25",
+   "to": "2026-05-29",
+   "foreign": -3955,
+   "individual": 1059,
+   "trustbank": 708,
+   "era": "new"
+  },
+  {
+   "from": "2026-06-01",
+   "to": "2026-06-05",
+   "foreign": -813,
+   "individual": 3082,
+   "trustbank": -310,
+   "era": "new"
+  },
+  {
+   "from": "2026-06-08",
+   "to": "2026-06-12",
+   "foreign": -5076,
+   "individual": -5011,
+   "trustbank": -57,
+   "era": "new"
+  },
+  {
+   "from": "2026-06-15",
+   "to": "2026-06-19",
+   "foreign": 10562,
+   "individual": -4469,
+   "trustbank": -1373,
+   "era": "new"
+  },
+  {
+   "from": "2026-06-22",
+   "to": "2026-06-26",
+   "foreign": -12379,
+   "individual": 9505,
+   "trustbank": 273,
+   "era": "new"
+  },
+  {
+   "from": "2026-06-29",
+   "to": "2026-07-03",
+   "foreign": 3661,
+   "individual": -6366,
+   "trustbank": 92,
+   "era": "new"
+  },
+  {
+   "from": "2026-07-06",
+   "to": "2026-07-10",
+   "foreign": 4928,
+   "individual": -636,
+   "trustbank": 2315,
+   "era": "new"
+  },
+  {
+   "from": "2026-07-13",
+   "to": "2026-07-17",
+   "foreign": -2864,
+   "individual": 4078,
+   "trustbank": 590,
+   "era": "new"
+  },
+  {
+   "from": "2026-07-20",
+   "to": "2026-07-24",
+   "foreign": 3515,
+   "individual": -4568,
+   "trustbank": 1933,
+   "era": "new"
+  },
+  {
+   "from": "2026-07-27",
+   "to": "2026-07-31",
+   "foreign": -4923,
+   "individual": -4172,
+   "trustbank": -3183,
+   "era": "new"
+  },
+  {
+   "from": "2026-08-03",
+   "to": "2026-08-07",
+   "foreign": -3829,
+   "individual": -1566,
+   "trustbank": 1697,
+   "era": "new"
+  },
+  {
+   "from": "2026-08-10",
+   "to": "2026-08-14",
+   "foreign": 2134,
+   "individual": -6558,
+   "trustbank": -824,
+   "era": "new"
+  },
+  {
+   "from": "2026-08-17",
+   "to": "2026-08-21",
+   "foreign": -4378,
+   "individual": 6979,
+   "trustbank": -5081,
+   "era": "new"
+  },
+  {
+   "from": "2026-08-24",
+   "to": "2026-08-28",
+   "foreign": -1320,
+   "individual": -1155,
+   "trustbank": -1916,
+   "era": "new"
+  },
+  {
+   "from": "2026-08-31",
+   "to": "2026-09-04",
+   "foreign": 6892,
+   "individual": -18,
+   "trustbank": -4469,
+   "era": "new"
+  },
+  {
+   "from": "2026-09-07",
+   "to": "2026-09-11",
+   "foreign": -3037,
+   "individual": 4491,
+   "trustbank": -5506,
+   "era": "new"
+  },
+  {
+   "from": "2026-09-14",
+   "to": "2026-09-18",
+   "foreign": -6425,
+   "individual": -3118,
+   "trustbank": -2943,
+   "era": "new"
+  },
+  {
+   "from": "2026-09-21",
+   "to": "2026-09-25",
+   "foreign": -930,
+   "individual": -87,
+   "trustbank": -3673,
+   "era": "new"
+  },
+  {
+   "from": "2026-09-28",
+   "to": "2026-10-02",
+   "foreign": 9559,
+   "individual": 2230,
+   "trustbank": 1764,
+   "era": "new"
+  },
+  {
+   "from": "2026-10-05",
+   "to": "2026-10-09",
+   "foreign": 14318,
+   "individual": 880,
+   "trustbank": -360,
+   "era": "new"
+  },
+  {
+   "from": "2026-10-12",
+   "to": "2026-10-16",
+   "foreign": -3654,
+   "individual": 2192,
+   "trustbank": -772,
+   "era": "new"
+  }
+ ]
+}

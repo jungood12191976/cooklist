@@ -1,0 +1,27 @@
+実行 2026-10-25T06:01:16.705579Z / ページ 14 / ファイル 562件 / 保存 562週(今回の追加 562) / 失敗 0件
+ページ別: index.html: +5件, 00-00-archives-00.html: +36件, 00-00-archives-01.html: +52件, 00-00-archives-02.html: +53件, 00-00-archives-03.html: +52件, 00-00-archives-04.html: +52件, 00-00-archives-05.html: +52件, 00-00-archives-06.html: +52件, 00-00-archives-07.html: +52件, 00-00-archives-08.html: +52件, 00-00-archives-09.html: +52件, 00-00-archives-10.html: +52件, 00-00-archives-11.html: なし, 00-00-archives-12.html: なし
+年別の週数: {'2016': 52, '2017': 52, '2018': 53, '2019': 51, '2020': 52, '2021': 52, '2022': 52, '2023': 52, '2024': 53, '2025': 52, '2026': 41}
+era別: {'old': 325, 'new': 237} / 旧市場で最後の週(2022年内) 2022-03-28 / 新市場で最初の週 2022-04-04
+既存20週との差の最大(億円): {'foreign': 4, 'individual': 5, 'trustbank': 2}
+2026-06-01: foreign=-4, individual=+1, trustbank=+0 (履歴−既存)
+2026-06-08: foreign=-2, individual=-1, trustbank=+0 (履歴−既存)
+2026-06-22: foreign=-1, individual=+2, trustbank=+0 (履歴−既存)
+2026-06-29: foreign=-1, individual=+2, trustbank=+0 (履歴−既存)
+2026-07-06: foreign=-1, individual=+1, trustbank=+0 (履歴−既存)
+2026-07-13: foreign=-1, individual=+4, trustbank=+2 (履歴−既存)
+2026-07-20: foreign=+1, individual=+0, trustbank=+1 (履歴−既存)
+2026-07-27: foreign=-2, individual=-5, trustbank=-1 (履歴−既存)
+2026-08-03: foreign=-2, individual=+0, trustbank=+0 (履歴−既存)
+2026-08-10: foreign=+0, individual=-1, trustbank=-1 (履歴−既存)
+2026-08-17: foreign=+0, individual=+2, trustbank=+1 (履歴−既存)
+2026-08-24: foreign=-1, individual=+0, trustbank=-1 (履歴−既存)
+2026-08-31: foreign=-1, individual=+0, trustbank=+0 (履歴−既存)
+2026-09-07: foreign=-1, individual=+0, trustbank=+0 (履歴−既存)
+2026-09-14: foreign=+0, individual=-1, trustbank=+0 (履歴−既存)
+2026-09-21: foreign=+0, individual=-1, trustbank=+0 (履歴−既存)
+2026-09-28: foreign=+0, individual=+1, trustbank=+0 (履歴−既存)
+2026-10-05: foreign=+0, individual=+0, trustbank=-1 (履歴−既存)
+東証+名証シートとの差が50億円超の週: 2件
+2025-02-03 {'foreign': 21, 'individual': -64, 'trustbank': 0}
+2016-06-13 {'foreign': -1, 'individual': 0, 'trustbank': -111}
+失敗した週:
