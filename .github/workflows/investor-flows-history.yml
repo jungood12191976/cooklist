@@ -1,0 +1,40 @@
+name: investor-flows-history
+
+# JPX 投資部門別売買状況(週次)の過去分(2016年〜)を一度に取り込み、data/investor_flows_history.json に保存する。
+# 手動実行(workflow_dispatch)、またはこのスクリプト/設定を変更してpushしたときに動く。毎週の自動更新(investor-flows.yml)とは別。
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/backfill_investor_flows.py'
+      - '.github/workflows/investor-flows-history.yml'
+
+permissions:
+  contents: write
+
+concurrency: investor-flows-history
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests openpyxl xlrd
+      - run: python scripts/backfill_investor_flows.py
+      - name: commit if changed
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/investor_flows_history.json data/investor_flows_history_check.txt
+          if git diff --cached --quiet; then
+            echo "変更なし"
+            exit 0
+          fi
+          git commit -m "投資家別売買(JPX週次)の過去分を取り込み"
+          git pull --rebase origin main
+          git push origin HEAD:main
