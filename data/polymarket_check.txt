@@ -1,39 +1,40 @@
-fetched_at=2026-10-25T10:05:17+09:00
+fetched_at=2026-10-25T17:20:13+09:00
 events_fetched=500
-event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cyom,deploying,description,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,gameId,icon,id,image,liquidity,liquidityClob,live,markets,negRisk,negRiskAugmented,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
+event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cyom,deploying,description,elapsed,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,finishedTimestamp,gameId,icon,id,image,liquidity,liquidityClob,live,markets,negRisk,negRiskAugmented,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
     - Fed Decision in October?
     - Fed Decision in December?
     - How many Fed rate cuts in 2026?
-    - Another Fed rate hike in 2026?
-    - Fed decisions (Sep–Dec)
     - How low will 5-year Treasury yield get before 2027?
+    - Fed decisions (Sep–Dec)
+    - Another Fed rate hike in 2026?
 theme oil_iran: 6 events
     - US-Iran ceasefire continues through...?
-    - Israel x Iran ceasefire continues through...?
-    - US announces end of Iranian blockade by...?
     - Will the U.S. invade Iran before 2027?
+    - US announces end of Iranian blockade by...?
+    - Israel x Iran ceasefire continues through...?
     - What will WTI Crude Oil (WTI) hit in October 2026?
-    - Strait of Hormuz traffic returns to normal by October 31?
+    - Bab el-Mandeb Strait effectively closed by...?
 theme trump: 6 events
     - Fed Decision in October?
     - US-Iran ceasefire continues through...?
     - Prime Minister of Israel after the next election?
-    - US announces end of Iranian blockade by...?
+    - Republican Senate seats after the 2026 midterm elections?
     - Will the U.S. invade Iran before 2027?
-    - NATO x Russia military clash by...?
+    - US announces end of Iranian blockade by...?
 theme tariff: 0 events
 theme recession: 0 events
-theme inflation: 3 events
+theme inflation: 4 events
     - Fed Decision in October?
-    - Another Fed rate hike in 2026?
     - Fed decisions (Sep–Dec)
+    - Another Fed rate hike in 2026?
+    - How many Fed rate hikes in 2026?
 theme stocks: 0 events
 theme ai_chips: 6 events
     - OpenAI announces bankruptcy by...?
     - Anthropic IPO Closing Market Cap
-    - Anthropic IPO by __?
     - OpenAI announces another Millennium Prize solution by...?
     - What will OpenAI's IPO valuation be?
+    - Anthropic IPO by __?
     - Next Fable Model (5.2+) released by...?
 theme fx: 0 events
