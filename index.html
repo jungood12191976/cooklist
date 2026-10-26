@@ -149,6 +149,10 @@
   .voy-banner.copied{ background:rgba(110,231,160,0.22); border-color:#6ee7a0; }
   .voy-head .ocean-entry-title{ font-size:17px; }
   .voy-hint{ font-size:12.5px; color:#9db4ff; margin-top:2px; }
+  .voy-cmp{ margin-top:8px; padding:6px 8px; border:1px solid rgba(157,180,255,0.35); border-radius:6px; background:rgba(255,255,255,0.04); }
+  .voy-cmp .vc-head{ font-size:14px; color:#eaf3ff; }
+  .voy-cmp .vc-line{ font-size:12.5px; color:#c9d6f5; line-height:1.6; }
+  .voy-cmp .vc-diff{ color:#ffd76b; font-weight:bold; }
   .voy-rule{ font-size:11.5px; color:#8aa0c8; line-height:1.6; margin-top:12px; padding-top:8px; border-top:1px dashed rgba(255,255,255,0.2); }
   .ocean-steps{ display:flex; align-items:center; gap:4px; font-size:11px; color:#9db4ff; margin-bottom:10px; flex-wrap:wrap; }
   .ocean-step{ padding:2px 6px; border-radius:6px; opacity:0.6; }
@@ -3159,6 +3163,59 @@
     try { if (scanned && list.length) { blCapture(list); blKick(); } } catch(e){}  // 戦いの記録(時のへや)：出た銘柄を保存し、5分足が取れたら結果を確定
     return { scanned, list };
   }
+  // ===== 戦いアイテムの「当日の強さ」比べ（2026-10-26 キング承認） =====
+  // 数字は事実だけを並べる(判定の基準・しきい値は作らない)。
+  //  銘柄の前日比＝リサーチ(dayObserve)に入っている値(regularMarketChangePercent・既存)。
+  //  同業種＝W2_CHAINS(連鎖)のうち、その銘柄が巻き添え1か2に入っている連鎖ごとに、自分以外の巻き添え1＋2の前日比の平均(リサーチで値が取れた銘柄だけ)。
+  //  日経先物＝勇者の天気と同じ kazeState。ドル円＝既存 fetchOceanUSDJPY の前日比(60秒キャッシュ。値が来たら該当の場所だけ書き換える)。
+  let cmpFx = { pct:null, at:0, busy:false, err:null };
+  function cmpNorm(c){ return String(c || '').replace(/\.T$/i, '').toUpperCase(); }
+  function cmpPctOf(code){
+    const o = (dayObserve || []).find(x => cmpNorm(x.code) === code);
+    return (o && typeof o.prevClosePct === 'number' && isFinite(o.prevClosePct)) ? o.prevClosePct : null;
+  }
+  function cmpFmt(v){ return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(2) + '%'; }
+  function cmpFxText(){
+    if (typeof cmpFx.pct === 'number') return cmpFmt(cmpFx.pct);
+    return cmpFx.err ? '取得できず' : '取得中…';
+  }
+  function cmpFxKick(){
+    if (cmpFx.busy || Date.now() - cmpFx.at < 60000) return;
+    cmpFx.busy = true;
+    Promise.resolve().then(() => fetchOceanUSDJPY()).then(r => {
+      cmpFx.at = Date.now();
+      if (r && typeof r.changePct === 'number') { cmpFx.pct = r.changePct; cmpFx.err = null; } else { cmpFx.err = (r && r.error) || 'no_data'; }
+    }).catch(e => { cmpFx.at = Date.now(); cmpFx.err = String((e && e.message) || e); })
+      .finally(() => { cmpFx.busy = false; try { document.querySelectorAll('[data-cmpfx]').forEach(el => { el.textContent = cmpFxText(); }); } catch(e){} });
+  }
+  function voyageCompareHTML(list){
+    cmpFxKick();
+    const fut = (kazeState && !kazeState.error && typeof kazeState.pct === 'number')
+      ? ((KAZE_SESSION_LABEL[kazeState.session] || '先物') + ' ' + cmpFmt(kazeState.pct)) : '取得中…';
+    let when = '';
+    if (dayObserveFetchedAt) { const d = new Date(dayObserveFetchedAt); when = `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; }
+    let h = `<div class="voy-hint" style="margin-top:8px;">📊 当日の強さ比べ（前日比。銘柄・同業種は${skyEsc(when || 'リサーチ')}のリサーチ値、先物・ドル円は最新）</div>`;
+    list.forEach(it => {
+      const own = cmpPctOf(it.code);
+      h += `<div class="voy-cmp"><div class="vc-head"><b>${skyEsc(it.code)}</b> ${skyEsc(it.name || '')}　今日 ${own == null ? '—' : cmpFmt(own)}</div>`;
+      const chs = W2_CHAINS.filter(ch => ch.w1.includes(it.code) || ch.w2.includes(it.code));
+      if (!chs.length) h += `<div class="vc-line">同業種：なし（連鎖に入っていない銘柄）</div>`;
+      chs.forEach(ch => {
+        const mem = ch.w1.concat(ch.w2).filter((c, i, a) => a.indexOf(c) === i && c !== it.code);
+        const vals = mem.map(cmpPctOf).filter(v => v != null);
+        if (!vals.length) { h += `<div class="vc-line">${ch.icon} ${skyEsc(ch.title)}：データなし（0/${mem.length}銘柄）</div>`; return; }
+        const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+        let diffTxt = '';
+        if (own != null) {
+          const d = own - avg, r = Math.round(d * 100) / 100;
+          diffTxt = ` → <span class="vc-diff">同業種より ${r === 0 ? '同じ' : cmpFmt(r) + (r > 0 ? ' 強い' : ' 弱い')}</span>`;
+        }
+        h += `<div class="vc-line">${ch.icon} ${skyEsc(ch.title)} 平均 ${cmpFmt(avg)}（${vals.length}/${mem.length}銘柄）${diffTxt}</div>`;
+      });
+      h += `<div class="vc-line">日経先物 ${skyEsc(fut)} ／ ドル円 <span data-cmpfx>${cmpFxText()}</span></div></div>`;
+    });
+    return h;
+  }
   async function voyageCopyText(text){
     try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(text); return true; } } catch(e){}
     try {
@@ -3803,7 +3860,7 @@
     } else {
       bannerHtml = `<div class="voy-banner-row">${items.list.map(it => `<button class="voy-banner" data-vcopy="${esc(it.code)}" title="${esc(it.tip)}">
           <span class="vb-code">${esc(it.code)}</span><span class="vb-name">${esc(it.name || '')}</span></button>`).join('')}</div>
-        <div class="voy-hint" id="voyCopyMsg">番号を押すとコピーされます</div>`;
+        <div class="voy-hint" id="voyCopyMsg">番号を押すとコピーされます</div>${(() => { try { return voyageCompareHTML(items.list); } catch(e) { return ''; } })()}`;
     }
     // iSPEEDチェック(3つだけ)
     const checks = rec.checks || {};
@@ -14779,7 +14836,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-26d';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-26e';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
