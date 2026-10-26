@@ -13249,15 +13249,25 @@ ${keywordLine}${bpBlock}${conditionBlock}
   const BL_WIN_READY_MIN = 9 * 60 + 50;      // 9:50以降に窓の結果を確定
   const BL_CLOSE_READY_MIN = 15 * 60 + 35;   // 15:35以降に終値の結果を確定
   let blBusy = false, blLastTry = 0;
-  function blLoad(){ const v = lsGet(BL_KEY); return (v && v.days && typeof v.days === 'object') ? v : { days: {} }; }
+  function blLoad(){
+    const v = lsGet(BL_KEY); const o = (v && v.days && typeof v.days === 'object') ? v : { days: {} };
+    // 2026-10-26 キング承認：休場日(土日・東証の休業日)に保存されてしまった「記録できず」は取り除く(その日の5分足は存在しない)。結果(win/close)が入っているものは残す。
+    let pruned = false;
+    Object.keys(o.days).forEach(d => {
+      if (skyIsTradingDay(d)) return;
+      const keep = (o.days[d].items || []).filter(it => it.win || it.close != null);
+      if (keep.length !== (o.days[d].items || []).length) { pruned = true; if (keep.length) o.days[d].items = keep; else delete o.days[d]; }
+    });
+    if (pruned) blSave(o);
+    return o;
+  }
   function blSave(o){ lsSet(BL_KEY, o); }
   function blHm(t, gmt){ return new Date((t + gmt) * 1000).toISOString().slice(11, 16); }
   function blDate(t, gmt){ return new Date((t + gmt) * 1000).toISOString().slice(0, 10); }
   function blCapture(list){
     if (!list || !list.length || !dayObserveFetchedAt) return;
     const scanDate = localDateKey(new Date(dayObserveFetchedAt)); // スキャンした日＝戦いアイテムが出た日
-    const wd = new Date(scanDate + 'T12:00:00').getDay();
-    if (wd === 0 || wd === 6) return;                              // 土日は取引なし
+    if (!skyIsTradingDay(scanDate)) return;                        // 土日・東証の休業日は取引なし(2026-10-26 祝日も除外に)
     const o = blLoad(); const day = o.days[scanDate] = o.days[scanDate] || { items: [] };
     let changed = false;
     list.forEach(it => {
@@ -14769,7 +14779,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-26c';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-26d';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
