@@ -1,4 +1,4 @@
-fetched_at=2026-10-26T07:31:03+09:00
+fetched_at=2026-10-26T09:30:24+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,countryName,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,electionType,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,showAllOutcomes,showMarketImages,slug,sortBy,startDate,startTime,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
@@ -6,15 +6,15 @@ theme rates: 6 events
     - Fed Decision in December?
     - How low will 5-year Treasury yield get before 2027?
     - How many Fed rate cuts in 2026?
-    - How high will 5-year Treasury yield go before 2027?
     - Fed decisions (Sep–Dec)
+    - Fed Decision in January?
 theme oil_iran: 6 events
     - US-Iran ceasefire continues through...?
     - Israel x Iran ceasefire continues through...?
-    - Will the U.S. invade Iran before 2027?
     - Strait of Hormuz traffic returns to normal by December 31?
+    - Will the U.S. invade Iran before 2027?
+    - Strait of Hormuz traffic returns to normal by October 31?
     - US announces end of Iranian blockade by...?
-    - What will WTI Crude Oil (WTI) hit in October 2026?
 theme trump: 6 events
     - Fed Decision in October?
     - US-Iran ceasefire continues through...?
@@ -24,20 +24,20 @@ theme trump: 6 events
     - Will the U.S. invade Iran before 2027?
 theme tariff: 1 events
     - US-Canada diplomatic agreement to lower tariffs by...?
-theme recession: 1 events
+theme recession: 2 events
+    - US recession by end of 2026?
     - US economic state at the end of 2026?
-theme inflation: 6 events
+theme inflation: 5 events
     - Fed Decision in October?
     - Fed decisions (Sep–Dec)
     - How many Fed rate hikes in 2026?
-    - US economic state at the end of 2026?
-    - How high will 10-year Treasury yield go before 2027?
     - Another Fed rate hike in 2026?
+    - US economic state at the end of 2026?
 theme stocks: 0 events
 theme ai_chips: 6 events
     - Anthropic IPO Closing Market Cap
-    - Which company has best AI model end of 2026?
     - Anthropic IPO by __?
+    - Which company has best AI model end of 2026?
     - Next Fable Model (5.2+) released by...?
     - OpenAI announces another Millennium Prize solution by...?
     - Will Anthropic’s valuation hit __ by December 31?
