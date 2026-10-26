@@ -4727,10 +4727,11 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const screenChanged = (screen !== lastRenderedScreen);
     const prevRenderedScreen = lastRenderedScreen;
     lastRenderedScreen = screen;
-    if (screen !== 'world' && screen !== 'world2' && screen !== 'world3' && screen !== 'setup' && screen !== 'letters' && screen !== 'sage') stopStageBGM();
+    if (screen !== 'world' && screen !== 'world2' && screen !== 'world3' && screen !== 'setup' && screen !== 'letters' && screen !== 'sage' && screen !== 'graph') stopStageBGM();
     if (screen === 'setup' && soundOn) startStageBGM('hokora'); // 秘密のほこら「石の祈り」(勇者の画面は従来のBGMのまま)
+    if (screen === 'graph' && soundOn) startStageBGM('toilet'); // デトックス「ゴゴゴ…どばぁ！」(開いている間だけ鳴る。再描画では鳴らし直さない)
     // ほこら専用の曲を出たあと、ほこら・世界・天空の城・時のへや以外(勇者など)へ移ったら、いつものBGM(baseBGM)に戻す
-    if (screenChanged && prevRenderedScreen === 'setup' && soundOn && !['setup','world','world2','world3','letters','sage','sky','timeroom'].includes(screen)) baseBGM();
+    if (screenChanged && (prevRenderedScreen === 'setup' || prevRenderedScreen === 'graph') && soundOn && !['setup','graph','world','world2','world3','letters','sage','sky','timeroom'].includes(screen)) baseBGM();
     if (screen === 'setup') renderSetup(root);
     else if (screen === 'graph') renderGraph(root);
     else if (screen === 'sky') renderSkyCastle(root);
@@ -11056,6 +11057,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     hokora:{ bpm:58, bpb:4, bars:16 }, // 秘密のほこら「石の祈り」(2026-10-07 キング選定。ニ調・うなる器と深い響き)
     uwasa: { bpm:128, bpb:4, bars:16 }, // ウワサの港「あやしい酒場」(ずれた和音のポルカ。音は midi 番号で持つ)
     sage: { bpm:84, bpb:3, bars:16 }, // 賢者のイシ「賢者の書斎」(2026-10-11 キング選定。ト短調・3拍子のオルゴールのワルツ)
+    toilet: { bpm:120, bpb:4, bars:6 }, // デトックス「ゴゴゴ…どばぁ！」(2026-10-26 キング選定。メロディなし・12秒ループ。水の音色は waterFire)
     tegami: { bpm:112, bpb:4, bars:32 } // ひみつの手紙「手紙の広場」(2026-10-10 キング選定。ホ長調・フルート版)
   };
   // 「あやしい酒場」(2026-10-07 キング選定。4拍子・♩=128)：ポルカの低音＋木琴の全音階の連打＋半音ずれた和音。4小節ずつ層を足す。
@@ -11164,6 +11166,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     return s;
   }
   function stageBuild(key){
+    if (key === 'toilet') return stageBuildToilet();
     if (key === 'sage') return stageBuildSage();
     if (key === 'tegami') return stageBuildTegami();
     if (key === 'iriguchi') return stageBuildIriguchi();
@@ -11345,6 +11348,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     stageNoise(at, 0.05, 0.05 * gm, 600, 'low');
   }
   function stageFire(e, at, spb){
+    if (WATER_VOICES[e.v]) { waterFire(e, at, spb); return; } // デトックスの水の音色
     const dur = Math.max(0.06, e.d * spb), gm = e.g || 1;
     const f = e.m ? 440 * Math.pow(2, (e.m - 69) / 12) : (e.n ? stageHz(e.n) : 0);
     switch (e.v) {
@@ -11378,6 +11382,122 @@ ${keywordLine}${bpBlock}${conditionBlock}
       case 'gsnare': stageNoise(at, 0.07, 0.07 * gm, 2200, 'band'); break;
       case 'pad': case 'sub': case 'glass': case 'harp': case 'bowl': case 'drip': case 'wind': stageHush(f, at, dur, gm, e.v); break;
     }
+  }
+  // ================= 💧 水の音色(2026-10-26 新規・デトックス用。stageFire の先頭から waterFire に回す) =================
+  // rush=ざーっ(流れる水) / swirl=うずまき(音が渦を巻いて下る) / bubble=ぽこっ / gurg=ごぼごぼ / trickle=ちょろちょろ / brass=ファンファーレ用のブラス
+  function waterRush(at, dur, gm, burst){
+    const s = actx.createBufferSource(), g = actx.createGain(), f = actx.createBiquadFilter();
+    s.buffer = stageNoiseBuf; s.loop = true;
+    f.type = 'bandpass'; f.Q.value = 0.7;
+    const pk = burst ? 0.1 : 0.3;
+    f.frequency.setValueAtTime(burst ? 2600 : 900, at);
+    f.frequency.linearRampToValueAtTime(burst ? 3400 : 3200, at + dur * pk);
+    f.frequency.linearRampToValueAtTime(700, at + dur);
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.linearRampToValueAtTime(0.11 * gm, at + dur * pk);
+    g.gain.linearRampToValueAtTime(0.055 * gm, at + dur * 0.7);
+    g.gain.linearRampToValueAtTime(0.0001, at + dur);
+    s.connect(f); f.connect(g); g.connect(stageMasterNode());
+    s.start(at); s.stop(at + dur + 0.05);
+    // 低いごうごう(水の重さ)
+    const s2 = actx.createBufferSource(), g2 = actx.createGain(), f2 = actx.createBiquadFilter();
+    s2.buffer = stageNoiseBuf; s2.loop = true; f2.type = 'lowpass'; f2.frequency.value = 320;
+    g2.gain.setValueAtTime(0.0001, at); g2.gain.linearRampToValueAtTime(0.1 * gm, at + dur * pk); g2.gain.linearRampToValueAtTime(0.0001, at + dur);
+    s2.connect(f2); f2.connect(g2); g2.connect(stageMasterNode());
+    s2.start(at); s2.stop(at + dur + 0.05);
+  }
+  function waterSwirl(freq, at, dur, gm){
+    const o = actx.createOscillator(), g = actx.createGain(), fl = actx.createBiquadFilter(), lfo = actx.createOscillator(), lg = actx.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(freq, at); o.frequency.exponentialRampToValueAtTime(Math.max(60, freq / 6), at + dur);
+    lfo.type = 'sine'; lfo.frequency.value = 7; lg.gain.value = freq * 0.03;
+    lfo.connect(lg); lg.connect(o.frequency);
+    fl.type = 'lowpass'; fl.frequency.value = 2600; fl.Q.value = 0.8;
+    g.gain.setValueAtTime(0.0001, at); g.gain.linearRampToValueAtTime(0.075 * gm, at + 0.08);
+    g.gain.setValueAtTime(0.075 * gm, at + dur * 0.7); g.gain.linearRampToValueAtTime(0.0001, at + dur);
+    o.connect(fl); fl.connect(g); stageOut(g, 0.3);
+    o.start(at); o.stop(at + dur + 0.05); lfo.start(at); lfo.stop(at + dur + 0.05);
+  }
+  function waterBubble(freq, at, gm){
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(freq, at); o.frequency.exponentialRampToValueAtTime(freq * 1.9, at + 0.07);
+    g.gain.setValueAtTime(0.0001, at); g.gain.linearRampToValueAtTime(0.1 * gm, at + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, at + 0.12);
+    o.connect(g); stageOut(g, 0.35); o.start(at); o.stop(at + 0.14);
+  }
+  function waterGurg(at, dur, gm){
+    const n = Math.max(3, Math.round(dur / 0.1));
+    for (let k = 0; k < n; k++) waterBubble(170 + ((k * 53) % 190), at + k * dur / n, gm * (0.55 + 0.45 * (((k * 7) % 5) / 4)));
+  }
+  function waterTrickle(at, dur, gm){
+    const s = actx.createBufferSource(), f = actx.createBiquadFilter(), am = actx.createGain(), env = actx.createGain(), lfo = actx.createOscillator(), lg = actx.createGain();
+    s.buffer = stageNoiseBuf; s.loop = true;
+    f.type = 'bandpass'; f.frequency.value = 5200; f.Q.value = 3;
+    am.gain.value = 0.5; lfo.type = 'sine'; lfo.frequency.value = 17; lg.gain.value = 0.5; lfo.connect(lg); lg.connect(am.gain);
+    env.gain.setValueAtTime(0.0001, at); env.gain.linearRampToValueAtTime(0.07 * gm, at + Math.min(0.3, dur * 0.2));
+    env.gain.setValueAtTime(0.07 * gm, Math.max(at + 0.31, at + dur - 0.3)); env.gain.linearRampToValueAtTime(0.0001, at + dur);
+    s.connect(f); f.connect(am); am.connect(env); env.connect(stageMasterNode());
+    s.start(at); s.stop(at + dur + 0.05); lfo.start(at); lfo.stop(at + dur + 0.05);
+  }
+  // rise=水かさが増していく(ざーっと音が上へ昇る) / splash=ざばーん(あふれた瞬間) / slide=ぷわ〜(ずり下がるラッパ)
+  function waterRise(at, dur, gm){
+    const s = actx.createBufferSource(), g = actx.createGain(), f = actx.createBiquadFilter();
+    s.buffer = stageNoiseBuf; s.loop = true; f.type = 'bandpass'; f.Q.value = 1.2;
+    f.frequency.setValueAtTime(300, at); f.frequency.exponentialRampToValueAtTime(4200, at + dur);
+    g.gain.setValueAtTime(0.0001, at); g.gain.linearRampToValueAtTime(0.11 * gm, at + dur * 0.92); g.gain.linearRampToValueAtTime(0.0001, at + dur);
+    s.connect(f); f.connect(g); g.connect(stageMasterNode()); s.start(at); s.stop(at + dur + 0.05);
+  }
+  function waterSplash(at, gm){
+    const s = actx.createBufferSource(), g = actx.createGain(), f = actx.createBiquadFilter();
+    s.buffer = stageNoiseBuf; f.type = 'highpass'; f.frequency.value = 1200;
+    g.gain.setValueAtTime(0.18 * gm, at); g.gain.exponentialRampToValueAtTime(0.0001, at + 0.55);
+    s.connect(f); f.connect(g); g.connect(stageMasterNode()); s.start(at); s.stop(at + 0.6);
+    const o = actx.createOscillator(), og = actx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(140, at); o.frequency.exponentialRampToValueAtTime(45, at + 0.25);
+    og.gain.setValueAtTime(0.35 * gm, at); og.gain.exponentialRampToValueAtTime(0.0001, at + 0.4);
+    o.connect(og); og.connect(stageMasterNode()); o.start(at); o.stop(at + 0.45);
+  }
+  function waterSlide(freq, at, dur, gm){
+    const o = actx.createOscillator(), g = actx.createGain(), fl = actx.createBiquadFilter();
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(freq, at); o.frequency.exponentialRampToValueAtTime(freq * 0.7, at + dur);
+    fl.type = 'lowpass'; fl.frequency.value = 1400; fl.Q.value = 1;
+    g.gain.setValueAtTime(0.0001, at); g.gain.linearRampToValueAtTime(0.07 * gm, at + 0.03);
+    g.gain.setValueAtTime(0.07 * gm, Math.max(at + 0.04, at + dur - 0.06)); g.gain.linearRampToValueAtTime(0.0001, at + dur);
+    o.connect(fl); fl.connect(g); g.connect(stageMasterNode()); o.start(at); o.stop(at + dur + 0.05);
+  }
+  const WATER_VOICES = { rush:1, swirl:1, bubble:1, gurg:1, trickle:1, brass:1, rise:1, splash:1, slide:1 };
+  function waterFire(e, at, spb){
+    const dur = Math.max(0.06, e.d * spb), gm = e.g || 1;
+    const f = e.m ? 440 * Math.pow(2, (e.m - 69) / 12) : 0;
+    switch (e.v) {
+      case 'rush': waterRush(at, dur, gm, e.m === 1); break;
+      case 'swirl': waterSwirl(f, at, dur, gm); break;
+      case 'bubble': waterBubble(f, at, gm); break;
+      case 'gurg': waterGurg(at, dur, gm); break;
+      case 'trickle': waterTrickle(at, dur, gm); break;
+      case 'rise': waterRise(at, dur, gm); break;
+      case 'splash': waterSplash(at, gm); break;
+      case 'slide': waterSlide(f, at, dur, gm); break;
+      case 'brass': stageTone('sawtooth', f, at, dur * 0.95, 0.05 * gm, 0.75, 0.025, 2600); stageTone('square', f, at, dur * 0.95, 0.02 * gm, 0.75, 0.025, 1800, 6); break;
+    }
+  }
+  // 「ゴゴゴ…どばぁ！」(デトックス。2026-10-26 キング選定・5案のうちの②)：メロディなし・♩=120・6小節(12秒)のループ。
+  // ちょろちょろ→地鳴りの低音と太鼓がだんだん速くなる→一瞬の間→ドンッと大洪水(予想以上にあふれてビックリ)→波が引く→しずく。
+  function stageBuildToilet(){
+    const s = STAGE_SONGS.toilet, ev = [];
+    s.total = s.bars * s.bpb;
+    const put = (t, d, v, m, g) => ev.push({ t:t, d:d, v:v, m:m || 0, g:g || 1 });
+    put(0, 6, 'trickle', 0, .8); put(0, 8, 'drone', 38, .9); put(6, 9.25, 'drone', 38, 1); put(6, 9.25, 'rise', 0, .8);
+    put(5.5, .1, 'wood', 0, 1.3); put(6, 6, 'rush', 0, .7);
+    const T = [0, 2, 4, 6, 8, 9, 10, 11, 12, 12.5, 13, 13.5, 14, 14.25, 14.5, 14.75, 15];
+    T.forEach((t, i) => put(t, .5, 'taiko', 0, .35 + .65 * i / (T.length - 1)));
+    for (let b = 8; b < 15; b++) put(b, .9, 'gbass', 38, .9);
+    put(16, .1, 'crash', 0, 1.3); put(16, .1, 'splash', 0, 1.5); [16, 16.5, 17].forEach(t => put(t, .5, 'taiko', 0, 1));
+    put(16, 4, 'rush', 1, 1.6); put(16, 4, 'swirl', 79, 1); [50, 57, 62].forEach(n => put(16, 2, 'brass', n, 1.1)); put(17, 3, 'gurg', 0, 1);
+    put(20, 4, 'rush', 0, .7); put(20, 3, 'swirl', 74, .7); put(21, 2, 'gurg', 0, .6); put(23.5, .5, 'drip', 84, .9);
+    ev.sort((a, b) => a.t - b.t);
+    s.ev = ev;
+    return s;
   }
   function stageTick(){
     const c = stageState; if (!c || !actx) return;
@@ -14531,7 +14651,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-25';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-26';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
@@ -15813,6 +15933,7 @@ ${note}
         if (s === 'timeroom') startTimeRoomBGM();
         else if (s === 'sky') startSkyBGM();
         else if (s === 'setup') startStageBGM('hokora');
+        else if (s === 'graph') startStageBGM('toilet');
         else baseBGM();
       }
     }
@@ -15830,6 +15951,7 @@ ${note}
     if (screen === 'letters') { if (soundOn) startStageBGM('tegami'); else stopStageBGM(); return; }
     if (screen === 'sage') { if (soundOn) startStageBGM('sage'); else stopStageBGM(); return; }
     if (screen === 'setup') { if (soundOn) startStageBGM('hokora'); else stopStageBGM(); return; }
+    if (screen === 'graph') { if (soundOn) startStageBGM('toilet'); else stopStageBGM(); return; }
     if (soundOn) startBGM(); else stopBGM();
   });
   document.getElementById('rpgTitleSplashImg').src = TITLE_SPLASH;
