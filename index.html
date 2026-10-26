@@ -117,6 +117,10 @@
   .tg-track{ position:relative; height:10px; background:rgba(157,180,255,0.14); border-radius:10px; }
   .tg-mid{ position:absolute; left:50%; top:-2px; bottom:-2px; width:2px; background:rgba(255,255,255,0.5); }
   .tg-bar{ position:absolute; top:0; bottom:0; }
+  .tg-month{ font-size:13px; font-weight:bold; color:#ffd36b; margin:12px 0 2px; }
+  .tg-month + .tg-wk{ border-top:0; }
+  .tg-era{ font-size:11.5px; color:#ffd36b; border-top:2px dashed rgba(255,211,107,0.6); padding-top:6px; margin:12px 0 2px; line-height:1.6; }
+  .tg-more{ background:rgba(255,211,107,0.12); color:#fff; border:1px solid #ffd36b; border-radius:10px; padding:9px 18px; font-size:14px; font-weight:bold; }
   .tg-ends{ display:flex; justify-content:space-between; font-size:11px; color:#9db4ff; margin:0 4.6em 0 calc(4.6em + 6px); }
   .vw-wind{ font-size:16px; font-weight:bold; margin-top:2px; }
   .vw-wind.head{ color:#ffb4b4; } .vw-wind.calm{ color:#cfe0ff; } .vw-wind.tail{ color:#9ff5c5; }
@@ -3579,6 +3583,9 @@
   // 海外投資家・個人・信託銀行(年金)の、東証(プライム+スタンダード+グロース)・現物・週次の差引(買い−売り)。元データ＝JPX 投資部門別売買状況。data/investor_flows.json を読むだけ。
   // 棒は中央から右＝買い越し／左＝売り越し。色は日本の業種温度計と同じ青→赤のグラデーションの一部。判定・予想は書かない。
   const TUG_WEEKS = 4;
+  const TUG_SCALE = 20000;      // 2026-10-26 キング承認：棒の端＝±20,000億円。どの週も共通(週どうしを比べられるように)
+  const TUG_MORE_STEP = 12;     // 「さらに過去を見る」1回で足す週数
+  let tugShown = 0;             // 今、過去側に出している週数(画面の描き直しをまたいで保つ)
   const TUG_SECTORS = [['foreign', '海外投資家'], ['individual', '個人'], ['trustbank', '信託銀行']];
   function tugFmt(n){ return (n > 0 ? '+' : (n < 0 ? '−' : '')) + Math.abs(n).toLocaleString('ja-JP'); }
   function buildTugPanel(){
@@ -3592,8 +3599,7 @@
       return wrap;
     }
     const weeks = doc.weeks.slice(-TUG_WEEKS).reverse();   // 新しい週が上
-    const mx = Math.max(1, ...weeks.flatMap(w => TUG_SECTORS.map(([k]) => Math.abs(w[k]))));
-    const scale = Math.ceil(mx / 2000) * 2000;
+    const scale = TUG_SCALE;
     const md = d => `${+d.slice(5,7)}/${+d.slice(8,10)}`;
     const last = weeks[0];
     const top = TUG_SECTORS.map(([k, n]) => ({ n, v: last[k] })).reduce((a, b) => (Math.abs(b.v) > Math.abs(a.v) ? b : a));
@@ -3607,13 +3613,60 @@
       return `<div class="tg-bar" style="right:50%; width:${w.toFixed(1)}%; border-radius:10px 0 0 10px; background:linear-gradient(270deg, hsl(220,70%,55%), hsl(220,55%,40%));"></div>`;
     };
     const ends = document.createElement('div'); ends.className = 'tg-ends'; ends.innerHTML = '<span>◀ 売り越し</span><span>買い越し ▶</span>'; wrap.appendChild(ends);
-    weeks.forEach(w => {
-      const box = document.createElement('div'); box.className = 'tg-wk';
-      box.innerHTML = `<div class="tg-date">${md(w.from)}〜${md(w.to)}の週　（億円）</div>` + TUG_SECTORS.map(([k, n]) =>
-        `<div class="tg-row"><span class="tg-name">${n}</span><div class="tg-track"><div class="tg-mid"></div>${barOf(w[k])}</div><span class="tg-val">${tugFmt(w[k])}</span></div>`).join('');
-      wrap.appendChild(box);
-    });
-    note(`差引＝買い−売り。棒の端＝±${scale.toLocaleString('ja-JP')}億円。東証プライム+スタンダード+グロースの現物。個人は信用取引を含みます。事業法人・証券会社の自己売買などは載せていません。`);
+    // 週のカードを並べる。月が変わるところに月の見出し、旧市場→新市場の境目(2022-04)に線と注記を入れる(2026-10-26 キング承認)
+    const cardsOf = (list, stt) => {
+      const frag = document.createDocumentFragment();
+      list.forEach(w => {
+        const m = w.to.slice(0, 7);
+        if (m !== stt.month) {
+          const h = document.createElement('div'); h.className = 'tg-month'; h.textContent = `${+m.slice(0,4)}年${+m.slice(5,7)}月`; frag.appendChild(h); stt.month = m;
+        }
+        if (stt.era === 'new' && w.era === 'old') {
+          const e = document.createElement('div'); e.className = 'tg-era';
+          e.textContent = '▼ ここから下は旧市場（東証一部＋二部＋マザーズ＋JASDAQ）の数字です。2022年4月からの新市場（プライム＋スタンダード＋グロース）とは範囲がちがいます。'; frag.appendChild(e);
+        }
+        if (w.era) stt.era = w.era;
+        const box = document.createElement('div'); box.className = 'tg-wk';
+        box.innerHTML = `<div class="tg-date">${md(w.from)}〜${md(w.to)}の週　（億円）</div>` + TUG_SECTORS.map(([k, n]) =>
+          `<div class="tg-row"><span class="tg-name">${n}</span><div class="tg-track"><div class="tg-mid"></div>${barOf(w[k])}</div><span class="tg-val">${tugFmt(w[k])}</span></div>`).join('');
+        frag.appendChild(box);
+      });
+      return frag;
+    };
+    const stt = { month: null, era: 'new' };
+    wrap.appendChild(cardsOf(weeks, stt));
+    // 過去の週(data/investor_flows_history.json・2016年〜)。ボタンを押したときだけ読み、12週ずつ下へ足す
+    const HNAME = 'investor_flows_history.json';
+    const oldestFrom = weeks[weeks.length - 1].from;
+    const past = document.createElement('div'); wrap.appendChild(past);
+    const moreWrap = document.createElement('div'); moreWrap.style.cssText = 'text-align:center; margin:10px 0 4px;'; wrap.appendChild(moreWrap);
+    const mini = txt => { const d = document.createElement('div'); d.style.cssText = 'font-size:11px; color:#8a93b8; line-height:1.6; margin-top:6px; text-align:left;'; d.textContent = txt; return d; };
+    const drawPast = () => {
+      past.innerHTML = ''; moreWrap.innerHTML = '';
+      const hd = ddoc(HNAME);
+      let remaining = null;
+      if (hd && Array.isArray(hd.weeks)) {
+        const older = hd.weeks.filter(w => w.from < oldestFrom).reverse();   // 新しい週が上
+        past.appendChild(cardsOf(older.slice(0, tugShown), { month: stt.month, era: stt.era }));
+        remaining = Math.max(0, older.length - tugShown);
+        if (tugShown > 0) past.appendChild(mini(`ここより下の週の出典：JPX 投資部門別売買状況(週次)の過去分（2016年1月〜）。直近4週とは別のファイルから読むため、同じ週でも数億円ずれることがあります。`));
+      } else if (tugShown > 0) {
+        moreWrap.appendChild(mini(ddNote(HNAME, '過去の週のデータ')));
+      }
+      if (remaining === 0 && tugShown > 0) { moreWrap.appendChild(mini('2016年1月の週まで、すべて見ました。')); return; }
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'tg-more';
+      btn.textContent = remaining ? `さらに過去を見る（あと${remaining}週）` : 'さらに過去を見る';
+      btn.onclick = () => {
+        tugShown += TUG_MORE_STEP;
+        const s = dataDocs[HNAME];
+        if (s && s.status === 'error') loadDataDoc(HNAME, true); else ensureDataDocs([HNAME]);
+        drawPast();
+      };
+      moreWrap.appendChild(btn);
+    };
+    if (tugShown > 0) ensureDataDocs([HNAME]);
+    drawPast();
+    note(`差引＝買い−売り。棒の端＝±${scale.toLocaleString('ja-JP')}億円（どの週も共通）。東証プライム+スタンダード+グロースの現物。個人は信用取引を含みます。事業法人・証券会社の自己売買などは載せていません。`);
     note(`出典：${doc.source}（更新 ${doc.updated}）。${doc.note}`);
     return wrap;
   }
@@ -14716,7 +14769,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-26b';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-26c';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
