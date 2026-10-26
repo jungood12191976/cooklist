@@ -43,6 +43,12 @@
   .voy-head{ display:flex; justify-content:space-between; align-items:baseline; }
   .voy-time{ font-size:12.5px; color:#9db4ff; }
   .voy-sec-title{ font-size:14.5px; font-weight:bold; color:#ffd76b; margin:12px 0 4px; }
+  .us-why{ margin-top:12px; border:1.5px solid #5a5d6e; border-radius:12px; padding:10px 12px; background:#1c1e23; }
+  .us-why-t{ font-size:14.5px; font-weight:bold; color:#f5c542; margin-bottom:6px; }
+  .us-why-d{ font-size:12px; font-weight:normal; color:#c8d0f0; }
+  .us-why-l{ font-size:14px; line-height:1.7; color:#e6e6e6; margin-bottom:6px; }
+  .us-why-s{ font-size:11px; line-height:1.6; color:#8a8d9c; margin-top:6px; }
+  .us-why-s a{ color:#9db4ff; word-break:break-all; }
   .voy-sub{ font-size:13px; color:#bfe0ff; margin:8px 0 4px; }
   .voy-line{ font-size:14.5px; color:#eaf3ff; line-height:1.6; margin:2px 0; }
   .voy-fail{ color:#ffcaa8; }
@@ -3727,6 +3733,52 @@
     note(`出典：${doc.source}（更新 ${doc.updated}）。${doc.note}`);
     return wrap;
   }
+  // ===== 🇺🇸 昨夜のアメリカ、なぜ動いた？(2026-10-26 キング承認): シート「米国結果」タブ(gid=1499387524) =====
+  // 平日8:03の定期実行が、前夜の米国市場の理由を2〜3行で1行書く。列: for_date,us_date,line1,line2,line3,sources(JSON),grade,written_at。
+  // for_date が「今日(JST)」の行だけ出す。無い日・古い日は何も出さない(古い内容を最新として出さない)。
+  const usWhyUrl = () => 'https://docs.google.com/spreadsheets/d/' + SKY_BRIEF_SHEET_ID + '/export?format=csv&gid=1499387524';
+  const usWhyState = { rows:null, at:0, fetching:false };
+  async function usWhyLoad(){
+    if (usWhyState.fetching) return;
+    if (usWhyState.rows && Date.now() - usWhyState.at < 5 * 60 * 1000) return;
+    usWhyState.fetching = true;
+    const ctrl = new AbortController(); const tid = setTimeout(() => ctrl.abort(), 15000);
+    let changed = false;
+    try {
+      const res = await fetch(usWhyUrl() + '&_=' + Date.now(), { cache:'no-store', signal: ctrl.signal });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const rows = skyParseCSV(await res.text());
+      const h = (rows[0] || []).map(x => String(x).trim());
+      if (h[0] !== 'for_date' || h[2] !== 'line1' || h[5] !== 'sources') throw new Error('形式が想定と違います');
+      const next = rows.slice(1).filter(r => r.some(c => String(c).trim() !== ''));
+      changed = JSON.stringify(next) !== JSON.stringify(usWhyState.rows);
+      usWhyState.rows = next; usWhyState.at = Date.now();
+    } catch(e) { usWhyState.rows = usWhyState.rows || []; usWhyState.at = Date.now() - 4 * 60 * 1000; }
+    finally { clearTimeout(tid); usWhyState.fetching = false; }
+    if (changed) { try { render(); } catch(e){} }
+  }
+  function usWhyToday(){
+    const today = todayDateKey();
+    const g = (r, i) => String(r[i] == null ? '' : r[i]).trim();
+    const hit = (usWhyState.rows || []).filter(r => g(r, 0) === today && g(r, 2));
+    if (!hit.length) return null;
+    const r = hit[hit.length - 1];
+    let srcs = [];
+    try { const a = JSON.parse(g(r, 5) || '[]'); if (Array.isArray(a)) srcs = a; } catch(e) {}
+    return { usDate: g(r, 1), lines: [g(r, 2), g(r, 3), g(r, 4)].filter(Boolean), srcs, grade: g(r, 6) };
+  }
+  function usWhyHTML(){
+    const o = usWhyToday();
+    if (!o) return '';
+    const esc = skyEsc;
+    const dt = /^\d{4}-\d{2}-\d{2}$/.test(o.usDate) ? `　（アメリカ ${fmtMD(o.usDate)}の結果）` : '';
+    const links = o.srcs.filter(x => x && /^https:\/\//.test(String(x.u || '')) && x.t)
+      .map(x => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer">${esc(x.t)}</a>`).join('<br>');
+    return `<div class="us-why"><div class="us-why-t">昨夜のアメリカ、なぜ動いた？<span class="us-why-d">${esc(dt.trim())}</span></div>
+      ${o.lines.map(l => `<div class="us-why-l">${esc(l)}</div>`).join('')}
+      <div class="us-why-s">${o.grade ? `確度${esc(o.grade)}・` : ''}記事が書いている内容だけをまとめています。原因の断定ではありません。${links ? '<br>出典：<br>' + links : ''}</div></div>`;
+  }
+
   function buildVoyagePanel(){
     const today = todayDateKey();
     const rec = getVoyageToday() || { date: today };
@@ -3739,6 +3791,7 @@
     // 表示形式を変えた日(2026-10-08)だけの移行：旧形式(v未設定)で取得済みなら、取得時間帯の中で1回だけ取り直して新しいカード表にする
     if (hasFetched && rec.view && rec.view.v !== 2 && trading && inWin) voyageKick();
     const ev = voyageTodayEvents();
+    try { usWhyLoad(); } catch(e) {}
     { const vi = hasFetched && rec.view && (rec.view.items || []).find(x => x.label === 'VIX' && !x.failed); if (vi && vi.weekAgo == null) vixFillWeekAgo(); }
 
     // 昨夜書いた「明日へのアドバイス」(天空の城。保存キー wd3:nextnote)を、トップに「キングからのアドバイス」として出す(1日だけ。キング指定 2026-10-07)
@@ -3871,6 +3924,7 @@
       <div class="pw-title">🌊 今日の航路　${fmtMD(today)}</div>
       <div class="voy-merge">${sec1}</div>
       ${hasNote ? `<div class="voy-note one" id="voyNote" title="タップで全文">👑 <b>${Number(nn.writtenDate.slice(5,7))}/${Number(nn.writtenDate.slice(8,10))}</b>　${esc(nn.text)}</div>` : ''}
+      ${(() => { try { return usWhyHTML(); } catch(e) { return ''; } })()}
       <div class="voy-sec-title">今日の予定</div>${sec2}
       <div class="voy-sec-title">今日の戦いアイテム</div>${bannerHtml}
       <div class="voy-sec-title">⚔️ iSPEEDを見る前のチェック</div>${sec4}`;
@@ -14836,7 +14890,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-26e';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-26f';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
