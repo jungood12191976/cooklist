@@ -1,11 +1,11 @@
-fetched_at=2026-10-28T03:39:53+09:00
+fetched_at=2026-10-28T07:55:16+09:00
 events_fetched=500
-event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,showAllOutcomes,showMarketImages,slug,sortBy,startDate,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
+event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,countryName,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,electionType,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,showAllOutcomes,showMarketImages,slug,sortBy,startDate,startTime,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
     - Fed Decision in October?
     - Fed Decision in December?
-    - How many Fed rate cuts in 2026?
     - Fed Decision in January?
+    - How many Fed rate cuts in 2026?
     - How low will 5-year Treasury yield get before 2027?
     - How low will Lake Powell drop?
 theme oil_iran: 6 events
@@ -20,22 +20,21 @@ theme trump: 6 events
     - Fed Decision in October?
     - US-Iran ceasefire continues through...?
     - US announces end of Iranian blockade by...?
+    - Fed Decision in December?
     - US-Iran ceasefire continues through the midterms?
-    - NATO x Russia military clash by...?
-theme tariff: 1 events
-    - US-Canada diplomatic agreement to lower tariffs by...?
+theme tariff: 0 events
 theme recession: 0 events
-theme inflation: 3 events
+theme inflation: 2 events
     - Fed Decision in October?
     - PPI YoY - October 2026
-    - How many Fed rate hikes in 2026?
-theme stocks: 0 events
+theme stocks: 1 events
+    - S&P 500 (SPY) closes above ___ on October 27?
 theme ai_chips: 6 events
     - Which company has best AI model end of 2026?
     - GPT Astra 6.1+ released by...?
-    - Anthropic IPO by __?
     - Anthropic IPO Closing Market Cap
     - OpenAI announces another Millennium Prize solution by...?
+    - Anthropic IPO by __?
     - What will OpenAI's IPO valuation be?
 theme fx: 1 events
     - Bank of Japan Decision in October?
