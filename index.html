@@ -44,11 +44,11 @@
   .voy-time{ font-size:12.5px; color:#9db4ff; }
   .voy-sec-title{ font-size:14.5px; font-weight:bold; color:#ffd76b; margin:12px 0 4px; }
   .us-why{ margin-top:12px; border:1.5px solid #5a5d6e; border-radius:12px; padding:10px 12px; background:#1c1e23; }
-  .us-why-t{ font-size:14.5px; font-weight:bold; color:#f5c542; margin-bottom:6px; }
+  .us-why-t{ font-size:13px; color:#f5c542; margin-bottom:6px; }
   .us-why-d{ font-size:12px; font-weight:normal; color:#c8d0f0; }
-  .us-why-l{ font-size:14px; line-height:1.7; color:#e6e6e6; margin-bottom:6px; }
+  .us-why-l{ font-size:13px; line-height:1.7; color:#e6e6e6; margin-bottom:6px; }
   .us-why-s{ font-size:11px; line-height:1.6; color:#8a8d9c; margin-top:6px; }
-  .us-why-s a{ color:#9db4ff; word-break:break-all; }
+  .us-why-s a{ color:#8a8d9c; text-decoration:underline; }
   .voy-sub{ font-size:13px; color:#bfe0ff; margin:8px 0 4px; }
   .voy-line{ font-size:14.5px; color:#eaf3ff; line-height:1.6; margin:2px 0; }
   .voy-fail{ color:#ffcaa8; }
@@ -3771,12 +3771,20 @@
     const o = usWhyToday();
     if (!o) return '';
     const esc = skyEsc;
-    const dt = /^\d{4}-\d{2}-\d{2}$/.test(o.usDate) ? `　（アメリカ ${fmtMD(o.usDate)}の結果）` : '';
-    const links = o.srcs.filter(x => x && /^https:\/\//.test(String(x.u || '')) && x.t)
-      .map(x => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer">${esc(x.t)}</a>`).join('<br>');
-    return `<div class="us-why"><div class="us-why-t">昨夜のアメリカ、なぜ動いた？<span class="us-why-d">${esc(dt.trim())}</span></div>
-      ${o.lines.map(l => `<div class="us-why-l">${esc(l)}</div>`).join('')}
-      <div class="us-why-s">${o.grade ? `確度${esc(o.grade)}・` : ''}記事が書いている内容だけをまとめています。原因の断定ではありません。${links ? '<br>出典：<br>' + links : ''}</div></div>`;
+    const cols = ['#ffb3b3','#ffd27a','#b9d4ff'];
+    const hostName = u => { try { return new URL(u).hostname.replace(/^www\./,''); } catch(e) { return ''; } };
+    const body = o.lines.map((l, i) => {
+      const m = String(l).match(/^【([^】]{1,16})】([\s\S]*)$/);
+      return m
+        ? `<div class="us-why-l"><span style="color:${cols[i % 3]};font-weight:bold;">${esc(m[1])}</span>${esc(m[2])}</div>`
+        : `<div class="us-why-l">${esc(l)}</div>`;
+    }).join('');
+    const links = o.srcs.filter(x => x && /^https:\/\//.test(String(x.u || '')))
+      .map(x => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer">${esc(x.n || hostName(x.u))}</a>`).join('・');
+    const dt = /^\d{4}-\d{2}-\d{2}$/.test(o.usDate) ? `（アメリカ ${fmtMD(o.usDate)}）` : '';
+    const warn = (o.grade === 'C' || o.grade === 'D') ? `確度${esc(o.grade)}・` : '';
+    return `<div class="us-why"><div class="us-why-t">昨夜のアメリカ、なぜ動いた？</div>${body}
+      <div class="us-why-s">${warn}出典：${links || '確認できません'}${dt ? ' ' + esc(dt) : ''}</div></div>`;
   }
 
   function buildVoyagePanel(){
@@ -14890,7 +14898,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-26f';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-27a';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
