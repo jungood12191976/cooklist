@@ -1,2 +1,1 @@
-items=225 fail=0 sliced=1 pxfail=0 fetched_at=2026-10-27T02:15+09:00
-SLICED 285A キオクシアHD first=100 sliced=336 ok=True
+items=225 fail=0 sliced=0 pxfail=0 fetched_at=2026-10-28T01:19+09:00
