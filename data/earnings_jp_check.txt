@@ -1,4 +1,4 @@
-FILE kessan.xlsx as_of=None data_rows=28 parsed=24 (うち日付未定=0) skipped=4 dups=0
+FILE kessan.xlsx as_of=None data_rows=47 parsed=43 (うち日付未定=0) skipped=4 dups=0
   SKIPPED ['※ 決算期変更による変則決算期中の会社を含む場合があります。', '', '', '', '', '', '', '']
   SKIPPED ['May include companies with irregular fiscal terms due to changes in the fiscal year.', '', '', '', '', '', '', '']
   SKIPPED ['※ テクニカル上場した会社は、前身となる会社（株式移転等を行った旧上場会社）の決算情報を発表する場合があります。', '', '', '', '', '', '', '']
@@ -8,18 +8,18 @@ FILE kessan08_1002.xlsx as_of=2026-10-01 data_rows=463 parsed=459 (うち日付�
   SKIPPED ['May include companies with irregular fiscal terms due to changes in the fiscal year.', '', '', '', '', '', '', '']
   SKIPPED ['※ テクニカル上場した会社は、前身となる会社（株式移転等を行った旧上場会社）の決算情報を発表する場合があります。', '', '', '', '', '', '', '']
   SKIPPED ['Technical listed companies may announce the financial information of their predecessor (former listed companies that have transferred stock, etc.)', '', '', '', '', '', '', '']
-FILE kessan09_1023.xlsx as_of=2026-10-22 data_rows=2951 parsed=2947 (うち日付未定=27) skipped=4 dups=24
+FILE kessan09_1023.xlsx as_of=2026-10-22 data_rows=2951 parsed=2947 (うち日付未定=27) skipped=4 dups=43
   SKIPPED ['※ 決算期変更による変則決算期中の会社を含む場合があります。', '', '', '', '', '', '', '']
   SKIPPED ['May include companies with irregular fiscal terms due to changes in the fiscal year.', '', '', '', '', '', '', '']
   SKIPPED ['※ テクニカル上場した会社は、前身となる会社（株式移転等を行った旧上場会社）の決算情報を発表する場合があります。', '', '', '', '', '', '', '']
   SKIPPED ['Technical listed companies may announce the financial information of their predecessor (former listed companies that have transferred stock, etc.)', '', '', '', '', '', '', '']
-  DUP ('4063', '2026-10-27', '第２四半期')
-  DUP ('4479', '2026-10-27', '本決算')
-  DUP ('4684', '2026-10-27', '第２四半期')
-  DUP ('4733', '2026-10-27', '第２四半期')
-  DUP ('4765', '2026-10-27', '第２四半期')
-  DUP ('4973', '2026-10-27', '第２四半期')
-  DUP ('5279', '2026-10-27', '第２四半期')
-  DUP ('5344', '2026-10-27', '第２四半期')
-  DUP ('5532', '2026-10-27', '本決算')
-  DUP ('5609', '2026-10-27', '第２四半期')
+  DUP ('1930', '2026-10-28', '第２四半期')
+  DUP ('1934', '2026-10-28', '第２四半期')
+  DUP ('2002', '2026-10-28', '第２四半期')
+  DUP ('2359', '2026-10-28', '第２四半期')
+  DUP ('2664', '2026-10-28', '第２四半期')
+  DUP ('2737', '2026-10-28', '第２四半期')
+  DUP ('2760', '2026-10-28', '第２四半期')
+  DUP ('368A', '2026-10-28', '第２四半期')
+  DUP ('3771', '2026-10-28', '第２四半期')
+  DUP ('3778', '2026-10-28', '第２四半期')
