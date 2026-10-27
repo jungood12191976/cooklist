@@ -1,4 +1,4 @@
-fetched_at=2026-10-27T08:49:49+09:00
+fetched_at=2026-10-27T10:32:39+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,showAllOutcomes,showMarketImages,slug,sortBy,startDate,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
@@ -7,7 +7,7 @@ theme rates: 6 events
     - How many Fed rate cuts in 2026?
     - How low will 30-year Treasury yield get before 2027?
     - How many Fed rate hikes in 2026?
-    - How low will 5-year Treasury yield get before 2027?
+    - Fed decisions (Sep–Dec)
 theme oil_iran: 6 events
     - US-Iran ceasefire continues through...?
     - Israel x Iran ceasefire continues through...?
@@ -24,19 +24,18 @@ theme trump: 6 events
     - Venezuela leader end of 2026?
 theme tariff: 1 events
     - US-Canada diplomatic agreement to lower tariffs by...?
-theme recession: 1 events
-    - South Korea GDP growth (YoY) in Q3 2026?
+theme recession: 0 events
 theme inflation: 4 events
     - Fed Decision in October?
-    - October Inflation US - Annual
     - How many Fed rate hikes in 2026?
+    - October Inflation US - Annual
     - Fed decisions (Sep–Dec)
 theme stocks: 0 events
 theme ai_chips: 6 events
     - Anthropic IPO by __?
     - Anthropic IPO Closing Market Cap
-    - What will Anthropic's public ticker be?
-    - Next Fable Model (5.2+) released by...?
     - Will Anthropic’s valuation hit __ by December 31?
-    - In which month will Anthropic IPO?
+    - What will Anthropic's public ticker be?
+    - OpenAI announces another Millennium Prize solution by...?
+    - Next Fable Model (5.2+) released by...?
 theme fx: 0 events
