@@ -123,6 +123,7 @@
   .tg-track{ position:relative; height:10px; background:rgba(157,180,255,0.14); border-radius:10px; }
   .tg-mid{ position:absolute; left:50%; top:-2px; bottom:-2px; width:2px; background:rgba(255,255,255,0.5); }
   .tg-bar{ position:absolute; top:0; bottom:0; }
+  .tg-oth{ font-size:11px; color:#8a93b8; margin:5px 0 1px; }
   .tg-nk{ margin-top:2px; padding-top:4px; border-top:1px dotted rgba(157,180,255,0.25); }
   .tg-nk .tg-name{ color:#ffd36b; }
   .tg-nkc{ min-width:0; } .tg-nkc svg{ display:block; width:100%; height:44px; }
@@ -3702,6 +3703,8 @@
   const TUG_MORE_STEP = 12;     // 「さらに過去を見る」1回で足す週数
   let tugShown = 0;             // 今、過去側に出している週数(画面の描き直しをまたいで保つ)
   const TUG_SECTORS = [['foreign', '海外投資家'], ['individual', '個人'], ['trustbank', '信託銀行']];
+  // 2026-10-29 キング指示(「足してみて」)：海外・個人・信託銀行のほかの投資家区分も、まず全部出す(使いながら不要なものを消す方針)。元データ＝JPX 投資部門別売買状況の同じ表(data/investor_flows_others.json)。
+  const TUG_OTHERS = [['proprietary', '証券自己'], ['brokerage', '証券委託'], ['invtrust', '投資信託'], ['bizcorp', '事業法人'], ['othercorp', 'その他法人'], ['lifenl', '生保・損保'], ['citybank', '都銀・地銀'], ['otherfin', 'その他金融']];
   function tugFmt(n){ return (n > 0 ? '+' : (n < 0 ? '−' : '')) + Math.abs(n).toLocaleString('ja-JP'); }
   // ----- 日経平均の折れ線(2026-10-29 キング承認・案A：週のカードごとに、3本のバーの下へ) -----
   // 元データ＝Yahoo Finance ^N225 の日足終値(king-stock-proxy経由)。週のカードの「前の週の最終営業日の終値」を基準(点線)に、その週の毎営業日の終値を結ぶ。
@@ -3773,8 +3776,10 @@
     tugNkLoad();
   }
   function buildTugPanel(){
-    ensureDataDocs(['investor_flows.json']);
+    ensureDataDocs(['investor_flows.json', 'investor_flows_others.json']);
     const doc = ddoc('investor_flows.json');
+    const odoc = ddoc('investor_flows_others.json');
+    const oby = {}; if (odoc && Array.isArray(odoc.weeks)) odoc.weeks.forEach(x => { oby[x.from] = x; });
     const wrap = document.createElement('div'); wrap.className = 'pw';
     const t = document.createElement('div'); t.className = 'pw-title'; t.textContent = '⚖️ 日本株の綱引き'; wrap.appendChild(t);
     const note = (txt, css) => { const d = document.createElement('div'); d.style.cssText = css || 'font-size:11px; color:#8a93b8; line-height:1.6; margin-top:6px;'; d.textContent = txt; wrap.appendChild(d); };
@@ -3813,6 +3818,8 @@
         const box = document.createElement('div'); box.className = 'tg-wk';
         box.innerHTML = `<div class="tg-date">${md(w.from)}〜${md(w.to)}の週　（億円）</div>` + TUG_SECTORS.map(([k, n]) =>
           `<div class="tg-row"><span class="tg-name">${n}</span><div class="tg-track"><div class="tg-mid"></div>${barOf(w[k])}</div><span class="tg-val">${tugFmt(w[k])}</span></div>`).join('')
+          + (oby[w.from] ? `<div class="tg-oth">ほかの投資家</div>` + TUG_OTHERS.map(([k, n]) => (typeof oby[w.from][k] === 'number')
+            ? `<div class="tg-row"><span class="tg-name">${n}</span><div class="tg-track"><div class="tg-mid"></div>${barOf(oby[w.from][k])}</div><span class="tg-val">${tugFmt(oby[w.from][k])}</span></div>` : '').join('') : '')
           + `<div class="tg-row tg-nk"><span class="tg-name">日経平均</span><div class="tg-nkc"></div><span class="tg-val tg-nkv"></span></div>`;
         tugNkAttach(box, w);
         frag.appendChild(box);
@@ -3853,6 +3860,7 @@
     if (tugShown > 0) ensureDataDocs([HNAME]);
     drawPast();
     note(`差引＝買い−売り。棒の端＝±${scale.toLocaleString('ja-JP')}億円（どの週も共通）。東証プライム+スタンダード+グロースの現物。個人は信用取引を含みます。事業法人・証券会社の自己売買などは載せていません。`);
+    note(oby && Object.keys(oby).length ? `ほかの投資家は、JPXの同じ表の区分です。取り込み済みの週(${md(odoc.weeks[0].from)}の週〜)だけ出ています。それより前の週は、まだ取り込んでいないので出ません。「証券自己」＝証券会社の自己売買（現金＋信用）、「証券委託」＝証券会社が委託で出した注文。区分名はJPXの表どおりです。` : 'ほかの投資家の区分は、読み込み中か、まだありません。');
     note(`日経平均の折れ線＝点線が「前の週の最終営業日の終値」、点がその週の毎営業日の終値。右の％は点線から週末の終値までの騰落率。縦の幅は点線から±${TUG_NK_SCALE}%で全週共通（はみ出す週は端に止め、％は実際の値）。出典：Yahoo Finance ^N225 日足終値。`);
     note(`出典：${doc.source}（更新 ${doc.updated}）。${doc.note}`);
     return wrap;
@@ -15488,7 +15496,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-29c';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-29d';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
