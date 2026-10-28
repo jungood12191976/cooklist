@@ -11649,8 +11649,9 @@ ${keywordLine}${bpBlock}${conditionBlock}
   function newsEarnHtml(code){
     const doc = ddoc('earnings_jp.json');
     if (!doc || !doc.items) return '';   // まだ読めていない間は何も出さない(読めたら再描画で出る)
-    if (_newsEarnDoc !== doc) { _newsEarnDoc = doc; _newsEarnMap = {}; doc.items.forEach(x => { if (x.date) _newsEarnMap[x.code] = x.date; }); }
+    if (_newsEarnDoc !== doc) { _newsEarnDoc = doc; _newsEarnMap = {}; doc.items.forEach(x => { _newsEarnMap[x.code] = x.date || (x.undecided ? 'undecided' : ''); }); }
     const d = _newsEarnMap[code];
+    if (d === 'undecided') return ` <span style="font-size:12px; color:#ffffff;">決算 日程未定</span>`;   // JPXが「未定」と載せている銘柄(これから＝白)
     if (!d) return ` <span style="font-size:12px; color:#8a93b8;">決算 日程なし</span>`;
     const upcoming = d >= todayDateKey();
     return ` <span style="font-size:12px; color:${upcoming ? '#ffffff' : '#8a93b8'};">決算${escapeHtml(fmtMD(d))}</span>`;
