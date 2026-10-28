@@ -3278,6 +3278,11 @@
     const j = kazeJstNow();
     return skyIsTradingDay(j.ymd) && j.min >= 9 * 60 && j.min < 15 * 60 + 30;
   }
+  function rkRowsHtml(){
+    const showCount = rankingOpen ? liquidRanking.length : Math.min(10, liquidRanking.length);
+    return liquidRanking.slice(0, showCount).map(x =>
+      `<div class="gm-feature-rank-row"><span class="rk-num">${x.rank}</span><span class="rk-code">${skyEsc(x.code)}</span><span class="rk-name">${skyEsc(nameFor(x.code) || '(社名なし)')}</span></div>`).join('');
+  }
   function buildRankingPanel(){
     const open = rankingMarketOpen();
     if (open && !liquidRanking && !universeLoading && !rankingAutoTried) {
@@ -3288,9 +3293,7 @@
     let html = `<div class="voy-head"><div class="ocean-entry-title">📊 売買代金ランキング${open ? '' : '（閉鎖中）'}</div></div>`;
     if (universeLoading) html += `<div class="voy-line">取得しています…</div>`;
     else if (liquidRanking && liquidRanking.length) {
-      const showCount = rankingOpen ? liquidRanking.length : Math.min(10, liquidRanking.length);
-      html += `<div class="gm-feature-ranking">${liquidRanking.slice(0, showCount).map(x =>
-        `<div class="gm-feature-rank-row"><span class="rk-num">${x.rank}</span><span class="rk-code">${skyEsc(x.code)}</span><span class="rk-name">${skyEsc(nameFor(x.code) || '(社名なし)')}</span></div>`).join('')}</div>`;
+      html += `<div class="gm-feature-ranking">${rkRowsHtml()}</div>`;
       if (liquidRanking.length > 10) html += `<button class="rpg-settings-link" id="rkMoreBtn" style="display:block; margin-top:6px;">${rankingOpen ? '▼ 少なく表示' : `▶ もっと見る(全${liquidRanking.length}件)`}</button>`;
     } else if (universeError) html += `<div class="voy-line voy-fail">⚠️ ${skyEsc(universeError)}</div>`;
     else if (!open) html += `<div class="voy-line">東証が開く取引日の9:00〜15:30に、アプリを開くと自動で取得します。</div>`;
@@ -15130,6 +15133,39 @@ ${note}
 
   const ETF_EXCLUDE = new Set(['1570','1357','1568','1579','1459','1458','1360','1365','2869','2558','1306','1321','1330','1546','1671','1699']);
 
+  // 2026-10-28 キング承認：売買代金ランキングは kabuステーション(PCの kabu_live.ps1 → Firebase /live/<合言葉>/rk4)を先に読む。
+  // Yahooは最低15分遅れ(Yahoo公式の注意書き)。kabuは約5秒ごとに更新される。PCのスクリプトが止まっている時間・端末に合言葉が無い時は、従来どおりYahoo→株探。
+  const KABU_RANK_MAX_AGE_SEC = 60;   // これより古い写しは使わない(スクリプト停止・PC停止のとき)
+  function rkCleanName(raw){
+    return String(raw || '').trim().replace(/^\(株\)/, '').replace(/\(株\)$/, '').replace(/^（株）/, '').replace(/（株）$/, '')
+      .replace(/ホールディングス$/, 'HD').trim().slice(0, 12);
+  }
+  async function fetchKabuRanking(){
+    const key = lsGet('ktq:liveKey');
+    if (!key) return { err: '合言葉なし' };
+    const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 8000);
+    try {
+      const res = await fetch(`${LIVE_FB}/live/${encodeURIComponent(key)}/rk4.json?_cb=${Date.now()}`, { cache:'no-store', signal: ctl.signal });
+      if (!res.ok) return { err: 'HTTP ' + res.status };
+      const j = await res.json();
+      if (!j || !Array.isArray(j.rk4)) return { err: '写しなし' };
+      const t = Date.parse(j.u); const age = isNaN(t) ? 1e9 : (Date.now() - t) / 1000;
+      if (age > KABU_RANK_MAX_AGE_SEC) return { err: `写しが${Math.round(age)}秒前で古い` };
+      const dayKey = String(j.u).slice(0, 10);
+      if (dayKey !== todayDateKey()) return { err: '写しが今日のものではない' };
+      const rows = []; const seen = new Set();
+      j.rk4.slice().sort((a, b) => (a.no || 999) - (b.no || 999)).forEach(a => {
+        const c = String(a && a.c || ''); if (!c || seen.has(c)) return; seen.add(c);
+        rows.push({ code: c, name: rkCleanName(a.n), rank: rows.length + 1 });
+      });
+      if (rows.length < 20) return { err: `${rows.length}件しかない` };
+      const hms = String(j.u).slice(11, 19);
+      return { rows, hms, age };
+    } catch(e){
+      return { err: e && e.name === 'AbortError' ? 'タイムアウト' : '通信失敗' };
+    } finally { clearTimeout(to); }
+  }
+
   async function fetchLiquidUniverse(){
     universeLoading = true; universeError = null;
     render();
@@ -15147,8 +15183,14 @@ ${note}
       { name:'codetabs',   to:15000, mk: u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u) }
     ];
     let codes = null, usedVia = '';
+    const kb = await fetchKabuRanking();
+    if (kb && kb.rows) {
+      codes = kb.rows.map(x => ({ code: x.code, name: x.name, rank: x.rank }));
+      usedVia = `kabuステーション ${kb.hms}時点`;
+      sink.push(`kabu: OK (${kb.rows.length}銘柄／${Math.round(kb.age)}秒前)`);
+    } else sink.push(`kabu: ${kb && kb.err || '不明'}`);
     outer:
-    for (const t of targets) {
+    for (const t of (codes ? [] : targets)) {
       for (const px of PROXIES) {
         try {
           const controller = new AbortController();
@@ -15194,12 +15236,31 @@ ${note}
       universeDiag = sink;
       if (universeMode === 'liquid') restoreGoldMine('liquid');   // 日経225モードのまま取り直しても、今のリサーチ結果を消さない
     } else {
-      universeError = '売買代金ランキングを取得できませんでした。' + (sink.length ? ' / ' + sink.slice(0,4).join(' / ') : '');
+      universeError = '売買代金ランキングを取得できませんでした。' + (sink.length ? ' / ' + sink.slice(0,5).join(' / ') : '');
       liquidUniverse = null;
       universeDiag = sink;
     }
     render();
   }
+
+  // 2026-10-28：画面を開いている間(取引時間中)、15秒ごとにkabuのランキングで「表示」だけ更新する。
+  // 監視対象の銘柄リスト(liquidUniverse)は作り直さない(リサーチ中に変わらないように)。取れなかった時は何もしない。
+  let rkKabuBusy = false;
+  async function rkKabuTick(){
+    if (rkKabuBusy || universeLoading || document.visibilityState !== 'visible' || !rankingMarketOpen()) return;
+    rkKabuBusy = true;
+    try {
+      const kb = await fetchKabuRanking();
+      if (!(kb && kb.rows) || universeLoading) return;
+      if (!liquidRanking) { if (!goldMineScanning) fetchLiquidUniverse(); return; }   // 失敗表示のまま止まっていた時は、取れた時点で取り直す
+      liquidRanking = kb.rows.filter(x => !ETF_EXCLUDE.has(x.code)).slice(0, 120).map((x, i) => ({ code: x.code, name: x.name, rank: i + 1 }));
+      liquidRanking.forEach(x => { if (x.name) stockNames[x.code] = x.name; });
+      universeAsOf = `kabuステーション ${kb.hms}時点`;
+      const box = document.querySelector('.rk-panel .gm-feature-ranking');
+      if (box) box.innerHTML = rkRowsHtml();
+    } finally { rkKabuBusy = false; }
+  }
+  setInterval(rkKabuTick, 15000);
 
   // コードから会社名を引く。
   // ①ランキング由来の日本語名 → ②アプリ内蔵の日経225日本語名 → ③株価APIで拾った英語名 の順。
