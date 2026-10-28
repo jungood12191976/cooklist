@@ -123,6 +123,7 @@
   .tg-track{ position:relative; height:10px; background:rgba(157,180,255,0.14); border-radius:10px; }
   .tg-mid{ position:absolute; left:50%; top:-2px; bottom:-2px; width:2px; background:rgba(255,255,255,0.5); }
   .tg-bar{ position:absolute; top:0; bottom:0; }
+  .tg-fold{ position:absolute; top:6px; right:8px; background:rgba(255,211,107,0.12); color:#fff; border:1px solid #ffd36b; border-radius:10px; padding:4px 10px; font-size:12px; font-weight:bold; }
   .tg-oth{ font-size:11px; color:#8a93b8; margin:5px 0 1px; }
   .tg-nk{ margin-top:2px; padding-top:4px; border-top:1px dotted rgba(157,180,255,0.25); }
   .tg-nk .tg-name{ color:#ffd36b; }
@@ -3702,6 +3703,7 @@
   const TUG_SCALE = 20000;      // 2026-10-26 キング承認：棒の端＝±20,000億円。どの週も共通(週どうしを比べられるように)
   const TUG_MORE_STEP = 12;     // 「さらに過去を見る」1回で足す週数
   let tugShown = 0;             // 今、過去側に出している週数(画面の描き直しをまたいで保つ)
+  let tugOpen = false;          // 2026-10-29 キング指示：最新の週だけ出し、前の週は折りたたむ(既定＝閉じる。描き直しをまたいで保つ)
   const TUG_SECTORS = [['foreign', '海外投資家'], ['individual', '個人'], ['trustbank', '信託銀行']];
   // 2026-10-29 キング指示(「足してみて」)：海外・個人・信託銀行のほかの投資家区分も、まず全部出す(使いながら不要なものを消す方針)。元データ＝JPX 投資部門別売買状況の同じ表(data/investor_flows_others.json)。
   const TUG_OTHERS = [['proprietary', '証券自己'], ['brokerage', '証券委託'], ['invtrust', '投資信託'], ['bizcorp', '事業法人'], ['othercorp', 'その他法人'], ['lifenl', '生保・損保'], ['citybank', '都銀・地銀'], ['otherfin', 'その他金融']];
@@ -3827,12 +3829,20 @@
       return frag;
     };
     const stt = { month: null, era: 'new' };
-    wrap.appendChild(cardsOf(weeks, stt));
+    wrap.appendChild(cardsOf(weeks.slice(0, 1), stt));
+    const olderWrap = document.createElement('div'); olderWrap.style.display = tugOpen ? '' : 'none';
+    olderWrap.appendChild(cardsOf(weeks.slice(1), stt));
+    wrap.appendChild(olderWrap);
+    const fold = document.createElement('button'); fold.type = 'button'; fold.className = 'tg-fold';
+    const foldTxt = () => (tugOpen ? '前の週を閉じる ▼' : '前の週も見る ▶');
+    fold.textContent = foldTxt();
+    fold.onclick = () => { tugOpen = !tugOpen; olderWrap.style.display = tugOpen ? '' : 'none'; fold.textContent = foldTxt(); };
+    wrap.appendChild(fold);
     // 過去の週(data/investor_flows_history.json・2016年〜)。ボタンを押したときだけ読み、12週ずつ下へ足す
     const HNAME = 'investor_flows_history.json';
     const oldestFrom = weeks[weeks.length - 1].from;
-    const past = document.createElement('div'); wrap.appendChild(past);
-    const moreWrap = document.createElement('div'); moreWrap.style.cssText = 'text-align:center; margin:10px 0 4px;'; wrap.appendChild(moreWrap);
+    const past = document.createElement('div'); olderWrap.appendChild(past);
+    const moreWrap = document.createElement('div'); moreWrap.style.cssText = 'text-align:center; margin:10px 0 4px;'; olderWrap.appendChild(moreWrap);
     const mini = txt => { const d = document.createElement('div'); d.style.cssText = 'font-size:11px; color:#8a93b8; line-height:1.6; margin-top:6px; text-align:left;'; d.textContent = txt; return d; };
     const drawPast = () => {
       past.innerHTML = ''; moreWrap.innerHTML = '';
@@ -15496,7 +15506,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-29e';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-29f';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
