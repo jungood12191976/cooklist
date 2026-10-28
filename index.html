@@ -3283,6 +3283,11 @@
     return liquidRanking.slice(0, showCount).map(x =>
       `<div class="gm-feature-rank-row"><span class="rk-num">${x.rank}</span><span class="rk-code">${skyEsc(x.code)}</span><span class="rk-name">${skyEsc(nameFor(x.code) || '(社名なし)')}</span></div>`).join('');
   }
+  // 2026-10-28 キング指示：ランキングの欄に時刻を出す。kabuは「いつ時点か」、Yahooは「最低15分遅れ」を添える。
+  function rkAsOfText(){
+    if (!universeAsOf) return '';
+    return String(universeAsOf).indexOf('kabu') === 0 ? universeAsOf : universeAsOf + '（最低15分遅れ）';
+  }
   function buildRankingPanel(){
     const open = rankingMarketOpen();
     if (open && !liquidRanking && !universeLoading && !rankingAutoTried) {
@@ -3293,6 +3298,7 @@
     let html = `<div class="voy-head"><div class="ocean-entry-title">📊 売買代金ランキング${open ? '' : '（閉鎖中）'}</div></div>`;
     if (universeLoading) html += `<div class="voy-line">取得しています…</div>`;
     else if (liquidRanking && liquidRanking.length) {
+      if (universeAsOf) html += `<div class="rk-asof" style="font-size:11px; color:#9db4ff; margin:0 0 4px;">${skyEsc(rkAsOfText())}</div>`;
       html += `<div class="gm-feature-ranking">${rkRowsHtml()}</div>`;
       if (liquidRanking.length > 10) html += `<button class="rpg-settings-link" id="rkMoreBtn" style="display:block; margin-top:6px;">${rankingOpen ? '▼ 少なく表示' : `▶ もっと見る(全${liquidRanking.length}件)`}</button>`;
     } else if (universeError) html += `<div class="voy-line voy-fail">⚠️ ${skyEsc(universeError)}</div>`;
@@ -15258,6 +15264,7 @@ ${note}
       universeAsOf = `kabuステーション ${kb.hms}時点`;
       const box = document.querySelector('.rk-panel .gm-feature-ranking');
       if (box) box.innerHTML = rkRowsHtml();
+      const asof = document.querySelector('.rk-panel .rk-asof'); if (asof) asof.textContent = rkAsOfText();
     } finally { rkKabuBusy = false; }
   }
   setInterval(rkKabuTick, 15000);

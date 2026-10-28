@@ -862,3 +862,4 @@ corsproxyは廃止。stooqは除外。
 - 注意：kabuのランキングは50件まで。Yahoo(最大120件)より少なくなる。売買代金上位モードの対象は「kabu上位50＋日経225」。
 - 検証：PowerShell構文は公式パーサーで確認。模擬のkabu API/Firebaseで、ランキング送信・始値収集・snap a/b(op=50)を確認。アプリはヘッドレスChromiumで、新鮮/古い/空の3パターンと表示更新を確認。**実機(Windows)での実行は未確認。明朝の `kabu_live_log.txt` と `kabu_rank_log.txt` で確認する。**
 - 今日のところ：すでに動いている古いスクリプトは9:31で終わる。今すぐ使うならDesktopの `kabu_rank_start.cmd` をダブルクリック。
+- 2026-10-28 追記(キング指示)：ランキング欄の上に小さく「kabuステーション hh:mm:ss時点」を表示(Yahooの時は「（最低15分遅れ）」付き)。15秒ごとの更新で時刻も更新。`rkAsOfText`。
