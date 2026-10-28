@@ -11643,6 +11643,18 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const up = rows.filter(r => r.tr.state === 'up').sort((a, b) => ((b.c.key === 'build') - (a.c.key === 'build')) || (b.c.aL - a.c.aL));
     return up.length ? up.slice(0, 3).map(r => String(r.name)) : null;
   }
+  // 2026-10-29 キング指示：ウワサの港の各銘柄に「決算M/D(曜日)」を出す。これからの決算＝白、終わった決算＝グレー(決算に向けて上がっているかを見分けるため)。
+  // 元データ＝data/earnings_jp.json(JPX公式・1銘柄1件)。決算日が「今日」の銘柄は、発表が引け後の場合があるので「これから」(白)に含める。日程が載っていない銘柄はグレーで「決算 日程なし」。
+  let _newsEarnMap = null, _newsEarnDoc = null;
+  function newsEarnHtml(code){
+    const doc = ddoc('earnings_jp.json');
+    if (!doc || !doc.items) return '';   // まだ読めていない間は何も出さない(読めたら再描画で出る)
+    if (_newsEarnDoc !== doc) { _newsEarnDoc = doc; _newsEarnMap = {}; doc.items.forEach(x => { if (x.date) _newsEarnMap[x.code] = x.date; }); }
+    const d = _newsEarnMap[code];
+    if (!d) return ` <span style="font-size:12px; color:#8a93b8;">決算 日程なし</span>`;
+    const upcoming = d >= todayDateKey();
+    return ` <span style="font-size:12px; color:${upcoming ? '#ffffff' : '#8a93b8'};">決算${escapeHtml(fmtMD(d))}</span>`;
+  }
   function buildNewsRow(r, nv, jm){
     const L = NEWS_LABELS[r.c.key];
     const row = document.createElement('div'); row.style.cssText = 'padding:8px 0; border-top:1px solid rgba(157,180,255,0.18);';
@@ -11651,7 +11663,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const dts = nv.dates; const peakV = Math.max(...r.it.counts.slice(0, -1)); const peakD = dts[r.it.counts.indexOf(peakV)];
     row.innerHTML =
       `<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">` +
-        `<div style="font-size:14px; color:#fff;"><b>${escapeHtml(r.code)}</b> <span style="font-size:12px; color:#9db4ff;">${escapeHtml(r.name)}</span></div>` +
+        `<div style="font-size:14px; color:#fff;"><b>${escapeHtml(r.code)}</b> <span style="font-size:12px; color:#9db4ff;">${escapeHtml(r.name)}</span>${newsEarnHtml(r.code)}</div>` +
         `<div style="font-size:12px; color:${L.color}; white-space:nowrap;" title="${escapeHtml(L.tip)}">${L.icon} ${L.text}</div>` +
       `</div>` +
       newsSparkSvg(r.it.counts, dts, { color: L.color, px: r.it.px, h: r.it.px ? 90 : 56 }) +
@@ -15399,7 +15411,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-29a';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-29b';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
