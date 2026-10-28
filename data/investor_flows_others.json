@@ -1,0 +1,69 @@
+{
+ "unit": "億円",
+ "market": "東証プライム+スタンダード+グロース(現物・差引=買い−売り)",
+ "weeks": [
+  {
+   "from": "2026-09-14",
+   "to": "2026-09-18",
+   "proprietary": 15121,
+   "brokerage": -94,
+   "invtrust": -1417,
+   "bizcorp": 1663,
+   "othercorp": 19,
+   "lifenl": -474,
+   "citybank": -1897,
+   "otherfin": -331
+  },
+  {
+   "from": "2026-09-21",
+   "to": "2026-09-25",
+   "proprietary": 6521,
+   "brokerage": -55,
+   "invtrust": -502,
+   "bizcorp": -1340,
+   "othercorp": 376,
+   "lifenl": -219,
+   "citybank": -231,
+   "otherfin": 69
+  },
+  {
+   "from": "2026-09-28",
+   "to": "2026-10-02",
+   "proprietary": -12225,
+   "brokerage": -67,
+   "invtrust": -143,
+   "bizcorp": -528,
+   "othercorp": 131,
+   "lifenl": -345,
+   "citybank": -234,
+   "otherfin": 77
+  },
+  {
+   "from": "2026-10-05",
+   "to": "2026-10-09",
+   "proprietary": -12685,
+   "brokerage": -3,
+   "invtrust": -1556,
+   "bizcorp": 1774,
+   "othercorp": 122,
+   "lifenl": -1186,
+   "citybank": -579,
+   "otherfin": -552
+  },
+  {
+   "from": "2026-10-12",
+   "to": "2026-10-16",
+   "proprietary": -103,
+   "brokerage": -340,
+   "invtrust": 1379,
+   "bizcorp": 1850,
+   "othercorp": -44,
+   "lifenl": -310,
+   "citybank": -508,
+   "otherfin": 172
+  }
+ ],
+ "source": "JPX 投資部門別売買状況(週次) https://www.jpx.co.jp/markets/statistics-equities/investor-type/index.html",
+ "note": "海外投資家・個人・信託銀行以外の区分。JPXの一覧にある直近の週(2026/9/14の週〜)から取り込み、それより前の週は未取得。scripts/fetch_investor_others.py が毎週更新。",
+ "updated": "2026-10-28"
+}
