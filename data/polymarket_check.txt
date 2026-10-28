@@ -1,4 +1,4 @@
-fetched_at=2026-10-28T10:29:57+09:00
+fetched_at=2026-10-28T11:09:43+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,countryName,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,electionType,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,showAllOutcomes,showMarketImages,slug,sortBy,startDate,startTime,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
@@ -14,7 +14,7 @@ theme oil_iran: 6 events
     - US announces end of Iranian blockade by...?
     - What will WTI Crude Oil (WTI) hit in October 2026?
     - US-Iran ceasefire continues through the midterms?
-    - Military action against Saudi Oil Pipeline (East-West) by...?
+    - Strait of Hormuz traffic returns to normal by October 31?
 theme trump: 6 events
     - Prime Minister of Israel after the next election?
     - Fed Decision in October?
