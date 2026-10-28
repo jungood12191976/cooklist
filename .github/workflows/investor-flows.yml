@@ -10,6 +10,7 @@ on:
     paths:
       - 'scripts/fetch_investor_flows.py'
       - 'scripts/sync_investor_flows_history.py'
+      - 'scripts/fetch_investor_others.py'
       - '.github/workflows/investor-flows.yml'
 
 permissions:
@@ -27,17 +28,18 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install requests openpyxl
-      - run: python scripts/dump_investor_headers.py
-        continue-on-error: true
       - run: python scripts/fetch_investor_flows.py
       - run: python scripts/sync_investor_flows_history.py
+        if: always()
+      - run: python scripts/fetch_investor_others.py
         if: always()
       - name: commit if changed
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/investor_flows.json data/investor_flows_check.txt data/investor_flows_history.json data/investor_flows_headers.txt
+          git add data/investor_flows.json data/investor_flows_check.txt data/investor_flows_history.json
+          git add data/investor_flows_others.json data/investor_flows_others_check.txt || true
           if git diff --cached --quiet; then
             echo "変更なし"
             exit 0
