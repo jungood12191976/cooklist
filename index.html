@@ -123,6 +123,10 @@
   .tg-track{ position:relative; height:10px; background:rgba(157,180,255,0.14); border-radius:10px; }
   .tg-mid{ position:absolute; left:50%; top:-2px; bottom:-2px; width:2px; background:rgba(255,255,255,0.5); }
   .tg-bar{ position:absolute; top:0; bottom:0; }
+  .tg-nk{ margin-top:2px; padding-top:4px; border-top:1px dotted rgba(157,180,255,0.25); }
+  .tg-nk .tg-name{ color:#ffd36b; }
+  .tg-nkc{ min-width:0; } .tg-nkc svg{ display:block; width:100%; height:44px; }
+  .tg-nkerr{ font-size:11px; color:#8a93b8; }
   .tg-month{ font-size:13px; font-weight:bold; color:#ffd36b; margin:12px 0 2px; }
   .tg-month + .tg-wk{ border-top:0; }
   .tg-era{ font-size:11.5px; color:#ffd36b; border-top:2px dashed rgba(255,211,107,0.6); padding-top:6px; margin:12px 0 2px; line-height:1.6; }
@@ -3699,6 +3703,75 @@
   let tugShown = 0;             // 今、過去側に出している週数(画面の描き直しをまたいで保つ)
   const TUG_SECTORS = [['foreign', '海外投資家'], ['individual', '個人'], ['trustbank', '信託銀行']];
   function tugFmt(n){ return (n > 0 ? '+' : (n < 0 ? '−' : '')) + Math.abs(n).toLocaleString('ja-JP'); }
+  // ----- 日経平均の折れ線(2026-10-29 キング承認・案A：週のカードごとに、3本のバーの下へ) -----
+  // 元データ＝Yahoo Finance ^N225 の日足終値(king-stock-proxy経由)。週のカードの「前の週の最終営業日の終値」を基準(点線)に、その週の毎営業日の終値を結ぶ。
+  // 右の数字＝基準から週末終値までの騰落率。縦の幅は基準から±TUG_NK_SCALE%で全週共通(はみ出す週は端に止める。数字は実際の値)。
+  const TUG_NK_PROXY = 'https://king-stock-proxy.jungood1219.workers.dev/?url=';
+  const TUG_NK_KEY = 'ktq:tugnk';
+  const TUG_NK_TTL = 6 * 3600 * 1000;
+  const TUG_NK_SCALE = 5;
+  const tugNk = { d: null, c: null, status: 'idle', waiters: [] };
+  function tugNkSet(d, c){ tugNk.d = d; tugNk.c = c; tugNk.status = 'ok'; }
+  function tugNkFlush(){ const ws = tugNk.waiters.splice(0); ws.forEach(f => { try { f(); } catch(e){} }); }
+  function tugNkLoad(){
+    if (tugNk.status === 'ok' || tugNk.status === 'loading') return;
+    try {
+      const o = JSON.parse(localStorage.getItem(TUG_NK_KEY) || 'null');
+      if (o && o.v === 1 && Array.isArray(o.d) && Array.isArray(o.c) && o.d.length === o.c.length && o.d.length > 2000 && Date.now() - o.t < TUG_NK_TTL) { tugNkSet(o.d, o.c); tugNkFlush(); return; }
+    } catch(e) {}
+    tugNk.status = 'loading';
+    const p1 = Math.floor(Date.UTC(2015, 11, 1) / 1000), p2 = Math.floor(Date.now() / 1000);
+    const target = 'https://query1.finance.yahoo.com/v8/finance/chart/%5EN225?period1=' + p1 + '&period2=' + p2 + '&interval=1d';
+    fetch(TUG_NK_PROXY + encodeURIComponent(target)).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(j => {
+      const res = j && j.chart && j.chart.result && j.chart.result[0];
+      if (!res || !res.meta || res.meta.symbol !== '^N225') throw new Error('日経平均のデータではありません');
+      const q = res.indicators && res.indicators.quote && res.indicators.quote[0];
+      if (!q || !q.close || !res.timestamp) throw new Error('終値が見つかりません');
+      const off = res.meta.gmtoffset || 0, d = [], c = [];
+      for (let i = 0; i < res.timestamp.length; i++) {
+        const v = q.close[i]; if (v == null || !(v > 0)) continue;
+        const iso = new Date((res.timestamp[i] + off) * 1000).toISOString().slice(0, 10);
+        if (d.length && iso <= d[d.length - 1]) continue;
+        d.push(iso); c.push(Math.round(v * 100) / 100);
+      }
+      if (d.length < 2000) throw new Error('データが少なすぎます(' + d.length + '本)');
+      try { localStorage.setItem(TUG_NK_KEY, JSON.stringify({ v: 1, t: Date.now(), d, c })); } catch(e) {}
+      tugNkSet(d, c);
+    }).catch(e => { tugNk.status = 'error'; tugNk.err = String((e && e.message) || e); }).then(tugNkFlush);
+  }
+  // 週(from〜to)の「基準」と「その週の終値の並び」。基準か終値が無い週は null。
+  function tugNkWeek(from, to){
+    const d = tugNk.d, c = tugNk.c; if (!d) return null;
+    let lo = 0, hi = d.length;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (d[m] < from) lo = m + 1; else hi = m; }
+    if (lo === 0 || lo >= d.length) return null;
+    const pts = [c[lo - 1]];
+    for (let i = lo; i < d.length && d[i] <= to; i++) pts.push(c[i]);
+    return pts.length >= 2 ? pts : null;
+  }
+  function tugNkFill(box, w){
+    const cell = box.querySelector('.tg-nkc'), val = box.querySelector('.tg-nkv'); if (!cell || !val) return;
+    if (tugNk.status === 'error') { cell.textContent = '日経平均を取得できませんでした'; cell.className = 'tg-nkc tg-nkerr'; val.textContent = '—'; return; }
+    if (tugNk.status !== 'ok') return;
+    const pts = tugNkWeek(w.from, w.to);
+    if (!pts) { cell.textContent = 'この週の日経平均は見つかりません'; cell.className = 'tg-nkc tg-nkerr'; val.textContent = '—'; return; }
+    const base = pts[0], last = pts[pts.length - 1], chg = (last / base - 1) * 100;
+    const W = 300, H = 44, mid = H / 2, amp = H / 2 - 3, n = pts.length;
+    const X = k => 4 + k * (W - 8) / (n - 1);
+    const Y = v => Math.max(2, Math.min(H - 2, mid - ((v / base - 1) * 100) / TUG_NK_SCALE * amp));
+    const col = chg >= 0 ? '#ff9b8a' : '#7fb0ff';
+    const poly = pts.map((v, k) => X(k).toFixed(1) + ',' + Y(v).toFixed(1)).join(' ');
+    const dots = pts.slice(1).map((v, k) => `<circle cx="${X(k + 1).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="2.2" fill="${col}"/>`).join('');
+    cell.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="日経平均 ${Math.round(base).toLocaleString('ja-JP')}円から${Math.round(last).toLocaleString('ja-JP')}円"><line x1="0" y1="${mid}" x2="${W}" y2="${mid}" stroke="rgba(255,255,255,0.45)" stroke-width="1" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"/><polyline fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke" points="${poly}"/>${dots}</svg>`;
+    cell.title = `基準(前の週の最終営業日の終値) ${Math.round(base).toLocaleString('ja-JP')}円 → 週末の終値 ${Math.round(last).toLocaleString('ja-JP')}円`;
+    val.textContent = (chg > 0 ? '+' : (chg < 0 ? '−' : '')) + Math.abs(chg).toFixed(1) + '%';
+    val.style.color = col;
+  }
+  function tugNkAttach(box, w){
+    if (tugNk.status === 'ok' || tugNk.status === 'error') { tugNkFill(box, w); return; }
+    tugNk.waiters.push(() => tugNkFill(box, w));
+    tugNkLoad();
+  }
   function buildTugPanel(){
     ensureDataDocs(['investor_flows.json']);
     const doc = ddoc('investor_flows.json');
@@ -3739,7 +3812,9 @@
         if (w.era) stt.era = w.era;
         const box = document.createElement('div'); box.className = 'tg-wk';
         box.innerHTML = `<div class="tg-date">${md(w.from)}〜${md(w.to)}の週　（億円）</div>` + TUG_SECTORS.map(([k, n]) =>
-          `<div class="tg-row"><span class="tg-name">${n}</span><div class="tg-track"><div class="tg-mid"></div>${barOf(w[k])}</div><span class="tg-val">${tugFmt(w[k])}</span></div>`).join('');
+          `<div class="tg-row"><span class="tg-name">${n}</span><div class="tg-track"><div class="tg-mid"></div>${barOf(w[k])}</div><span class="tg-val">${tugFmt(w[k])}</span></div>`).join('')
+          + `<div class="tg-row tg-nk"><span class="tg-name">日経平均</span><div class="tg-nkc"></div><span class="tg-val tg-nkv"></span></div>`;
+        tugNkAttach(box, w);
         frag.appendChild(box);
       });
       return frag;
@@ -3778,6 +3853,7 @@
     if (tugShown > 0) ensureDataDocs([HNAME]);
     drawPast();
     note(`差引＝買い−売り。棒の端＝±${scale.toLocaleString('ja-JP')}億円（どの週も共通）。東証プライム+スタンダード+グロースの現物。個人は信用取引を含みます。事業法人・証券会社の自己売買などは載せていません。`);
+    note(`日経平均の折れ線＝点線が「前の週の最終営業日の終値」、点がその週の毎営業日の終値。右の％は点線から週末の終値までの騰落率。縦の幅は点線から±${TUG_NK_SCALE}%で全週共通（はみ出す週は端に止め、％は実際の値）。出典：Yahoo Finance ^N225 日足終値。`);
     note(`出典：${doc.source}（更新 ${doc.updated}）。${doc.note}`);
     return wrap;
   }
