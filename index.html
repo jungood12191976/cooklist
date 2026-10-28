@@ -4507,6 +4507,7 @@
       }
     } catch(e){}
     try { const raw3 = lsGet('wd3:quests'); if (raw3) quests = raw3.quests || []; } catch(e){}
+    try { openDayLevel(); } catch(e){}
     try { const rawML = lsGet('wd3:menulog'); if (rawML) menuLog = rawML.menuLog || []; } catch(e){}
     try { const rawCR = lsGet('wd3:customratios'); if (rawCR) customRatios = rawCR.customRatios || []; } catch(e){}
     try { const rawH = lsGet('wd3:holdings'); if (rawH) holdings = rawH.holdings || []; } catch(e){}
@@ -4613,6 +4614,16 @@
     return Math.round(avg);
   }
   async function saveQuests(){ lsSet('wd3:quests', {quests}); }
+  // 勇者のLv＝「アプリを開いた日数」。2026-10-29にキングが決定：開始値=50(9/9〜10/28の日数)、今日(10/29)がLv.51、以降は開いた日だけ+1(同日は何回開いても1)
+  const OPEN_DAYS_BASE = 50;
+  function openDayLevel(){
+    let rec = null;
+    try { rec = lsGet('wd3:open_days'); } catch(e){}
+    if (!rec || !Array.isArray(rec.days)) rec = { base: OPEN_DAYS_BASE, days: [] };
+    const k = localDateKey(new Date());
+    if (!rec.days.includes(k)) { rec.days.push(k); lsSet('wd3:open_days', rec); }
+    return (rec.base || 0) + rec.days.length;
+  }
   function saveQuestDaily(){ lsSet('wd3:quest_daily', questDaily); }
   function saveMagicWordsHistory(){ lsSet('wd3:magicwords_history', { entries: magicWordsHistory }); }
   function saveStepper(){ lsSet('wd3:stepper', { entries: stepperEntries }); }
@@ -5732,7 +5743,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
         mainSprite = `<img class="rpg-hero-img${bounceClass}" id="rpgHero" src="${startSrc}" alt="勇者" style="position:relative; z-index:1;">`;
       }
       scene.innerHTML = `${buildWeatherFx()}${buildMercuryFx()}${buildRewardIcons()}
-        <div class="rpg-scene-level" id="rpgSceneLevel">Lv.${quests.filter(q=>q.done).length}</div>
+        <div class="rpg-scene-level" id="rpgSceneLevel">Lv.${openDayLevel()}</div>
         ${kazeCap}
         ${buildMiniStatus()}
         <img class="rpg-enemy-img${battleEngaged ? ' engaged' : ''}" id="rpgEnemy" src="${todaysEnemy.img}" alt="${todaysEnemy.name}" title="${todaysEnemy.name}">
@@ -15388,7 +15399,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-28b';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-29a';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
