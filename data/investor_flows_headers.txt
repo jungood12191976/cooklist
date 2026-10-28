@@ -1,0 +1,208 @@
+links: [('20260914', '20260918'), ('20260924', '20260925'), ('20260928', '20261002'), ('20261005', '20261009'), ('20261013', '20261016')]
+file /markets/statistics-equities/investor-type/t13vrt000002havh-att/stock_1_w_20261013_20261016.xlsx / 投資部門別 株式売買状況 Stocks by Investor / max_row=15 max_col=59
+hdr A1: '投資部門別 株式売買状況\xa0Stocks by Investor Type'
+hdr D3: '自己 Proprietary'
+hdr L3: '委託 Brokerage'
+hdr D4: '自己 Proprietary'
+hdr L4: '個人 Individuals'
+hdr T4: '海外投資家 Foreigners '
+hdr AB4: '証券会社 Securities Cos.'
+hdr AF4: '法人 Institutions'
+hdr D5: '現金取引 Cash'
+hdr H5: '信用取引 Margin'
+hdr L5: '現金取引 Cash'
+hdr P5: '信用取引 Margin'
+hdr T5: '法人 Institutions'
+hdr X5: '個人 Individuals'
+hdr AB5: '証券会社 Securities Cos.'
+hdr AF5: '投資信託 Investment Trusts'
+hdr AJ5: '事業法人 Business Cos. '
+hdr AN5: 'その他法人等 Other Cos.'
+hdr AR5: '金融機関 Financial Institutions'
+hdr D6: '現金取引 Cash'
+hdr H6: '信用取引 Margin'
+hdr L6: '現金取引 Cash'
+hdr P6: '信用取引 Margin'
+hdr T6: '法人 Institutions'
+hdr X6: '個人 Individuals'
+hdr AB6: '証券会社 Securities Cos.'
+hdr AF6: '投資信託 Investment Trusts'
+hdr AJ6: '事業法人 Business Cos. '
+hdr AN6: 'その他法人等 Other Cos.'
+hdr AR6: '生保・損保 Life & Non-Life'
+hdr AV6: '都銀・地銀等 City & Regional BK'
+hdr AZ6: '信託銀行 Trust BK'
+hdr BD6: 'その他金融機関 Other Financials'
+hdr A7: '年月週 Year, Month, Week'
+hdr B7: '市場／Market'
+hdr C7: '株数／金額 Shares／Value 千株／千円 1,000 Shares／1,000 yen'
+hdr D7: '売 Sales'
+hdr E7: '買 Purchases'
+hdr F7: '差引 Balance'
+hdr G7: '合計 Total'
+hdr H7: '売 Sales'
+hdr I7: '買 Purchases'
+hdr J7: '差引 Balance'
+hdr K7: '合計 Total'
+hdr L7: '売 Sales'
+hdr M7: '買 Purchases'
+hdr N7: '差引 Balance'
+hdr O7: '合計 Total'
+hdr P7: '売 Sales'
+hdr Q7: '買 Purchases'
+hdr R7: '差引 Balance'
+hdr S7: '合計 Total'
+hdr T7: '売 Sales'
+hdr U7: '買 Purchases'
+hdr V7: '差引 Balance'
+hdr W7: '合計 Total'
+hdr X7: '売 Sales'
+hdr Y7: '買 Purchases'
+hdr Z7: '差引 Balance'
+hdr AA7: '合計 Total'
+hdr AB7: '売 Sales'
+hdr AC7: '買 Purchases'
+hdr AD7: '差引 Balance'
+hdr AE7: '合計 Total'
+hdr AF7: '売 Sales'
+hdr AG7: '買 Purchases'
+hdr AH7: '差引 Balance'
+hdr AI7: '合計 Total'
+hdr AJ7: '売 Sales'
+hdr AK7: '買 Purchases'
+hdr AL7: '差引 Balance'
+hdr AM7: '合計 Total'
+hdr AN7: '売 Sales'
+hdr AO7: '買 Purchases'
+hdr AP7: '差引 Balance'
+hdr AQ7: '合計 Total'
+hdr AR7: '売 Sales'
+hdr AS7: '買 Purchases'
+hdr AT7: '差引 Balance'
+hdr AU7: '合計 Total'
+hdr AV7: '売 Sales'
+hdr AW7: '買 Purchases'
+hdr AX7: '差引 Balance'
+hdr AY7: '合計 Total'
+hdr AZ7: '売 Sales'
+hdr BA7: '買 Purchases'
+hdr BB7: '差引 Balance'
+hdr BC7: '合計 Total'
+hdr BD7: '売 Sales'
+hdr BE7: '買 Purchases'
+hdr BF7: '差引 Balance'
+hdr BG7: '合計 Total'
+row 8 market='東証プライム\nTSE Prime Market' C='株数 Shares'
+   D8=1493974
+   E8=1567153
+   F8=73179
+   G8=3061127
+   H8=52335
+   I8=245
+   J8=-52090
+   K8=52580
+   L8=765137
+   M8=637452
+   N8=-127685
+   O8=1402589
+   P8=1112400
+   Q8=1052634
+   R8=-59766
+   S8=2165034
+   T8=7676027
+   U8=7735063
+   V8=59036
+   W8=15411090
+   X8=11364
+   Y8=11607
+   Z8=243
+   AA8=22971
+   AB8=71292
+   AC8=60541
+   AD8=-10751
+   AE8=131833
+   AF8=142826
+   AG8=224890
+   AH8=82064
+   AI8=367716
+   AJ8=79168
+   AK8=154562
+   AL8=75394
+   AM8=233730
+   AN8=17255
+   AO8=14279
+   AP8=-2976
+   AQ8=31534
+   AR8=17247
+   AS8=4006
+   AT8=-13241
+   AU8=21253
+   AV8=18273
+   AW8=3107
+   AX8=-15166
+   AY8=21380
+   AZ8=220565
+   BA8=229330
+   BB8=8765
+   BC8=449895
+   BD8=32642
+   BE8=16285
+   BF8=-16357
+   BG8=48927
+row 9 market='東証プライム\nTSE Prime Market' C='金額 Value'
+   D9=3969725772
+   E9=4077667285
+   F9=107941513
+   G9=8047393057
+   H9=118467947
+   I9=952149
+   J9=-117515798
+   K9=119420096
+   L9=1644711949
+   M9=1674133922
+   N9=29421973
+   O9=3318845871
+   P9=5872391724
+   Q9=6056371989
+   R9=183980265
+   S9=11928763713
+   T9=24655274536
+   U9=24303115126
+   V9=-352159410
+   W9=48958389662
+   X9=57375115
+   Y9=66059928
+   Z9=8684813
+   AA9=123435043
+   AB9=213612955
+   AC9=181611043
+   AD9=-32001912
+   AE9=395223998
+   AF9=409115780
+   AG9=547224734
+   AH9=138108954
+   AI9=956340514
+   AJ9=226580303
+   AK9=389851856
+   AL9=163271553
+   AM9=616432159
+   AN9=75662778
+   AO9=71079848
+   AP9=-4582930
+   AQ9=146742626
+   AR9=44682865
+   AS9=14445317
+   AT9=-30237548
+   AU9=59128182
+   AV9=59819408
+   AW9=10321805
+   AX9=-49497603
+   AY9=70141213
+   AZ9=631543042
+   BA9=555146986
+   BB9=-76396056
+   BC9=1186690028
+   BD9=29090870
+   BE9=45554313
+   BF9=16463443
+   BG9=74645183
