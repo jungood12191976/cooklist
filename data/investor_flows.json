@@ -3,7 +3,7 @@
  "market": "東証プライム+スタンダード+グロース(現物・差引=買い−売り)",
  "source": "JPX 投資部門別売買状況(週次) https://www.jpx.co.jp/markets/statistics-equities/investor-type/index.html",
  "note": "2026/9/29掲載分以降はJPX公式xlsxの3市場の差引をscripts/fetch_investor_flows.pyが毎週追記。それ以前の週は株探の週次集計から転記(最新週の10/5〜9はJPX公式と一致を確認済み)。",
- "updated": "2026-10-22",
+ "updated": "2026-10-29",
  "weeks": [
   {
    "from": "2026-06-01",
@@ -144,6 +144,13 @@
    "foreign": -3654,
    "individual": 2192,
    "trustbank": -772
+  },
+  {
+   "from": "2026-10-19",
+   "to": "2026-10-23",
+   "foreign": 272,
+   "individual": -716,
+   "trustbank": -2243
   }
  ]
 }

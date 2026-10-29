@@ -61,9 +61,21 @@
    "lifenl": -310,
    "citybank": -508,
    "otherfin": 172
+  },
+  {
+   "from": "2026-10-19",
+   "to": "2026-10-23",
+   "proprietary": 665,
+   "brokerage": -171,
+   "invtrust": 392,
+   "bizcorp": 1199,
+   "othercorp": 1432,
+   "lifenl": -304,
+   "citybank": -328,
+   "otherfin": 27
   }
  ],
  "source": "JPX 投資部門別売買状況(週次) https://www.jpx.co.jp/markets/statistics-equities/investor-type/index.html",
  "note": "海外投資家・個人・信託銀行以外の区分。JPXの一覧にある直近の週(2026/9/14の週〜)から取り込み、それより前の週は未取得。scripts/fetch_investor_others.py が毎週更新。",
- "updated": "2026-10-28"
+ "updated": "2026-10-29"
 }
