@@ -1,3 +1,1 @@
-items=225 fail=0 sliced=2 pxfail=0 fetched_at=2026-10-29T02:09+09:00
-SLICED 285A キオクシアHD first=100 sliced=288 ok=True
-SLICED 9432 NTT first=100 sliced=219 ok=True
+items=225 fail=0 sliced=0 pxfail=0 fetched_at=2026-10-30T02:25+09:00
