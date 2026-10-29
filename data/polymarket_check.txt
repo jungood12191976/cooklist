@@ -1,23 +1,23 @@
-fetched_at=2026-10-29T18:52:05+09:00
+fetched_at=2026-10-30T02:24:43+09:00
 events_fetched=500
-event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cyom,deploying,description,elapsed,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,finishedTimestamp,gameId,icon,id,image,liquidity,liquidityClob,live,markets,negRisk,negRiskAugmented,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
+event_keys=active,archived,automaticallyActive,closed,commentCount,createdAt,creationDate,cyom,deploying,description,elapsed,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,finishedTimestamp,gameId,icon,id,image,live,markets,negRisk,negRiskAugmented,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
     - Fed Decision in December?
-    - Another Fed rate hike in 2026?
     - How many Fed rate cuts in 2026?
-    - How many Fed rate hikes in 2026?
+    - Another Fed rate hike in 2026?
     - How low will 5-year Treasury yield get before 2027?
     - Fed Decision in January?
+    - How many Fed rate hikes in 2026?
 theme oil_iran: 6 events
     - US-Iran ceasefire continues through...?
-    - US announces end of Iranian blockade by...?
     - Strait of Hormuz traffic returns to normal by October 31?
+    - US announces end of Iranian blockade by...?
     - Israel x Iran ceasefire continues through...?
-    - What will WTI Crude Oil (WTI) hit in October 2026?
     - Will the U.S. invade Iran before 2027?
+    - Iran leadership change by...?
 theme trump: 6 events
-    - Prime Minister of Israel after the next election?
     - Fed Decision in December?
+    - Prime Minister of Israel after the next election?
     - US-Iran ceasefire continues through...?
     - US announces end of Iranian blockade by...?
     - Republican Senate seats after the 2026 midterm elections?
@@ -25,19 +25,18 @@ theme trump: 6 events
 theme tariff: 0 events
 theme recession: 1 events
     - US recession by end of 2026?
-theme inflation: 4 events
+theme inflation: 3 events
     - Another Fed rate hike in 2026?
     - How many Fed rate hikes in 2026?
     - Fed decisions (Sep–Dec)
-    - Fed decisions (Oct-Jan)
 theme stocks: 1 events
-    - Which companies added to S&P 500 in Q4 2026?
+    - S&P 500 (SPY) closes above ___ on October 29?
 theme ai_chips: 6 events
     - Which company has best AI model end of 2026?
     - Anthropic IPO Closing Market Cap
     - Anthropic IPO by __?
-    - What will OpenAI's IPO valuation be?
-    - Largest IPO by market cap in 2026?
+    - GPT Astra 6.1+ released by...?
     - Next Fable Model (5.2+) released by...?
+    - OpenAI IPO Closing Market Cap
 theme fx: 1 events
     - Bank of Japan Decision in October?
