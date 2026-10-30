@@ -1,44 +1,41 @@
-fetched_at=2026-10-31T03:34:26+09:00
+fetched_at=2026-10-31T07:56:31+09:00
 events_fetched=500
-event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,countryName,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,electionType,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,showAllOutcomes,showMarketImages,slug,sortBy,startDate,startTime,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
+event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cyom,deploying,description,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,gameId,icon,id,image,liquidity,liquidityClob,live,markets,negRisk,negRiskAugmented,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
     - Fed Decision in December?
     - How many Fed rate hikes in 2026?
     - How many Fed rate cuts in 2026?
     - How low will 10-year Treasury yield get before 2027?
     - Fed Decision in January?
-    - Fed decisions (Oct-Jan)
+    - Fed Decision in March?
 theme oil_iran: 6 events
     - US-Iran ceasefire continues through...?
-    - Israel x Iran ceasefire continues through...?
-    - Strait of Hormuz traffic returns to normal by October 31?
     - US announces end of Iranian blockade by...?
     - What will WTI Crude Oil (WTI) hit in October 2026?
-    - US-Iran ceasefire continues through the midterms?
+    - Israel x Iran ceasefire continues through...?
+    - Kharg Island no longer under Iranian control by...?
+    - Strait of Hormuz traffic returns to normal by October 31?
 theme trump: 6 events
     - US-Iran ceasefire continues through...?
     - Fed Decision in December?
     - Prime Minister of Israel after the next election?
     - US announces end of Iranian blockade by...?
+    - Kharg Island no longer under Iranian control by...?
     - US-Iran ceasefire continues through the midterms?
-    - US-Iran Final Nuclear Deal by…?
 theme tariff: 0 events
-theme recession: 1 events
-    - Eurozone Annual GDP Growth 2026
+theme recession: 0 events
 theme inflation: 5 events
     - How many Fed rate hikes in 2026?
     - How low will 10-year Treasury yield get before 2027?
     - Fed decisions (Oct-Jan)
     - How high will inflation get in 2026?
     - Another Fed rate hike in 2026?
-theme stocks: 2 events
-    - S&P 500 (SPY) closes above ___ on October 30?
-    - What will S&P 500 (SPY) hit Week of October 26 2026?
+theme stocks: 0 events
 theme ai_chips: 6 events
     - Will Anthropic’s valuation hit __ by December 31?
     - Anthropic IPO Closing Market Cap
     - Next Fable Model (5.2+) released by...?
     - OpenAI IPO Closing Market Cap
     - Which company has best AI model end of 2026?
-    - Anthropic IPO by __?
+    - Largest IPO by market cap in 2026?
 theme fx: 0 events
