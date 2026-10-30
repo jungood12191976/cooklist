@@ -10334,6 +10334,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   function buildDeepBox(title, lines, linksOut){
     const dd = document.createElement('details'); dd.className = 'lt-dd'; dd.open = true; // 2026-10-30 キング指示：開いたまま
     const sm = document.createElement('summary'); sm.textContent = title; dd.appendChild(sm);
+    const factNodes = []; // 2026-10-30 キング指示：数字がずらずら並ぶ📌事実・📏検算は閉じた蛇腹へ。🎯見立て・✅確認・⛔外れる条件は開いたまま
     lines.forEach(l => {
       const d = document.createElement('div');
       if (l.indexOf('🔗') === 0) {
@@ -10345,8 +10346,11 @@ ${keywordLine}${bpBlock}${conditionBlock}
         d.className = 'lt-dd-line' + (l.indexOf('🎯') === 0 ? ' lt-dd-hyp' : l.indexOf('✅') === 0 ? ' lt-dd-chk' : l.indexOf('⛔') === 0 ? ' lt-dd-ng' : '');
         d.textContent = l;
       }
-      if (linksOut && d.className === 'lt-dd-link') linksOut.push(d); else dd.appendChild(d); // 🔗(出典リンク)は閉じた「本文・出典」へ(2026-10-30 キング指示)
+      if (linksOut && d.className === 'lt-dd-link') linksOut.push(d);
+      else if (l.indexOf('📌') === 0 || l.indexOf('📏') === 0) factNodes.push(d);
+      else dd.appendChild(d); // 🔗(出典リンク)は閉じた「本文・出典」へ(2026-10-30 キング指示)
     });
+    if (factNodes.length) dd.appendChild(ktqBuildFold('dd|' + title + '|' + lines[0], '📎 根拠の数字・事実（' + factNodes.length + '行）', factNodes));
     return dd;
   }
   // 「さらに深掘りを頼む」：依頼(記事のキー mail_id|no)を中継(ntfy.sh・非公開名のトピック)へ送る。クロ側の定期実行が、決まった時刻に読んで調べ、シートL列に書く。
@@ -15757,7 +15761,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-30f';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-30g';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
