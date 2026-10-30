@@ -77,5 +77,5 @@
  ],
  "source": "JPX 投資部門別売買状況(週次) https://www.jpx.co.jp/markets/statistics-equities/investor-type/index.html",
  "note": "海外投資家・個人・信託銀行以外の区分。JPXの一覧にある直近の週(2026/9/14の週〜)から取り込み、それより前の週は未取得。scripts/fetch_investor_others.py が毎週更新。",
- "updated": "2026-10-29"
+ "updated": "2026-10-30"
 }
