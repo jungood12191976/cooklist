@@ -499,7 +499,7 @@ corsproxyは廃止。stooqは除外。
 ## ✉️ ひみつの手紙（2026-10-10）
 - 画面 `letters`（`renderSecretLetters`）。シート「手紙」(gid 165072080) のCSVを読み、記事ごとのカード。[Gmailを開く]／[不要]=アプリ内で非表示（`LETTERS_HIDDEN_KEY`）。
 - 未実装：メール全部不要→Gmailごみ箱へ（ごみ箱のみ・完全削除はしない）／平日21:00の要約定期実行／セール系メールの対象（キング未決定）。
-- BGM「手紙の広場」（キング選定・ホ長調♩=112・32小節A→A→B→A・フルート主旋律）：`STAGE_SONGS.tegami`、`TEGAMI_DATA`（1089音）、`stageBuildTegami`、音色 gflute/gstr/gpz/gharp/gbass/gtimp/gsnare を `stageFire` に追加。この画面でだけ鳴る（render()の除外リストと🔊切替に `letters` を追加）。実機の音は未確認（エンジン上の読み込み・JSエラーなしのみ確認）。
+- BGM「和音がめぐる」（2026-10-30d・キング選定でB=金属チャイム。旧「手紙の広場」から差し替え。眠くなるため「シャキッと・メロディー少なめ・単調にならない」要望）：ホ短調♩=128・16小節・旋律なし。弦の8分スタッカートが止まらずコードが1小節ごとに動く(Em-C-Am-B7-Em-G-D-B7)。後半8小節は弦の3・3・2アクセント＋ピチカート。4小節ごとに「ピンポーン」（ピン=D#6→ポーン=B5・約7秒/14.5秒…）、8小節ごとに小太鼓フィル。`STAGE_SONGS.tegami`、`TEGAMI_DATA`（654音）、`TEGAMI_VOICES`＝gbass/gtimp/gsnare/gstr/gpz/dbB、`TEGAMI_GAIN`＝2.093（試聴で旧曲と平均音量をそろえた倍率）、`stageBuildTegami`。新音色 `dbB`＝`stageChimeB`（管鐘の倍音1・2.76・5.4・8.93倍＋基音のゆらぎ）を `stageFire` に追加。画面の配線（`startStageBGM('tegami')`・render()の除外・🔊切替）は旧曲のまま。旧「手紙の広場」のデータは git履歴(2026-10-30d より前)にある。試聴は自作のオフライン描画で、実機の音は未確認（私は音を聴けない）。音量・ピンポーンの大きさ・入る回数が気になる場合の調整先は `TEGAMI_GAIN`／`stageChimeB`の係数／`TEGAMI_DATA`のdbB行。
 
 ## 2026-10-10c ケッサンの町(旧・おわりの町)
 - 名称を「おわりの町」→「ケッサンの町」に変更(ナビ名・画面タイトル。画面キー world2 / renderWorldChain2 / BGMキー 'owari' は据え置き)。
