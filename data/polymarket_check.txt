@@ -1,42 +1,42 @@
-fetched_at=2026-10-30T18:55:46+09:00
+fetched_at=2026-10-31T01:59:59+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,countryName,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,electionType,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,showAllOutcomes,showMarketImages,slug,sortBy,startDate,startTime,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
     - Fed Decision in December?
-    - How many Fed rate cuts in 2026?
     - How many Fed rate hikes in 2026?
+    - How many Fed rate cuts in 2026?
     - How low will 10-year Treasury yield get before 2027?
     - Fed Decision in January?
-    - Another Fed rate hike in 2026?
+    - Fed rate cut by...?
 theme oil_iran: 6 events
     - US-Iran ceasefire continues through...?
     - Israel x Iran ceasefire continues through...?
     - Will the Iranian regime fall before 2027?
     - US announces end of Iranian blockade by...?
+    - What will WTI Crude Oil (WTI) hit in October 2026?
     - Strait of Hormuz traffic returns to normal by October 31?
-    - US-Iran ceasefire continues through the midterms?
 theme trump: 6 events
-    - Prime Minister of Israel after the next election?
     - US-Iran ceasefire continues through...?
+    - Prime Minister of Israel after the next election?
     - Fed Decision in December?
     - Will the Iranian regime fall before 2027?
     - US announces end of Iranian blockade by...?
     - US-Iran ceasefire continues through the midterms?
 theme tariff: 0 events
-theme recession: 1 events
-    - US recession by end of 2026?
+theme recession: 0 events
 theme inflation: 5 events
     - How many Fed rate hikes in 2026?
     - How low will 10-year Treasury yield get before 2027?
     - Another Fed rate hike in 2026?
     - Fed decisions (Oct-Jan)
     - How high will inflation get in 2026?
-theme stocks: 0 events
+theme stocks: 1 events
+    - What will S&P 500 (SPY) hit Week of October 26 2026?
 theme ai_chips: 6 events
     - Anthropic announces bankruptcy by...?
+    - Will Anthropic’s valuation hit __ by December 31?
     - OpenAI announces bankruptcy by...?
     - Anthropic IPO Closing Market Cap
-    - Which company has best AI model end of 2026?
-    - Will Anthropic’s valuation hit __ by December 31?
     - Next Fable Model (5.2+) released by...?
+    - Which company has best AI model end of 2026?
 theme fx: 0 events
