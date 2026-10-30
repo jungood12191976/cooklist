@@ -11770,7 +11770,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const mr = newsMarketRatio(nv);
     const rows = Object.keys(nv.items).map(code => { const it = nv.items[code]; return { code, name: it.name || nameFor(code), c: newsClassify(it.counts, mr), tr: newsTrend(it, jm[code]) }; });
     const up = rows.filter(r => r.tr.state === 'up').sort((a, b) => ((b.c.key === 'build') - (a.c.key === 'build')) || (b.c.aL - a.c.aL));
-    return up.length ? up.slice(0, 3).map(r => String(r.name)) : null;
+    return up.length ? up.slice(0, 3).map(r => ({ code: String(r.code), name: String(r.name) })) : null;   // 2026-10-30 キング指示：銘柄コードも返す(勇者のいえの黄色枠で押すとコピーできるように)
   }
   // 2026-10-29 キング指示：ウワサの港の各銘柄に「決算M/D(曜日)」を出す。これからの決算＝白、終わった決算＝グレー(決算に向けて上がっているかを見分けるため)。
   // 元データ＝data/earnings_jp.json(JPX公式・1銘柄1件)。決算日が「今日」の銘柄は、発表が引け後の場合があるので「これから」(白)に含める。日程が載っていない銘柄はグレーで「決算 日程なし」。
@@ -12585,9 +12585,17 @@ ${keywordLine}${bpBlock}${conditionBlock}
     h.style.cursor = 'pointer';
     h.setAttribute('role', 'button');
     h.addEventListener('click', () => { playSelect(); screen = 'world3'; render(); });
+    // 2026-10-30 キング指示：「〜がおすすめです」の文は出さず銘柄だけ。各銘柄の後ろに番号(押すとコピー＝既存の liveCopyCode / .lv-copy と同じ)
     const t = document.createElement('div');
-    t.style.cssText = 'font-size:16px; font-weight:bold; color:#fff; line-height:1.6;';
-    t.textContent = t3.join('、') + 'がおすすめです';
+    t.style.cssText = 'font-size:16px; font-weight:bold; color:#fff; line-height:2;';
+    t3.forEach((x, i) => {
+      const sp = document.createElement('span'); sp.style.cssText = 'white-space:nowrap; margin-right:14px;';
+      sp.appendChild(document.createTextNode(x.name));
+      const b = document.createElement('button'); b.className = 'lv-copy'; b.textContent = x.code + ' 📋';
+      b.setAttribute('aria-label', '銘柄コード' + x.code + 'をコピー');
+      b.addEventListener('click', ev => { ev.stopPropagation(); liveCopyCode(b, x.code); });
+      sp.appendChild(b); t.appendChild(sp);
+    });
     box.appendChild(h); box.appendChild(t);
     return box;
   }
@@ -15541,7 +15549,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-29g';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-30a';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
