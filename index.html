@@ -11464,7 +11464,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
         const meta = document.createElement('div'); meta.className = 'nw-meta';
         meta.textContent = `${pinSet.has(keyOf(it)) ? '📌 ' : ''}${fmtMD(it.date)}　${it.kind}　確度${it.grade || '?'}・${it.body === '本文' ? '本文まで読んだ' : '見出しのみ'}`; card.appendChild(meta); // 出典名・公開日は出さない(元記事を開けばわかる)
         const h = document.createElement('div'); h.className = 'nw-head'; h.textContent = it.head; card.appendChild(h);
-        const hasEx = it.explain && it.explain.length, hasDt = it.daytrade && it.daytrade.length;
+        const dtShow = (it.daytrade || []).filter(l => !/[:：]\s*確認(できません|できず|できませんでした)[。.]?\s*$/.test(l)); // 2026-10-30 キング指示：「〜：確認できません」だけの行は出さない(場所をとるだけ)
+        const hasEx = it.explain && it.explain.length, hasDt = dtShow.length;
         const foldNodes = []; // 2026-10-30 キング指示：用語の説明(🔰)は開いたまま。数値・キーワード・一次情報(出典)だけ「📎 数値・出典」に閉じる
         if (hasEx) { // 🔰 かんたん解説(開いたまま・見出しの直下)
           const ex = document.createElement('details'); ex.className = 'lt-ex'; ex.open = true;
@@ -11474,7 +11475,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
         }
         if (it.numbers) { const d = document.createElement('div'); d.className = 'nw-num'; d.textContent = '数値：' + it.numbers; foldNodes.push(d); }
         if (hasDt) { // デイトレとの関係(クロの仮説)。💡の行は仮説なので大きく色を変える
-          it.daytrade.forEach(l => { const d = document.createElement('div'); d.className = 'lt-ex-line' + (l.indexOf('💡') === 0 ? ' lt-ex-hyp' : ''); d.textContent = l.replace(/^💡\s*見方\s*[(（]仮説[)）]\s*[:：]\s*/, '💡 仮説→ '); card.appendChild(d); }); // 2026-10-19 キング指示：「見方(仮説)：」→「仮説→」
+          dtShow.forEach(l => { const d = document.createElement('div'); d.className = 'lt-ex-line' + (l.indexOf('💡') === 0 ? ' lt-ex-hyp' : ''); d.textContent = l.replace(/^💡\s*見方\s*[(（]仮説[)）]\s*[:：]\s*/, '💡 仮説→ '); card.appendChild(d); }); // 2026-10-19 キング指示：「見方(仮説)：」→「仮説→」
         } else if (it.note) { const d = document.createElement('div'); d.className = 'nw-note'; d.textContent = it.note; card.appendChild(d); } // 古い行：「仮説：…」で始まる行。事実ではないので色を分ける
         if (!hasEx && it.keywords) { const d = document.createElement('div'); d.className = 'nw-kw'; d.textContent = 'キーワード：' + it.keywords; foldNodes.push(d); }
         // 一次情報（シートM列 primary）：「名称｜URL｜確認日｜一次側の最新日付と値」か「なし」。空・なしは【1次情報なし】(キング指示 2026-10-17：このまま残す)
@@ -15756,7 +15757,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-30e';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-30f';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
