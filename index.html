@@ -350,9 +350,9 @@
   .lt-meta{ font-size:11px; color:#9db4ff; letter-spacing:.5px; margin-bottom:4px; }
   .lt-head{ font-size:14.5px; font-weight:bold; color:#fff; line-height:1.5; margin-bottom:6px; }
   .lt-ex{ margin:8px 0 2px; border:1px dashed #5a78c8; border-radius:8px; padding:6px 10px; background:rgba(60,90,170,.12); }
-  .lt-ex summary{ cursor:pointer; font-size:13px; color:#9fd0ff; font-weight:bold; }
-  .lt-ex-line{ font-size:14.5px; color:#d6e2ff; line-height:1.75; margin:6px 0; }
-  .lt-ex-hyp{ font-size:17px; font-weight:bold; line-height:1.7; color:#ffe9a8; border-left:3px solid #d9b44a; padding-left:8px; }
+  .lt-ex summary{ cursor:pointer; font-size:14px; color:#9fd0ff; font-weight:bold; }
+  .lt-ex-line{ font-size:17px; color:#d6e2ff; line-height:1.75; margin:6px 0; } /* 2026-10-30 キング指示：14.5→17px */
+  .lt-ex-hyp{ font-size:20px; font-weight:bold; line-height:1.7; color:#ffe9a8; border-left:3px solid #d9b44a; padding-left:8px; } /* 17→20px */
   /* 🔥 今日のひみつの手紙で気になる！(2026-10-30 キング承認：絵の真下・押すと該当カードへ移動して光る・読んだら印) */
   .kn-box{ margin:12px 0; padding:12px 12px 10px; border:3px solid #ff9a3c; border-radius:12px; background:linear-gradient(180deg,rgba(255,140,40,.16),rgba(40,20,10,.35)); }
   .kn-title{ font-size:16px; font-weight:bold; color:#ffd98a; line-height:1.4; }
@@ -371,7 +371,13 @@
   .kn-flash{ animation: knFlash 1.8s ease-out 1; border-radius:12px; }
   [id^="ktq-c-"]{ scroll-margin-top:62px; } /* 右上の🔊ボタン(画面固定)の下から始める */
   /* 📰 世界の速報カード(2026-10-17 キング承認：手紙と同じ形・大きな文字・出典の文字は出さない) */
-  .nw-card{ padding:12px 0; border-top:1px solid rgba(157,180,255,0.25); line-height:1.6; }
+  /* 2026-10-30 キング指示：速報もTokyo Briefの手紙と同じ「1記事1枠」。手紙=ブルー／速報=黄色。📌は色を変えず太い枠＋📌印で見分ける */
+  .nw-card{ margin-top:12px; padding:12px; border:2px solid #ffd76b; border-radius:12px; background:rgba(255,255,255,0.04); box-shadow:0 4px 0 rgba(0,0,0,0.3); line-height:1.6; }
+  .nw-card.nw-pinned, .sky-panel.lt-pinned{ border-width:5px; }
+  .lt-fold{ margin:8px 0 2px; border:1px dashed rgba(157,180,255,.45); border-radius:8px; background:rgba(255,255,255,.03); }
+  .lt-fold-h{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 10px; cursor:pointer; font-size:13px; font-weight:bold; color:#b8c6ee; }
+  .lt-fold-a{ flex:0 0 auto; font-size:18px; line-height:1.2; color:#ffd76b; }
+  .lt-fold-b{ padding:0 10px 8px; }
   .nw-meta{ font-size:12.5px; color:#9db4ff; letter-spacing:.3px; margin-bottom:4px; }
   .nw-head{ font-size:17px; font-weight:bold; color:#fff; line-height:1.55; margin-bottom:6px; }
   .nw-num{ font-size:14.5px; color:#ffd76b; line-height:1.6; margin:4px 0; }
@@ -389,7 +395,7 @@
   .lt-dd-link{ font-size:12.5px; line-height:1.6; margin:3px 0; }
   .lt-dd-link a{ color:#9fd0ff; word-break:break-all; }
   .lt-line{ font-size:13px; color:#dfe8ff; line-height:1.65; margin:5px 0; padding-left:1.2em; text-indent:-1.2em; }
-  .sky-panel.lt-pinned{ border-color:#ffd76b; background:rgba(255,215,107,0.07); }
+  .sky-panel.lt-pinned{ background:rgba(255,215,107,0.07); } /* 色は変えない(手紙=ブルーのまま)。太い枠と📌印で見分ける */
   .lt-btns{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
   .lt-foot{ font-size:11.5px; color:#9db4ff; text-align:center; margin:16px 0 4px; line-height:1.7; }
   .sky-empty-note{ font-size:13.5px; color:#9db4ff; text-align:center; padding:10px 4px; line-height:1.6; }
@@ -10154,7 +10160,21 @@ ${keywordLine}${bpBlock}${conditionBlock}
   function ktqJstDateStr(offsetDays){ const j = new Date(Date.now() + 9*3600*1000 + (offsetDays || 0)*86400000); const p = n => (n < 10 ? '0' : '') + n; return j.getUTCFullYear() + '-' + p(j.getUTCMonth() + 1) + '-' + p(j.getUTCDate()); }
   function ktqCutoff7(){ return ktqJstDateStr(-7); }
   function ktqCardId(key){ let h = 5381; const s = String(key); for (let i = 0; i < s.length; i++) h = (((h * 33) ^ s.charCodeAt(i)) >>> 0); return 'ktq-c-' + h.toString(36); }
-  const KN_CSV_URL = 'https://docs.google.com/spreadsheets/d/' + SKY_BRIEF_SHEET_ID + '/export?format=csv&gid=158711198'; // シート「気になる」(2026-10-30新設)
+  // 「📎 本文・出典」の蛇腹(2026-10-30 キング指示：出典と細かいものだけ閉じる。▼は右上＝開▼/閉▶)。開閉は再描画しても残す(セッション中)
+  const ktqFoldOpen = new Set();
+  function ktqBuildFold(foldId, title, nodes){
+    const box = document.createElement('div'); box.className = 'lt-fold';
+    const head = document.createElement('div'); head.className = 'lt-fold-h';
+    const tt = document.createElement('span'); tt.textContent = title;
+    const arrow = document.createElement('span'); arrow.className = 'lt-fold-a';
+    const body = document.createElement('div'); body.className = 'lt-fold-b';
+    nodes.forEach(n => body.appendChild(n));
+    const apply = () => { const o = ktqFoldOpen.has(foldId); arrow.textContent = o ? '▼' : '▶'; body.style.display = o ? '' : 'none'; };
+    head.addEventListener('click', () => { playSelect(); if (ktqFoldOpen.has(foldId)) ktqFoldOpen.delete(foldId); else ktqFoldOpen.add(foldId); apply(); });
+    head.appendChild(tt); head.appendChild(arrow); box.appendChild(head); box.appendChild(body); apply();
+    return box;
+  }
+  const KN_CSV_URL ='https://docs.google.com/spreadsheets/d/' + SKY_BRIEF_SHEET_ID + '/export?format=csv&gid=158711198'; // シート「気になる」(2026-10-30新設)
   const KN_READ_KEY = 'ktq_picks_read_v1'; // 「読んだ」印(この端末だけ)。印は「for_date|ref_key」
   const knMiss = new Set();
   function knReadLoad(){ try { const a = JSON.parse(localStorage.getItem(KN_READ_KEY) || '[]'); return new Set(Array.isArray(a) ? a.slice(-300) : []); } catch(e) { return new Set(); } }
@@ -10311,8 +10331,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
     return scene;
   }
   // 🔎/🔬 深掘りの折りたたみ(行頭の絵文字で見た目が変わる。🔗は「題名|https://…」)
-  function buildDeepBox(title, lines){
-    const dd = document.createElement('details'); dd.className = 'lt-dd';
+  function buildDeepBox(title, lines, linksOut){
+    const dd = document.createElement('details'); dd.className = 'lt-dd'; dd.open = true; // 2026-10-30 キング指示：開いたまま
     const sm = document.createElement('summary'); sm.textContent = title; dd.appendChild(sm);
     lines.forEach(l => {
       const d = document.createElement('div');
@@ -10325,7 +10345,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
         d.className = 'lt-dd-line' + (l.indexOf('🎯') === 0 ? ' lt-dd-hyp' : l.indexOf('✅') === 0 ? ' lt-dd-chk' : l.indexOf('⛔') === 0 ? ' lt-dd-ng' : '');
         d.textContent = l;
       }
-      dd.appendChild(d);
+      if (linksOut && d.className === 'lt-dd-link') linksOut.push(d); else dd.appendChild(d); // 🔗(出典リンク)は閉じた「本文・出典」へ(2026-10-30 キング指示)
     });
     return dd;
   }
@@ -10418,12 +10438,16 @@ ${keywordLine}${bpBlock}${conditionBlock}
         ex.innerHTML = '<summary>🔰 かんたん解説</summary>' + it.explain.map(l => '<div class="lt-ex-line' + (l.indexOf('💡') === 0 ? ' lt-ex-hyp' : '') + '">' + skyEsc(l) + '</div>').join('');
         card.appendChild(ex);
       }
-      const bodyBox = document.createElement('div');
+      // 2026-10-30 キング指示：用語の説明(🔰)と🔎深掘りは開いたまま。◆本文と🔗出典リンクだけ「📎 本文・出典」に閉じる
+      const foldNodes = []; const bodyBox = document.createElement('div');
       bodyBox.innerHTML = it.lines.map(l => '<div class="lt-line">◆ ' + skyEsc(l) + '</div>').join('');
-      card.appendChild(bodyBox);
-      if (it.deep && it.deep.length) card.appendChild(buildDeepBox('🔎 深掘り（プロのデイトレ目線）', it.deep)); // 🎯=仮説は大きく、✅=確認、⛔=外れる条件、🔗=出典リンク
-      if (it.deep2 && it.deep2.length) card.appendChild(buildDeepBox('🔬 さらに深掘り（依頼分）', it.deep2)); // 依頼ぶんの結果(シートL列)
+      foldNodes.push(bodyBox);
+      const links = [];
+      if (it.deep && it.deep.length) card.appendChild(buildDeepBox('🔎 深掘り（プロのデイトレ目線）', it.deep, links)); // 🎯=仮説は大きく、✅=確認、⛔=外れる条件
+      if (it.deep2 && it.deep2.length) card.appendChild(buildDeepBox('🔬 さらに深掘り（依頼分）', it.deep2, links)); // 依頼ぶんの結果(シートL列)
       else if (it.deep && it.deep.length) card.appendChild(buildDeepRequest(it)); // 深掘りがある記事だけ「さらに深掘りを頼む」
+      links.forEach(l => foldNodes.push(l));
+      card.appendChild(ktqBuildFold(card.id, '📎 本文・出典' + (links.length ? '（出典リンク' + links.length + '）' : ''), foldNodes));
       const btns = document.createElement('div'); btns.className = 'lt-btns';
       const a = document.createElement('a'); a.className = 'rpg-settings-link'; a.textContent = '📧 Gmailを開く';
       a.href = lettersGmailUrl(it.mail); a.target = '_blank'; a.rel = 'noopener noreferrer'; a.style.textDecoration = 'none';
@@ -11436,22 +11460,23 @@ ${keywordLine}${bpBlock}${conditionBlock}
       const list = worldNews.showAll ? ordered : unpinned.slice(0, 8).concat(pinnedL); // 📌は「新しい8件」の枠とは別に、必ず出す
       if (!ordered.length) note('表示する速報はありません（すべて隠しました）。新しい速報が届くとここに出ます。');
       list.forEach(it => {
-        const card = document.createElement('div'); card.className = 'nw-card'; card.id = ktqCardId(keyOf(it)); // 🔥気になる枠から飛んでくる目印
+        const card = document.createElement('div'); card.className = 'nw-card' + (pinSet.has(keyOf(it)) ? ' nw-pinned' : ''); card.id = ktqCardId(keyOf(it)); // 🔥気になる枠から飛んでくる目印
         const meta = document.createElement('div'); meta.className = 'nw-meta';
         meta.textContent = `${pinSet.has(keyOf(it)) ? '📌 ' : ''}${fmtMD(it.date)}　${it.kind}　確度${it.grade || '?'}・${it.body === '本文' ? '本文まで読んだ' : '見出しのみ'}`; card.appendChild(meta); // 出典名・公開日は出さない(元記事を開けばわかる)
         const h = document.createElement('div'); h.className = 'nw-head'; h.textContent = it.head; card.appendChild(h);
         const hasEx = it.explain && it.explain.length, hasDt = it.daytrade && it.daytrade.length;
-        if (hasEx || it.numbers) { // 🔰 かんたん解説(2026-10-30 キング指示：開いたまま・本文の前＝見出しの直下)。数値の行もここにしまう(2026-10-19 キング承認：見出しと重なるため)
+        const foldNodes = []; // 2026-10-30 キング指示：用語の説明(🔰)は開いたまま。数値・キーワード・一次情報(出典)だけ「📎 数値・出典」に閉じる
+        if (hasEx) { // 🔰 かんたん解説(開いたまま・見出しの直下)
           const ex = document.createElement('details'); ex.className = 'lt-ex'; ex.open = true;
-          const sm = document.createElement('summary'); sm.textContent = hasEx ? (it.numbers ? '🔰 かんたん解説・数値' : '🔰 かんたん解説') : '🔢 数値'; ex.appendChild(sm);
-          if (it.numbers) { const d = document.createElement('div'); d.className = 'nw-num'; d.textContent = '数値：' + it.numbers; ex.appendChild(d); }
+          const sm = document.createElement('summary'); sm.textContent = '🔰 かんたん解説'; ex.appendChild(sm);
           (it.explain || []).forEach(l => { const d = document.createElement('div'); d.className = 'lt-ex-line' + (l.indexOf('💡') === 0 ? ' lt-ex-hyp' : ''); d.textContent = l; ex.appendChild(d); });
           card.appendChild(ex);
         }
+        if (it.numbers) { const d = document.createElement('div'); d.className = 'nw-num'; d.textContent = '数値：' + it.numbers; foldNodes.push(d); }
         if (hasDt) { // デイトレとの関係(クロの仮説)。💡の行は仮説なので大きく色を変える
           it.daytrade.forEach(l => { const d = document.createElement('div'); d.className = 'lt-ex-line' + (l.indexOf('💡') === 0 ? ' lt-ex-hyp' : ''); d.textContent = l.replace(/^💡\s*見方\s*[(（]仮説[)）]\s*[:：]\s*/, '💡 仮説→ '); card.appendChild(d); }); // 2026-10-19 キング指示：「見方(仮説)：」→「仮説→」
         } else if (it.note) { const d = document.createElement('div'); d.className = 'nw-note'; d.textContent = it.note; card.appendChild(d); } // 古い行：「仮説：…」で始まる行。事実ではないので色を分ける
-        if (!hasEx && it.keywords) { const d = document.createElement('div'); d.className = 'nw-kw'; d.textContent = 'キーワード：' + it.keywords; card.appendChild(d); }
+        if (!hasEx && it.keywords) { const d = document.createElement('div'); d.className = 'nw-kw'; d.textContent = 'キーワード：' + it.keywords; foldNodes.push(d); }
         // 一次情報（シートM列 primary）：「名称｜URL｜確認日｜一次側の最新日付と値」か「なし」。空・なしは【1次情報なし】(キング指示 2026-10-17：このまま残す)
         const pr = document.createElement('div'); pr.className = 'nw-pri';
         const pp = (it.primary || '').split('｜').map(x => x.trim());
@@ -11463,7 +11488,8 @@ ${keywordLine}${bpBlock}${conditionBlock}
           pr.appendChild(document.createTextNode(`一次情報：${pp[0] || ''}${pp[2] ? '（確認 ' + pp[2] + '）' : ''} ${pp[3] || ''}　`));
           if (/^https?:\/\//i.test(pp[1] || '')) { const a = document.createElement('a'); a.href = pp[1]; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = '一次情報を開く'; pr.appendChild(a); }
         }
-        card.appendChild(pr);
+        foldNodes.push(pr);
+        card.appendChild(ktqBuildFold(card.id, '📎 数値・出典', foldNodes));
         const btns = document.createElement('div'); btns.className = 'lt-btns';
         if (/^https?:\/\//i.test(it.url)) { // 元記事リンク(javascript:等は出さない)
           const a = document.createElement('a'); a.className = 'rpg-settings-link'; a.textContent = '📰 元記事を開く'; a.href = it.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.style.textDecoration = 'none';
@@ -15730,7 +15756,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-30d';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-10-30e';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
