@@ -1,35 +1,36 @@
-fetched_at=2026-10-31T07:56:31+09:00
+fetched_at=2026-10-31T10:42:34+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cyom,deploying,description,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,gameId,icon,id,image,liquidity,liquidityClob,live,markets,negRisk,negRiskAugmented,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
     - Fed Decision in December?
     - How many Fed rate hikes in 2026?
-    - How many Fed rate cuts in 2026?
     - How low will 10-year Treasury yield get before 2027?
+    - How many Fed rate cuts in 2026?
     - Fed Decision in January?
     - Fed Decision in March?
 theme oil_iran: 6 events
     - US-Iran ceasefire continues through...?
-    - US announces end of Iranian blockade by...?
     - What will WTI Crude Oil (WTI) hit in October 2026?
+    - US announces end of Iranian blockade by...?
     - Israel x Iran ceasefire continues through...?
     - Kharg Island no longer under Iranian control by...?
-    - Strait of Hormuz traffic returns to normal by October 31?
+    - US-Iran Final Nuclear Deal by…?
 theme trump: 6 events
-    - US-Iran ceasefire continues through...?
     - Fed Decision in December?
+    - US-Iran ceasefire continues through...?
     - Prime Minister of Israel after the next election?
     - US announces end of Iranian blockade by...?
     - Kharg Island no longer under Iranian control by...?
-    - US-Iran ceasefire continues through the midterms?
+    - US-Iran Final Nuclear Deal by…?
 theme tariff: 0 events
-theme recession: 0 events
+theme recession: 1 events
+    - Eurozone Annual GDP Growth 2026
 theme inflation: 5 events
     - How many Fed rate hikes in 2026?
     - How low will 10-year Treasury yield get before 2027?
     - Fed decisions (Oct-Jan)
-    - How high will inflation get in 2026?
     - Another Fed rate hike in 2026?
+    - Fed decisions (Sep–Dec)
 theme stocks: 0 events
 theme ai_chips: 6 events
     - Will Anthropic’s valuation hit __ by December 31?
