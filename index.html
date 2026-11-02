@@ -9150,7 +9150,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   const LIVE_STALE_SEC = 15;     // これ以上更新が無ければ「止まっています」
   const LIVE_CHART_END = 30*60;  // チャートの横軸：9:00〜9:30(秒)
   const skyLive = { data:null, fetchedAt:0, error:null, fetching:false, prevP:{}, flash:{}, open:{}, showAll:false,
-                    hist:{}, histAt:0, histFetching:false, lastVisibleAt:Date.now(),
+                    hist:{}, histDay:'', histAt:0, histFetching:false, lastVisibleAt:Date.now(),
                     sort: (lsGet('ktq:liveSort') || 'vd') };
   (function(){
     try {
@@ -9173,8 +9173,15 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const d = new Date(t + 9*3600*1000);
     return d.getUTCHours()*3600 + d.getUTCMinutes()*60 + d.getUTCSeconds() - 9*3600;
   }
+  // 2026-11-02 不具合修正：アプリを開いたまま日をまたぐと、前の日のチャート点(メモリ上の履歴)が残り、今日の点と混ざっていた。
+  // 履歴は「日付つき」で持ち、日付が変わったら捨てる(PC側のFirebaseは毎朝消えているので、ここだけが原因)。
+  function liveDayGuard(){
+    const today = todayDateKey();
+    if (skyLive.histDay !== today) { skyLive.hist = {}; skyLive.prevP = {}; skyLive.histAt = 0; skyLive.histDay = today; }
+  }
   function liveAddPoint(c, t, p, v, vol){
     if (c == null || t == null || p == null) return;
+    liveDayGuard();
     const m = skyLive.hist[c] || (skyLive.hist[c] = {});
     m[t] = { t, p, v, vol };
   }
@@ -9260,6 +9267,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   }
   // チャート：横軸は9:00〜9:30で固定(銘柄どうしで時刻の位置がそろう)。株価の線・VWAPの線・始値/前日終値の線・出来高の棒
   function liveChartSVG(it){
+    liveDayGuard();
     const m = skyLive.hist[it.c];
     const pts = m ? Object.values(m).filter(q => q.t >= -60 && q.t <= LIVE_CHART_END + 60).sort((a,b) => a.t - b.t) : [];
     const W = 400, H = 96, VB = 22, top = 6, ch = H - VB - top - 4, L = 4, R = 26;
@@ -9460,6 +9468,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   }
   // 今日 9:00〜9:30 の履歴(時刻順)。t=9:00からの秒
   function duelPtsOf(c){
+    liveDayGuard();
     const m = skyLive.hist[c];
     return m ? Object.values(m).filter(q => q.t != null && q.p != null && q.t >= 0 && q.t <= DUEL_END_SEC).sort((a,b) => a.t - b.t) : [];
   }
@@ -15761,7 +15770,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-10-30g';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-11-02a';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
