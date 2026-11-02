@@ -1,17 +1,17 @@
-fetched_at=2026-11-02T19:55:33+09:00
+fetched_at=2026-11-03T05:44:55+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,countryName,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,electionType,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,showAllOutcomes,showMarketImages,slug,sortBy,startDate,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
     - Fed Decision in December?
     - How many Fed rate cuts in 2026?
-    - Fed Decision in January?
-    - Another Fed rate hike in 2026?
-    - How many Fed rate hikes in 2026?
     - How low will 5-year Treasury yield get before 2027?
+    - Another Fed rate hike in 2026?
+    - Fed Decision in January?
+    - Fed decisions (Sep–Dec)
 theme oil_iran: 6 events
-    - Israel x Iran ceasefire continues through...?
     - US-Iran ceasefire continues through...?
     - US announces end of Iranian blockade by...?
+    - Israel x Iran ceasefire continues through...?
     - Will the U.S. invade Iran before 2027?
     - What will WTI Crude Oil (WTI) hit in November 2026?
     - US-Iran Hormuz Agreement by...?
@@ -19,21 +19,23 @@ theme trump: 6 events
     - Prime Minister of Israel after the next election?
     - US-Iran ceasefire continues through...?
     - US announces end of Iranian blockade by...?
+    - Fed Decision in December?
     - Will the U.S. invade Iran before 2027?
     - Republican Senate seats after the 2026 midterm elections?
-    - Who will Trump speak to by November 30?
 theme tariff: 0 events
 theme recession: 0 events
-theme inflation: 3 events
+theme inflation: 4 events
     - Another Fed rate hike in 2026?
+    - What will gas hit by end of November?
+    - Fed decisions (Sep–Dec)
     - How many Fed rate hikes in 2026?
-    - PPI YoY - October 2026
-theme stocks: 0 events
+theme stocks: 1 events
+    - S&P 500 (SPY) closes above ___ on November 2?
 theme ai_chips: 6 events
-    - Largest IPO by market cap in 2026?
-    - Will Anthropic’s valuation hit __ by December 31?
-    - GPT Astra 6.1+ released by...?
-    - Anthropic IPO by __?
     - Anthropic IPO Closing Market Cap
-    - Next Fable Model (5.2+) released by...?
+    - Will Anthropic’s valuation hit __ by December 31?
+    - Which company has best AI model end of 2026?
+    - Anthropic IPO by __?
+    - Largest IPO by market cap in 2026?
+    - OpenAI IPO Closing Market Cap
 theme fx: 0 events
