@@ -1,4 +1,4 @@
-fetched_at=2026-11-02T10:38:28+09:00
+fetched_at=2026-11-02T11:26:18+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cyom,deploying,description,elapsed,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,finishedTimestamp,gameId,icon,id,image,liquidity,liquidityClob,live,markets,negRisk,negRiskAugmented,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,turnProviderId,updatedAt,usId,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
@@ -20,8 +20,8 @@ theme trump: 6 events
     - US-Iran ceasefire continues through...?
     - US announces end of Iranian blockade by...?
     - Republican Senate seats after the 2026 midterm elections?
-    - Republican House seats after the 2026 midterm elections?
     - Fed Decision in December?
+    - US-Iran Hormuz Agreement by...?
 theme tariff: 0 events
 theme recession: 1 events
     - Eurozone Annual GDP Growth 2026
@@ -34,6 +34,6 @@ theme ai_chips: 6 events
     - Which company has best AI model end of 2026?
     - GPT Astra 6.1+ released by...?
     - Anthropic IPO Closing Market Cap
+    - Will Anthropic’s valuation hit __ by December 31?
     - Next Fable Model (5.2+) released by...?
-    - Who will the OpenAI spy be accused of working for in 2026?
 theme fx: 0 events
