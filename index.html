@@ -9827,6 +9827,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
     duelS.seen[ym] = true; duelS.lastAnn = ym; duelSave();
     const mon = Number(ym.slice(5)), diff = Math.abs(s.k - s.t);
     const ov = document.createElement('div'); ov.id = 'duelOv'; ov.className = 'duel-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', mon + '月の結果発表');
+    const cashEnd = duelCashBefore(ym + '-32');  // その月の最終日までの累計(開始1000万円＋全日の損益)
     let head, art = '';
     if (s.k > s.t) { head = `${mon}月の勝者：キング`; }
     else if (s.k < s.t) { head = `${mon}月の勝者：TACO…ニヤリ`; art = duelOctopusSVG(); }
@@ -9835,8 +9836,10 @@ ${keywordLine}${bpBlock}${conditionBlock}
       <div class="duel-row"><span>キング</span><b class="${duelCls(s.k)}">${duelYen(s.k)}</b></div>
       <div class="duel-row"><span>TACO</span><b class="${duelCls(s.t)}">${duelYen(s.t)}</b></div>
       <div class="duel-row top"><span>差</span><b>¥${diff.toLocaleString('ja-JP')}</b></div>
-      <div class="duel-row"><span>持ち金 キング</span><b>¥${Math.round(duelCashBefore(ym + '-32').k).toLocaleString('ja-JP')}</b></div>
-      <div class="duel-row"><span>持ち金 TACO</span><b>¥${Math.round(duelCashBefore(ym + '-32').t).toLocaleString('ja-JP')}</b></div>
+      <div class="duel-row top"><span>通算損益 キング（開始から）</span><b class="${duelCls(cashEnd.k - DUEL_START_CASH)}">${duelYen(cashEnd.k - DUEL_START_CASH)}</b></div>
+      <div class="duel-row"><span>通算損益 TACO（開始から）</span><b class="${duelCls(cashEnd.t - DUEL_START_CASH)}">${duelYen(cashEnd.t - DUEL_START_CASH)}</b></div>
+      <div class="duel-row"><span>持ち金 キング</span><b>¥${Math.round(cashEnd.k).toLocaleString('ja-JP')}</b></div>
+      <div class="duel-row"><span>持ち金 TACO</span><b>¥${Math.round(cashEnd.t).toLocaleString('ja-JP')}</b></div>
       <div class="duel-note">対戦 ${s.n}日　／　タップで閉じる</div></div>`;
     ov.addEventListener('click', () => { ov.remove(); updateSkyDuelPanel(); });
     document.body.appendChild(ov);
