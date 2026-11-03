@@ -1,4 +1,4 @@
-fetched_at=2026-11-04T03:25:04+09:00
+fetched_at=2026-11-04T05:04:40+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,countryName,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,electionType,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,showAllOutcomes,showMarketImages,slug,sortBy,startDate,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 5 events
@@ -12,8 +12,8 @@ theme oil_iran: 6 events
     - US announces end of Iranian blockade by...?
     - Israel x Iran ceasefire continues through...?
     - Will the U.S. invade Iran before 2027?
+    - Strait of Hormuz traffic returns to normal by December 31?
     - Will the Iranian regime fall before 2027?
-    - US-Iran Hormuz Agreement by...?
 theme trump: 6 events
     - US-Iran ceasefire continues through...?
     - Republican Senate seats after the 2026 midterm elections?
@@ -34,5 +34,5 @@ theme ai_chips: 6 events
     - Will Anthropic’s valuation hit __ by December 31?
     - Anthropic IPO by __?
     - Which company has best AI model end of 2026?
-    - OpenAI IPO Closing Market Cap
+    - How much will Anthropic raise in its IPO?
 theme fx: 0 events
