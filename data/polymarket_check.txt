@@ -1,20 +1,20 @@
-fetched_at=2026-11-05T03:36:58+09:00
+fetched_at=2026-11-05T05:24:51+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,countryName,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,electionType,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,showAllOutcomes,showMarketImages,slug,sortBy,startDate,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
     - Fed Decision in December?
+    - Bank of England decision in November?
     - How many Fed rate cuts in 2026?
     - Another Fed rate hike in 2026?
-    - Bank of England decision in November?
     - Fed Decision in January?
     - Fed decisions (Oct-Jan)
 theme oil_iran: 6 events
-    - Israel x Iran ceasefire continues through...?
     - US-Iran ceasefire continues through...?
+    - Israel x Iran ceasefire continues through...?
     - Will the U.S. invade Iran before 2027?
     - US announces end of Iranian blockade by...?
     - What will WTI Crude Oil (WTI) hit in November 2026?
-    - Strait of Hormuz traffic returns to normal by December 31?
+    - US-Iran effective ceasefire continues through...?
 theme trump: 6 events
     - Fed Decision in December?
     - US-Iran ceasefire continues through...?
@@ -23,9 +23,8 @@ theme trump: 6 events
     - Republican Senate seats after the midterms (Lower Brackets)
     - US announces end of Iranian blockade by...?
 theme tariff: 0 events
-theme recession: 2 events
+theme recession: 1 events
     - Dem sweep & US recession by end of 2027?
-    - US GDP growth in Q4 2026?
 theme inflation: 3 events
     - Another Fed rate hike in 2026?
     - Fed decisions (Oct-Jan)
