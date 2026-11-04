@@ -11063,6 +11063,284 @@ ${keywordLine}${bpBlock}${conditionBlock}
     if (stageState && stageState.key === 'iriguchi') stopStageBGM();
     if (worldTickTimer){ clearInterval(worldTickTimer); worldTickTimer = null; }
   }
+  // ===== 🎯 9時の本命5（2026-11-04 キング指示：9:00〜9:30の現物デイトレ専用。予想→結果→集計で育てる）=====
+  // データ元はすべて kabuステーション(PCの kabu_live.ps1 → Firebase /live/<合言葉>)。Yahooは遅延するので使わない(キング指示 2026-11-04)。
+  //   now … 最新1枚(約5秒ごと・50銘柄・p=値 o=始値 v=VWAP pc=前日終値 cp=前日比% to=売買代金(百万円))
+  //   h/<コード>/k<9:00からの秒> … [値, VWAP, 累計出来高]　snap/a … 9:05の売買代金ランキング＋始値　rk4 … 売買代金ランキング(15:31まで)
+  //   now・h・snap・rk4 は翌朝のPC起動で消えるので、アプリが開かれた時に rec/<日付> へ写して残す(recは消えない)。
+  // 実物確認(2026-11-04 15:30のFirebase)：日経225の売買代金上位5は9:00:46〜9:31:03の約223点が揃っていた。順位が圏外の銘柄は履歴が途中までしか無い(例：8316は83秒まで)。
+  // 「前日に下げた」はkabuのデータに無いので使えない(cpは“その時点の前日比”)。代わりに「寄りの前日比プラス」を条件の候補に入れた。
+  const HB_TOPN = 5;            // 本命の数(キング指定：日経225の売買代金上位5)
+  const HB_BUY_SEC = 295;       // 9:04:55以降の最初の記録＝「9:05に買った」
+  const HB_SELL_SEC = 1800;     // 9:30:00以前の最後の記録＝「9:30に売った」
+  const HB_BUY_SLACK = 40;      // 買い側：目標からこの秒数より遅い記録しか無ければ「記録なし」(推測で埋めない)
+  const HB_SELL_SLACK = 60;     // 売り側：同じく早い側
+  const HB_COVER_SEC = 1800;    // 9:30の点まで届いてから写す(途中で写すと売りの時刻が早まるため)
+  // 仮ルール(初期値・キングに提示済みの案)。集計を見て、ここの行を足し引きして育てる。
+  const HB_RULES = [
+    { k:'all',  label:'上位5を、そのまま買う',                 f: r => true },
+    { k:'o',    label:'9:05に 寄り値より上',                   f: r => r.o === true },
+    { k:'v',    label:'9:05に VWAPより上',                     f: r => r.v === true },
+    { k:'ov',   label:'寄り値より上 かつ VWAPより上（今の本命条件）', f: r => r.o === true && r.v === true },
+    { k:'g',    label:'寄りの前日比がプラス',                   f: r => r.g === true },
+    { k:'ovg',  label:'3つとも満たす',                         f: r => r.o === true && r.v === true && r.g === true },
+    { k:'not',  label:'本命条件を満たさない（見送りだった）',      f: r => !(r.o === true && r.v === true) },
+    { k:'pre',  label:'前日引けの上位5に入っていた',             f: r => r.pre === true }
+  ];
+  let hbNikSet = null;
+  let hbS = { recs:null, now:null, snap:null, rk:null, at:0, nowAt:0, loading:false, err:null, saveMsg:'', open:true, moreOpen:false };
+  let hbTimer = null;
+  const hbKey = () => lsGet('ktq:liveKey');
+  const hbNik = () => hbNikSet || (hbNikSet = new Set(NIKKEI225.map(c => String(c).replace(/\.T$/i, ''))));
+  function hbJst(){ const d = new Date(Date.now() + 9*3600*1000); return { key: d.toISOString().slice(0, 10), sec: d.getUTCHours()*3600 + d.getUTCMinutes()*60 + d.getUTCSeconds() }; }
+  async function hbSend(method, path, obj){
+    const key = hbKey(); const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 15000);
+    try {
+      const init = { method, cache:'no-store', signal: ctl.signal };
+      if (obj !== undefined) { init.body = JSON.stringify(obj); init.headers = { 'Content-Type':'application/json; charset=utf-8' }; }
+      const r = await fetch(`${LIVE_FB}/live/${encodeURIComponent(key)}/${path}.json${method === 'GET' ? '?_cb=' + Date.now() : ''}`, init);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return method === 'GET' ? await r.json() : true;
+    } finally { clearTimeout(to); }
+  }
+  // h/<コード> → [[秒,値,VWAP,出来高]…]（秒の昇順）
+  function hbSeries(o){
+    return Object.keys(o || {}).map(k => { const v = o[k] || []; return [ +String(k).slice(1), v[0], v[1], v[2] ]; })
+      .filter(a => isFinite(a[0]) && a[1] != null && isFinite(a[1])).sort((a, b) => a[0] - b[0]);
+  }
+  // 9:05に買って9:30に売った場合。窓から外れていれば null(推測で埋めない)。損益は%(100株・手数料なしの考え方は他の記録と同じ)
+  function hbScore(ser){
+    const b = ser.find(a => a[0] >= HB_BUY_SEC); if (!b || b[0] > HB_BUY_SEC + HB_BUY_SLACK) return null;
+    let s = null; for (const a of ser) { if (a[0] <= HB_SELL_SEC) s = a; else break; }
+    if (!s || s[0] < HB_SELL_SEC - HB_SELL_SLACK || s[0] <= b[0]) return null;
+    let hi = -Infinity, lo = Infinity;
+    ser.forEach(a => { if (a[0] >= b[0] && a[0] <= s[0]) { if (a[1] > hi) hi = a[1]; if (a[1] < lo) lo = a[1]; } });
+    const pc = x => +((x / b[1] - 1) * 100).toFixed(2);
+    return { bs:b[0], bp:b[1], bv:(b[2] != null && isFinite(b[2])) ? b[2] : null, ss:s[0], sp:s[1], ret:pc(s[1]), hi:pc(hi), lo:pc(lo) };
+  }
+  // 9:05のランキング(snap/a)＋その日の値動き(h全体)から、日経225の行を作る。pre＝前日引けの上位5(コード)
+  function hbBuildRows(snapA, hAll, preCodes){
+    const nik = hbNik(), rows = []; let rk = 0; const preSet = new Set(preCodes || []);
+    (snapA.rk4 || []).slice().sort((x, y) => (x.no || 999) - (y.no || 999)).forEach(a => {
+      const c = String(a && a.c || ''); if (!c || !nik.has(c)) return; rk++;
+      const sc = hbScore(hbSeries(hAll && hAll[c]));
+      const op = snapA.op ? snapA.op[c] : null;
+      const row = { c, n: a.n || '', rk, to: Math.round(a.to || 0), cp: a.cp == null ? null : a.cp, pre: preSet.has(c) };
+      if (sc) {
+        row.bp = sc.bp; row.sp = sc.sp; row.ret = sc.ret; row.hi = sc.hi; row.lo = sc.lo;
+        row.o = (op != null && isFinite(op)) ? sc.bp > op : null;
+        row.v = sc.bv != null ? sc.bp > sc.bv : null;
+        row.g = a.cp == null ? null : a.cp > 0;
+      }
+      rows.push(row);
+    });
+    return rows;
+  }
+  // rk4(15:30)から日経225の上位10＝翌朝の「寄り前の本命」の元
+  function hbBuildClose(rk){
+    const nik = hbNik(), out = [];
+    (rk.rk4 || []).slice().sort((x, y) => (x.no || 999) - (y.no || 999)).forEach(a => {
+      const c = String(a && a.c || ''); if (!c || !nik.has(c) || out.length >= 10) return;
+      out.push({ c, n: a.n || '', no: a.no, to: Math.round(a.to || 0), cp: a.cp == null ? null : a.cp, p: a.p == null ? null : a.p });
+    });
+    return out;
+  }
+  function hbPreFor(recs, dateKey){ // dateKey より前で、引けの記録がある最新の日の上位5
+    const ds = Object.keys(recs || {}).filter(d => d < dateKey && recs[d] && Array.isArray(recs[d].close) && recs[d].close.length).sort();
+    if (!ds.length) return null; const d = ds[ds.length - 1];
+    return { date: d, list: recs[d].close.slice(0, HB_TOPN) };
+  }
+  async function hbLoad(){
+    if (hbS.loading || !hbKey()) return; hbS.loading = true;
+    try {
+      const [recs, snap, rk, now] = await Promise.all([ hbSend('GET', 'rec'), hbSend('GET', 'snap'), hbSend('GET', 'rk4'), hbSend('GET', 'now') ]);
+      hbS.recs = recs || {}; hbS.snap = snap; hbS.rk = rk; hbS.now = now; hbS.nowAt = Date.now();
+      const a = snap && snap.a; const d = (a && typeof a.u === 'string') ? a.u.slice(0, 10) : null;
+      // ① 9:05の順位＋9:00〜9:30の値動きを、採点して rec に残す(9:30の点まで届いてから・1日1回)
+      const j0 = hbJst(), over = d && (d !== j0.key || j0.sec >= 9*3600 + 31*60 + 30);
+      if (d && over && !(hbS.recs[d] && Array.isArray(hbS.recs[d].rows))) {
+        const hAll = await hbSend('GET', 'h');
+        let mx = 0; Object.keys(hAll || {}).forEach(c => Object.keys(hAll[c] || {}).forEach(k => { const s = +String(k).slice(1); if (s > mx) mx = s; }));
+        if (hAll && mx >= HB_COVER_SEC) {
+          const pre = hbPreFor(hbS.recs, d);
+          const rows = hbBuildRows(a, hAll, pre ? pre.list.map(x => x.c) : []);
+          const body = { v:1, savedAt: new Date().toISOString(), rows, pre: pre ? pre.list.map(x => x.c) : [] };
+          await hbSend('PATCH', 'rec/' + d, body);
+          hbS.recs[d] = Object.assign(hbS.recs[d] || {}, body);
+          hbS.saveMsg = `${d} の記録を残しました（${rows.filter(r => r.ret != null).length}銘柄を採点）`;
+        }
+      }
+      // ② 15:30の売買代金ランキング(日経225の上位10)を、翌朝の「寄り前の本命」の元として残す
+      const rd = (rk && typeof rk.u === 'string') ? rk.u.slice(0, 10) : null;
+      if (rd && rk.u.slice(11, 16) >= '15:30' && !(hbS.recs[rd] && Array.isArray(hbS.recs[rd].close) && hbS.recs[rd].close.length)) {
+        const close = hbBuildClose(rk);
+        if (close.length >= HB_TOPN) {
+          await hbSend('PUT', 'rec/' + rd + '/close', close);
+          (hbS.recs[rd] = hbS.recs[rd] || {}).close = close;
+          hbS.saveMsg = (hbS.saveMsg ? hbS.saveMsg + '／' : '') + `${rd} の引けの上位を残しました`;
+        }
+      }
+      hbS.err = null;
+    } catch(e){ hbS.err = (e && e.name === 'AbortError') ? '時間切れ' : String((e && e.message) || e); }
+    hbS.loading = false; hbS.at = Date.now(); hbFill();
+  }
+  async function hbLoadNow(){ // 9:00〜9:35の間だけ、最新1枚(約11KB)を5秒ごとに
+    if (hbS.loading || !hbKey()) return;
+    try { hbS.now = await hbSend('GET', 'now'); hbS.nowAt = Date.now(); hbS.err = null; } catch(e){ hbS.err = (e && e.name === 'AbortError') ? '時間切れ' : String((e && e.message) || e); }
+    hbFill();
+  }
+  function hbTick(){
+    if (!document.getElementById('hbPanel') || document.visibilityState !== 'visible' || !hbKey()) return;
+    const j = hbJst(); const inSes = skyIsTradingDay(j.key) && j.sec >= 9*3600 - 60 && j.sec < 9*3600 + 35*60;
+    if (!hbS.at || Date.now() - hbS.at > (inSes ? 60000 : 5*60000)) { hbLoad(); return; }
+    if (inSes) hbLoadNow(); else hbFill();
+  }
+  function hbFmtPct(x){ return x == null ? '—' : (x >= 0 ? '+' : '') + x.toFixed(2) + '%'; }
+  const hbPctCol = x => x == null ? '#8a93b8' : (x > 0 ? '#ffd76b' : (x < 0 ? '#8fb8ff' : '#cfd8ff'));
+  function hbStats(recs, topN, f){
+    const rets = [], days = new Set();
+    Object.keys(recs || {}).forEach(d => ((recs[d] && recs[d].rows) || []).forEach(r => { if (r.rk <= topN && r.ret != null && f(r)) { rets.push(r.ret); days.add(d); } }));
+    const n = rets.length; if (!n) return { n:0, days:0 };
+    return { n, days: days.size, w: rets.filter(x => x > 0).length, avg: +(rets.reduce((s, x) => s + x, 0) / n).toFixed(2) };
+  }
+  // 1日分の学び：その日の日経225(履歴のある全銘柄)で、条件ごとに ある/なし の平均損益の差を出す
+  function hbLesson(rec){
+    const rows = ((rec && rec.rows) || []).filter(r => r.ret != null); if (rows.length < 6) return null;
+    const avg = a => a.reduce((s, r) => s + r.ret, 0) / a.length; const out = [];
+    [['o','寄り値より上'], ['v','VWAPより上'], ['g','寄りの前日比プラス']].forEach(([k, lab]) => {
+      const y = rows.filter(r => r[k] === true), nn = rows.filter(r => r[k] === false);
+      if (y.length >= 2 && nn.length >= 2) out.push({ lab, y: avg(y), n: avg(nn), ny: y.length, nn: nn.length, diff: avg(y) - avg(nn) });
+    });
+    out.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff)); return { rows: rows.length, items: out };
+  }
+  function hbFill(){
+    const wrap = document.getElementById('hbPanel'); if (!wrap) return;
+    wrap.querySelectorAll('.hb-body').forEach(n => n.remove());
+    const ar = wrap.querySelector('.hb-arrow'); if (ar) ar.textContent = hbS.open ? '▼' : '▶';
+    if (!hbS.open) return;
+    const body = document.createElement('div'); body.className = 'hb-body';
+    const mk = (txt, css) => { const d = document.createElement('div'); d.style.cssText = css || ''; d.textContent = txt; return d; };
+    const SUB = 'font-size:12px;color:#9aa4cc;line-height:1.6;', HEAD = 'font-size:16px;font-weight:bold;color:#ffd76b;line-height:1.5;';
+    const box = (title) => { const b = document.createElement('div'); b.style.cssText = 'border-top:1px solid rgba(255,215,107,.25);padding:8px 0 6px;'; if (title) b.appendChild(mk(title, HEAD)); body.appendChild(b); return b; };
+    if (!hbKey()) { body.appendChild(mk('この端末はまだ合言葉が入っていません。専用リンクを一度開くと、PCのkabuの数字がここに届きます。', 'font-size:13px;color:#9aa4cc;line-height:1.6;')); wrap.appendChild(body); return; }
+    if (!hbS.recs) { body.appendChild(mk(hbS.err ? '読めませんでした：' + hbS.err : 'PCのkabuの記録を読んでいます…', SUB)); wrap.appendChild(body); return; }
+    const j = hbJst(); const trading = skyIsTradingDay(j.key);
+    const nameOf = (c, n) => nameFor(c) || n || c;
+    const fresh = hbS.now && typeof hbS.now.u === 'string' && hbS.now.u.slice(0, 10) === j.key && (Date.now() - Date.parse(hbS.now.u)) < 60000;
+    const inSes = trading && j.sec >= 9*3600 && j.sec < 9*3600 + 35*60;
+    const nowMap = {}; if (fresh) (hbS.now.items || []).forEach(x => { nowMap[String(x.c)] = x; });
+    const judge = x => x && x.p != null && x.o != null && x.v != null ? (x.p > x.o && x.p > x.v) : null;
+
+    // ---- ① 寄り前の本命5＝前日引けの売買代金 上位5(日経225) ----
+    const preRef = (!trading || j.sec >= 15*3600 + 35*60) ? '9999-12-31' : j.key;   // 引け後・休場日は、直近の引けを「次の寄り」用に使う
+    const pre = hbPreFor(hbS.recs, preRef);
+    const b1 = box('🌅 寄り前の本命5');
+    if (!pre) b1.appendChild(mk('まだ前日の引けの記録がありません。今日の15:30以降にアプリを開くと、ここに残ります。', SUB));
+    else {
+      b1.appendChild(mk(`日経225の売買代金上位（${pre.date} 15:30時点）`, SUB));
+      pre.list.forEach((x, i) => {
+        const row = document.createElement('div'); row.style.cssText = 'margin-top:6px;line-height:1.45;';
+        const lv = nowMap[x.c]; const jg = judge(lv);
+        row.appendChild(mk(`${i + 1}位　${nameOf(x.c, x.n)}　${x.c}${jg == null ? '' : (jg ? '　🟢' : '　⚪')}`, 'font-size:15px;font-weight:bold;color:#e6eeff;'));
+        row.appendChild(mk(`前日 売買代金 ${Math.round(x.to / 100).toLocaleString()}億円　前日比 ${hbFmtPct(x.cp)}` + (lv ? `　いま 寄り比 ${hbFmtPct((lv.p / lv.o - 1) * 100)}／VWAP比 ${hbFmtPct((lv.p / lv.v - 1) * 100)}` : ''), 'font-size:12px;color:#c8d0f0;'));
+        b1.appendChild(row);
+      });
+    }
+    // ---- ② いまの上位5＋判定（9:00〜9:35・kabuの最新を5秒ごと）----
+    if (inSes) {
+      const b2 = box('⚔️ いまの上位5と、今日の判定');
+      if (!fresh) b2.appendChild(mk('PCのkabuの最新がまだ届いていません（60秒以上古い）。', SUB));
+      else {
+        const nik = hbNik();
+        const live = (hbS.now.items || []).filter(x => nik.has(String(x.c))).sort((a, b) => (b.to || 0) - (a.to || 0)).slice(0, HB_TOPN);
+        const ok = live.filter(x => judge(x) === true).length;
+        const hhmm = hbS.now.u.slice(11, 19);
+        b2.appendChild(mk(`kabu ${hhmm} 時点　9:05に判定してください`, SUB));
+        b2.appendChild(mk(j.sec < 9*3600 + 4*60 ? '9:05までは見るだけ。' : (ok ? `🟢 本命条件を満たす銘柄：${ok}／${live.length}` : '⚪ どれも満たさない → 今日は買わない（これも正式な答え）'), 'font-size:17px;font-weight:bold;color:#fff;margin:4px 0;'));
+        live.forEach((x, i) => {
+          const row = document.createElement('div'); row.style.cssText = 'margin-top:6px;line-height:1.45;';
+          const jg = judge(x);
+          row.appendChild(mk(`${i + 1}位　${nameOf(x.c, x.n)}　${x.c}　${jg ? '🟢' : '⚪'}`, 'font-size:15px;font-weight:bold;color:#e6eeff;'));
+          row.appendChild(mk(`${x.p}円　寄り比 ${hbFmtPct((x.p / x.o - 1) * 100)}　VWAP比 ${hbFmtPct((x.p / x.v - 1) * 100)}　前日比 ${hbFmtPct(x.cp)}　売買代金 ${Math.round((x.to || 0) / 100).toLocaleString()}億円`, 'font-size:12px;color:#c8d0f0;'));
+          b2.appendChild(row);
+        });
+      }
+    }
+    // ---- ③ 採点：いちばん新しい記録 ----
+    const days = Object.keys(hbS.recs).filter(d => hbS.recs[d] && Array.isArray(hbS.recs[d].rows)).sort();
+    const last = days.length ? days[days.length - 1] : null;
+    const b3 = box('📜 採点（9:05に買って9:30に売ったら）');
+    if (!last) b3.appendChild(mk('まだ記録がありません。平日の9:30以降にアプリを開くと、その日の分が自動で溜まります。', SUB));
+    else {
+      const rec = hbS.recs[last]; const top = rec.rows.filter(r => r.rk <= HB_TOPN);
+      b3.appendChild(mk(`${last} の、9:05時点の売買代金 上位5`, SUB));
+      top.forEach(r => {
+        const row = document.createElement('div'); row.style.cssText = 'margin-top:6px;line-height:1.45;';
+        const mark = r.ret == null ? '記録なし' : `${hbFmtPct(r.ret)}`;
+        const head = document.createElement('div'); head.style.cssText = 'font-size:15px;font-weight:bold;color:#e6eeff;display:flex;justify-content:space-between;gap:8px;';
+        head.appendChild(mk(`${r.rk}位　${nameOf(r.c, r.n)}　${r.c}${r.pre ? '　★前日の本命' : ''}`));
+        head.appendChild(mk(mark, `color:${hbPctCol(r.ret)};white-space:nowrap;`));
+        row.appendChild(head);
+        if (r.ret != null) row.appendChild(mk(`${r.bp}→${r.sp}円　最高 ${hbFmtPct(r.hi)}／最低 ${hbFmtPct(r.lo)}　寄り値${r.o === true ? '上' : (r.o === false ? '下' : '?')}・VWAP${r.v === true ? '上' : (r.v === false ? '下' : '?')}・前日比${r.g === true ? '＋' : (r.g === false ? '−' : '?')}`, 'font-size:12px;color:#c8d0f0;'));
+        b3.appendChild(row);
+      });
+      const pass = top.filter(r => r.ret != null && r.o === true && r.v === true), fail = top.filter(r => r.ret != null && !(r.o === true && r.v === true));
+      const av = a => a.length ? hbFmtPct(a.reduce((s, r) => s + r.ret, 0) / a.length) : '—';
+      b3.appendChild(mk(`本命条件を満たした ${pass.length}銘柄：平均 ${av(pass)} ／ 満たさなかった ${fail.length}銘柄：平均 ${av(fail)}`, 'font-size:13px;color:#fff;margin-top:8px;line-height:1.5;'));
+      const ls = hbLesson(rec);
+      if (ls && ls.items.length) {
+        b3.appendChild(mk(`その日の日経225 ${ls.rows}銘柄で、効いた条件（ある側−ない側の平均）`, 'font-size:12px;color:#9aa4cc;margin-top:6px;'));
+        ls.items.forEach(it => b3.appendChild(mk(`${it.lab}：${it.ny}銘柄 ${hbFmtPct(it.y)} ／ そうでない${it.nn}銘柄 ${hbFmtPct(it.n)}　差 ${hbFmtPct(it.diff)}`, 'font-size:12px;color:#c8d0f0;line-height:1.55;')));
+      }
+      // ひとこと(次の仮説)：rec/<日付>/memo に保存
+      const memoWrap = document.createElement('div'); memoWrap.style.cssText = 'margin-top:8px;';
+      const ta = document.createElement('textarea'); ta.rows = 2; ta.maxLength = 300; ta.placeholder = 'ひとこと（外れた／次はこれを試す）'; ta.value = rec.memo || '';
+      ta.style.cssText = 'width:100%;box-sizing:border-box;background:#0f1330;color:#e6eeff;border:1px solid rgba(255,215,107,.35);padding:6px;font-size:13px;';
+      memoWrap.appendChild(ta);
+      const sv = document.createElement('button'); sv.className = 'rpg-btn wide'; sv.style.marginTop = '4px'; sv.textContent = '💾 ひとことを残す';
+      sv.onclick = async () => { playSelect(); sv.disabled = true; try { await hbSend('PUT', 'rec/' + last + '/memo', ta.value.slice(0, 300)); rec.memo = ta.value.slice(0, 300); sv.textContent = '残しました'; } catch(e){ sv.textContent = '残せませんでした：' + ((e && e.message) || e); } setTimeout(() => { sv.disabled = false; }, 800); };
+      memoWrap.appendChild(sv); b3.appendChild(memoWrap);
+    }
+    // ---- ④ 集計：ルールごとの成績（上位5／ひろげて上位20）----
+    const b4 = box('📊 集計（記録した日の全部）');
+    if (!days.length) b4.appendChild(mk('記録が溜まると、ここに条件ごとの勝率と平均が出ます。', SUB));
+    else {
+      b4.appendChild(mk(`${days.length}日分（${days[0]}〜${days[days.length - 1]}）。1行＝その条件で9:05に買って9:30に売った回数`, SUB));
+      const tbl = document.createElement('div'); tbl.style.cssText = 'margin-top:6px;';
+      let hbEmpty = 0;
+      HB_RULES.forEach(rl => {
+        const s5 = hbStats(hbS.recs, HB_TOPN, rl.f), s20 = hbStats(hbS.recs, 20, rl.f);
+        if (!s5.n && !s20.n) { hbEmpty++; return; }   // 該当なしの条件は1行にまとめる(消さない・件数が付けば自動で現れる)
+        const line = (s) => s.n ? `${s.n}回・勝ち${s.w}・平均 ${hbFmtPct(s.avg)}` : '—';
+        const r = document.createElement('div'); r.style.cssText = 'margin-top:5px;line-height:1.45;';
+        r.appendChild(mk(rl.label, 'font-size:13px;color:#e6eeff;font-weight:bold;'));
+        const l1 = document.createElement('div'); l1.style.cssText = 'font-size:12px;color:#c8d0f0;';
+        l1.appendChild(document.createTextNode('上位5　')); const s1 = mk(line(s5), 'display:inline;color:' + hbPctCol(s5.n ? s5.avg : null) + ';'); l1.appendChild(s1);
+        l1.appendChild(document.createTextNode('　／　上位20　')); const s2 = mk(line(s20), 'display:inline;color:' + hbPctCol(s20.n ? s20.avg : null) + ';'); l1.appendChild(s2);
+        r.appendChild(l1); tbl.appendChild(r);
+      });
+      b4.appendChild(tbl);
+      if (hbEmpty) b4.appendChild(mk(`まだ該当なしの条件：${hbEmpty}個（該当する日が出ると自動で現れます）`, 'font-size:12px;color:#8a93b8;margin-top:6px;'));
+      if (days.length < 5) b4.appendChild(mk(`⚠️ まだ${days.length}日分。数日では偶然の差と区別できません（件数が増えるほど信用できます）。`, 'font-size:12px;color:#ffb88a;margin-top:6px;line-height:1.5;'));
+    }
+    body.appendChild(mk('本命条件（仮）：9:05に ①寄り値より上 ②VWAPより上、の両方。満たす銘柄が無ければ今日は買わない。条件は集計を見て足し引きして育てます。', 'font-size:11px;color:#8a93b8;margin-top:6px;line-height:1.6;'));
+    body.appendChild(mk('出典：PCのkabuステーション(kabu_live.ps1)→Firebase。9:30までの値動きは翌朝のPC起動で消えるため、アプリを開いた時に写して残します。', 'font-size:11px;color:#8a93b8;line-height:1.6;'));
+    if (hbS.saveMsg) body.appendChild(mk(hbS.saveMsg, 'font-size:11px;color:#7be08a;'));
+    if (hbS.err) body.appendChild(mk('読めませんでした：' + hbS.err, 'font-size:11px;color:#ff9a9a;'));
+    wrap.appendChild(body);
+  }
+  function buildHonmeiPanel(){
+    const wrap = document.createElement('div'); wrap.className = 'pw'; wrap.id = 'hbPanel';
+    const t = document.createElement('div'); t.className = 'pw-title'; t.style.cssText = 'cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;';
+    const tx = document.createElement('span'); tx.textContent = '🎯 9時の本命5'; t.appendChild(tx);
+    const ar = document.createElement('span'); ar.className = 'hb-arrow'; ar.textContent = hbS.open ? '▼' : '▶'; t.appendChild(ar);
+    t.addEventListener('click', () => { hbS.open = !hbS.open; hbFill(); });
+    wrap.appendChild(t);
+    if (!hbTimer) hbTimer = setInterval(hbTick, 5000);
+    if (hbKey() && (!hbS.at || Date.now() - hbS.at > 60000)) setTimeout(hbLoad, 300);
+    setTimeout(hbFill, 0);
+    return wrap;
+  }
   function renderWorldGate(root){
     const bar = document.createElement('div'); bar.className = 'rpg-topbar';
     bar.appendChild(buildScreenNavBar('world'));
@@ -11083,6 +11361,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
 
     if (worldState.status !== 'loading' && !worldIsFresh()) fetchWorldSignals(false);
     fetchWorldNews(false);
+    root.appendChild(buildHonmeiPanel());   // 🎯 9時の本命5(2026-11-04 キング指示・kabuのデータ)
     root.appendChild(buildWorldSignalPanel());
     fetchSectorTemp(false);
     root.appendChild(buildSectorThermoPanel());   // 🌡️ 日本の業種 温度計(2026-10-20 キング承認)
@@ -15773,7 +16052,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-11-02a';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-11-04a';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
