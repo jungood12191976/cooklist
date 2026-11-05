@@ -269,6 +269,12 @@
   .duel-b.skip{ background:transparent; border:2px solid #9fb3d9; color:#cfd9ff; font-size:16px; }
   .duel-b.banner{ width:100%; margin:0 0 8px; background:#8a5a00; color:#fff; font-size:16px; }
   .duel-b:disabled{ background:#3a4458; border-color:#3a4458; color:#8c97ad; cursor:default; }
+  .duel-tabs{ display:flex; gap:6px; margin:8px 0; }
+  .duel-tab{ flex:1; min-height:48px; border:2px solid #5a78c8; border-radius:10px; background:#141b29; color:#cfd9ff; font-size:15px; font-weight:bold; cursor:pointer; font-family:inherit; padding:2px 4px; line-height:1.25; }
+  .duel-tab small{ display:block; font-size:11px; font-weight:normal; color:#9fb3d9; min-height:13px; }
+  .duel-tab.on{ background:#ffd76b; border-color:#ffd76b; color:#1b2a41; }
+  .duel-tab.on small{ color:#1b2a41; }
+  .duel-trade{ margin:4px 0 6px; }
   .duel-note{ font-size:12px; color:#9fb3d9; line-height:1.6; margin:4px 0; }
   .duel-box{ border:1px solid rgba(255,255,255,.18); border-radius:10px; padding:10px 12px; margin-top:8px; font-size:14px; line-height:1.7; color:#e9efff; background:#2f3d55; }
   .duel-box.me{ border:2px solid #ffd76b; }
@@ -9429,6 +9435,7 @@ ${keywordLine}${bpBlock}${conditionBlock}
   // 押した瞬間の値＝skyLive.data(kabuステーション→Firebase)の最新の株価を自動で記録。9:30まで持てば9:30の値(履歴 t≤1800 の最後の点)で自動売り。
   // TACOは9:30以降に、同じ履歴だけを使って時刻順に計算する(先の値は見ない)＝キングには見えない。ルールは仮：A=5分ブレイク。
   // 2026-10-28 キング決定：元手1000万円(キングもTACOも)から、損益を足し引きして積み上げる(リセットなし)。株数はキングが100株単位で選ぶ(持ち金の範囲内)。手数料なし。2026-10-29の9:00から。
+  // 2026-11-05 キング指示：同時に3銘柄まで(タブ①②③)。キングもTACOも同条件・持ち金は共有。旧形式の記録は起動時に自動で枠①に変換する。
   // 月末に月の損益で勝敗を発表(勝ち=花吹雪／負け=ニヤリのタコ)。保存：localStorage 'ktq:duel'。
   const DUEL_KEY = 'ktq:duel';
   const DUEL_START_CASH = 10000000;  // 最初の元手(キング決定・固定)
@@ -9454,8 +9461,30 @@ ${keywordLine}${bpBlock}${conditionBlock}
     }
     return o;
   })();
-  const duelUI = { code:'', msg:'', autoShown:{}, lastHistFetch:0, shares:100 };
+  const DUEL_SLOTS = 3;  // 2026-11-05 キング指示：同時に3銘柄まで(タブ①②③)。キングもTACOも同じ条件。持ち金は全体で共有
+  const duelUI = { tab:0, codes:['','',''], sh:[DUEL_LOT, DUEL_LOT, DUEL_LOT], msg:'', autoShown:{}, lastHistFetch:0, syncCode:true };
   function duelSave(){ lsSet(DUEL_KEY, duelS); }
+  // 旧形式(1日1銘柄：rec.code / rec.king / rec.taco)を新形式(枠①②③：rec.slots / rec.noTrade / rec.taco.picks)に直す。何度呼んでもよい
+  function duelMigrate(){
+    let ch = false;
+    for (const dk of Object.keys(duelS.days)) {
+      const r = duelS.days[dk];
+      if (!r || Array.isArray(r.slots)) continue;
+      ch = true;
+      const k = r.king || {};
+      r.slots = [null, null, null];
+      if (k.act === 'buy' && k.buy) r.slots[0] = { code:String(r.code || ''), name:r.name || '', act:'buy', buy:k.buy, sell:k.sell || null };
+      r.noTrade = (k.act === 'skip');
+      if (r.taco) {
+        const t = r.taco;
+        r.taco = { picks:((t.act === 'buy' && t.buy) ? [{ code:String(t.code || ''), name:t.name || '', act:'buy', sh:t.sh, buy:t.buy, sell:t.sell, pl:t.pl }] : []), pl:(t.pl || 0) };
+      }
+      delete r.king; delete r.code; delete r.name;
+    }
+    if (ch) duelSave();
+  }
+  duelMigrate();
+  function duelSlotList(rec){ return (rec && Array.isArray(rec.slots)) ? rec.slots.filter(Boolean) : []; }
   function duelSecNow(){ const d = new Date(Date.now() + 9*3600*1000); return d.getUTCHours()*3600 + d.getUTCMinutes()*60 + d.getUTCSeconds() - 9*3600; }
   function duelDateOf(iso){ const t = Date.parse(iso); return isNaN(t) ? null : new Date(t + 9*3600*1000).toISOString().slice(0,10); }
   function duelYen(n){ return (n > 0 ? '+' : (n < 0 ? '−' : '')) + '¥' + Math.abs(Math.round(n)).toLocaleString('ja-JP'); }
@@ -9485,6 +9514,12 @@ ${keywordLine}${bpBlock}${conditionBlock}
       k += r.pl.king; t += r.pl.taco;
     }
     return { k, t };
+  }
+  // 今使えるキングの持ち金＝その日の始まりの持ち金＋売り済みの損益−持っている分の買値(全枠で共有)
+  function duelCashNow(dk, rec){
+    let c = duelCashBefore(dk).k;
+    for (const sl of duelSlotList(rec)) c += sl.sell ? (sl.sell.p - sl.buy.p) * sl.buy.sh : -(sl.buy.p * sl.buy.sh);
+    return c;
   }
   function duelMaxShares(cash, price){ return (price > 0 && cash > 0) ? Math.floor(cash / price / DUEL_LOT) * DUEL_LOT : 0; }
 
@@ -9539,21 +9574,29 @@ ${keywordLine}${bpBlock}${conditionBlock}
   }
 
   // TACOは自分で銘柄を選ぶ(2026-10-29 キング決定：キングと同じ銘柄でなくてよい)。候補＝「寄り付きの戦場」の全銘柄。
-  // ルールを最初に満たした銘柄を1つだけ買う(同時なら売買代金が大きいほう)。どれも満たさなければノートレ。
-  function duelTacoPick(rule, cash){
+  // 2026-11-05 キング決定：最大3銘柄まで同時に持てる。持ち金は共有で、買えた順(同時なら売買代金が大きいほう)に、その時点の持ち金いっぱいで買う。
+  // 先に買った銘柄が売れていれば、その損益が持ち金に戻ってから次を買う。持ち金が100株分に足りなければ見送り。
+  function duelTacoPick(rule, cash0){
     const d = skyLive.data, arr = (d && Array.isArray(d.items)) ? d.items : [];
-    let best = null;
+    const cands = [];
     for (const it of arr) {
       if (!it || it.c == null) continue;
       const pts = duelPtsOf(it.c);
-      const r = duelTacoRun(rule, pts, it.o != null ? it.o : null, cash);
+      const r = duelTacoRun(rule, pts, it.o != null ? it.o : null, 1e13);  // 入る時刻・出る時刻だけ先に決める(株数は下で持ち金から決める)
       if (!r || r.act !== 'buy') continue;
-      const key = { t:r.buy.t, to:(it.to != null ? it.to : 0) };
-      if (!best || key.t < best.key.t || (key.t === best.key.t && key.to > best.key.to)) best = { key, r, it };
+      cands.push({ it, r, to:(it.to != null ? it.to : 0) });
     }
-    if (!best) return { act:'skip', pl:0 };
-    best.r.code = String(best.it.c); best.r.name = best.it.n || '';
-    return best.r;
+    cands.sort((a, b) => (a.r.buy.t - b.r.buy.t) || (b.to - a.to));
+    const picks = [];
+    for (const c of cands) {
+      if (picks.length >= DUEL_SLOTS) break;
+      let cash = cash0;
+      for (const pk of picks) cash += (pk.sell.t <= c.r.buy.t) ? pk.pl : -(pk.buy.p * pk.sh);
+      const sh = duelMaxShares(cash, c.r.buy.p);
+      if (sh < DUEL_LOT) continue;
+      picks.push({ code:String(c.it.c), name:c.it.n || '', act:'buy', sh:sh, buy:c.r.buy, sell:c.r.sell, pl:(c.r.sell.p - c.r.buy.p) * sh });
+    }
+    return { picks:picks, pl:picks.reduce((a, pk) => a + pk.pl, 0) };
   }
 
   // ノートレ専用：銘柄もデータも要らない(9:00〜9:30の間・東証の開場日だけ)
@@ -9580,34 +9623,33 @@ ${keywordLine}${bpBlock}${conditionBlock}
     if (it.p == null) return { ok:false, why:'この銘柄の現在値がまだ届いていません' };
     return { ok:true, it, p:it.p, t:liveSecOf(d.u) };
   }
-  function duelPress(act){
+  function duelPress(act, tab){
     const dk = todayDateKey();
     let rec = duelS.days[dk];
-    if (act === 'buy' || act === 'skip') {
-      if (rec && rec.king && rec.king.act) return;
-      const g = duelGate(duelNorm(duelUI.code));
-      if (act === 'skip' && !g.ok) {  // 銘柄を選ばないノートレ
-        const gs = duelGateSkip();
-        if (!gs.ok) { duelUI.msg = gs.why; return; }
-        duelS.days[dk] = { code:'', name:'', rule:duelS.rule, status:'open', king:{ act:'skip' } };
-        duelUI.msg = ''; duelSave(); return;
-      }
+    const i = (tab >= 0 && tab < DUEL_SLOTS) ? tab : 0;
+    const slot = (rec && rec.slots) ? rec.slots[i] : null;
+    if (act === 'skip') {  // 1日まるごとのノートレ(どの枠も買っていない時だけ)
+      if (rec && (rec.noTrade || duelSlotList(rec).length)) return;
+      const gs = duelGateSkip();
+      if (!gs.ok) { duelUI.msg = gs.why; return; }
+      duelS.days[dk] = { rule:duelS.rule, status:'open', slots:[null, null, null], noTrade:true };
+    } else if (act === 'buy') {
+      if (slot || (rec && rec.noTrade)) return;
+      const code = duelNorm(duelUI.codes[i]);
+      const g = duelGate(code);
       if (!g.ok) { duelUI.msg = g.why; return; }
-      let sh = 0;
-      if (act === 'buy') {
-        const cash = duelCashBefore(dk).k, sh0 = Math.round(Number(duelUI.shares));
-        if (!(sh0 >= DUEL_LOT) || sh0 % DUEL_LOT !== 0) { duelUI.msg = `株数は${DUEL_LOT}株単位で入れてください`; return; }
-        if (sh0 * g.p > cash) { duelUI.msg = `持ち金が足りません（今の値で最大 ${duelMaxShares(cash, g.p).toLocaleString('ja-JP')}株）`; return; }
-        sh = sh0;
-      }
-      rec = duelS.days[dk] = { code:String(g.it.c), name:g.it.n || '', rule:duelS.rule, status:'open', king:{ act:act } };
-      if (act === 'buy') rec.king.buy = { p:g.p, t:g.t, sh:sh };
-      duelS.lastCode = rec.code;
+      if (duelSlotList(rec).some(x => duelNorm(x.code) === code)) { duelUI.msg = 'この銘柄は別の枠で買っています'; return; }
+      const cash = rec ? duelCashNow(dk, rec) : duelCashBefore(dk).k, sh0 = Math.round(Number(duelUI.sh[i]));
+      if (!(sh0 >= DUEL_LOT) || sh0 % DUEL_LOT !== 0) { duelUI.msg = `株数は${DUEL_LOT}株単位で入れてください`; return; }
+      if (sh0 * g.p > cash) { duelUI.msg = `持ち金が足りません（今の値で最大 ${duelMaxShares(cash, g.p).toLocaleString('ja-JP')}株）`; return; }
+      if (!rec) rec = duelS.days[dk] = { rule:duelS.rule, status:'open', slots:[null, null, null], noTrade:false };
+      rec.slots[i] = { code:String(g.it.c), name:g.it.n || '', act:'buy', buy:{ p:g.p, t:g.t, sh:sh0 }, sell:null };
+      duelS.lastCode = rec.slots[i].code;
     } else if (act === 'sell') {
-      if (!rec || !rec.king || rec.king.act !== 'buy' || rec.king.sell) return;
-      const g = duelGate(duelNorm(rec.code));
+      if (!slot || slot.sell) return;
+      const g = duelGate(duelNorm(slot.code));
       if (!g.ok) { duelUI.msg = g.why; return; }
-      rec.king.sell = { p:g.p, t:g.t, how:'manual' };
+      slot.sell = { p:g.p, t:g.t, how:'manual' };
     } else return;
     duelUI.msg = '';
     duelSave();
@@ -9625,15 +9667,12 @@ ${keywordLine}${bpBlock}${conditionBlock}
       if (!skyLive.histFetching && Date.now() - duelUI.lastHistFetch > 10000 && lsGet('ktq:liveKey')) { duelUI.lastHistFetch = Date.now(); fetchSkyLive(); fetchSkyHist(); }
       return;
     }
-    const k = rec.king;
-    if (rec.code) {
-      const pts = duelPtsOf(rec.code);
-      const close = duelCloseOf(pts);
-      if (!close) { rec.status = 'invalid'; rec.why = '9:30ごろのデータが足りませんでした'; duelSave(); return; }
-      if (k.act === 'buy' && !k.sell) k.sell = { p:close.p, t:close.t, how:'close' };
-    }
-    rec.taco = duelTacoPick(rec.rule, duelCashBefore(dk).t) || { act:'skip', pl:0 };
-    rec.pl = { king: k.act === 'buy' ? (k.sell.p - k.buy.p) * k.buy.sh : 0, taco: rec.taco.pl || 0 };
+    const list = duelSlotList(rec);
+    const closes = list.map(sl => duelCloseOf(duelPtsOf(sl.code)));
+    if (closes.some(c => !c)) { rec.status = 'invalid'; rec.why = '9:30ごろのデータが足りませんでした'; duelSave(); return; }
+    list.forEach((sl, n) => { if (!sl.sell) sl.sell = { p:closes[n].p, t:closes[n].t, how:'close' }; });
+    rec.taco = duelTacoPick(rec.rule, duelCashBefore(dk).t);
+    rec.pl = { king:list.reduce((a, sl) => a + (sl.sell.p - sl.buy.p) * sl.buy.sh, 0), taco:rec.taco.pl || 0 };
     rec.status = 'ok';
     duelSave();
   }
@@ -9679,24 +9718,44 @@ ${keywordLine}${bpBlock}${conditionBlock}
     return `買 ¥${liveFmt(tr.buy.p)}（${duelHMS(tr.buy.t)}）→ 売 ¥${liveFmt(tr.sell.p)}（${duelHMS(tr.sell.t)}${how}）　${Number(sh).toLocaleString('ja-JP')}株`;
   }
   function duelRuleLabel(r){ const x = DUEL_RULES.find(a => a[0] === r); return x ? x[1] : r; }
+  function duelTabLabel(n, rec){
+    const sl = (rec && rec.slots) ? rec.slots[n] : null, mark = '①②③'[n];
+    if (sl) return `${mark} ${skyEsc(sl.code)}<small>${sl.sell ? '売り済' : '保有中'}</small>`;
+    const c = duelNorm(duelUI.codes[n]);
+    return `${mark} ${c ? skyEsc(c) : '空き'}<small>${c ? '呼び出し中' : ''}</small>`;
+  }
+  function duelTabsHTML(){
+    const rec = duelS.days[todayDateKey()];
+    return [0, 1, 2].map(n => `<button class="duel-tab${n === duelUI.tab ? ' on' : ''}" role="tab" aria-selected="${n === duelUI.tab}" data-duel="tab" data-i="${n}">${duelTabLabel(n, rec)}</button>`).join('');
+  }
+  // 取引の一覧(キング／TACO共通)：銘柄・買い・売り・株数・損益
+  function duelTradesHTML(list){
+    if (!list.length) return 'ノートレ（見送り）';
+    return list.map(x => {
+      const pl = (x.sell.p - x.buy.p) * (x.buy.sh != null ? x.buy.sh : x.sh);
+      return `<div class="duel-trade">${skyEsc(x.code + ' ' + (x.name || ''))}<br>${skyEsc(duelTradeLine(x))}<br><span class="${duelCls(pl)}"><b>${duelYen(pl)}</b></span></div>`;
+    }).join('');
+  }
   function duelBodyHTML(){
-    const dk = todayDateKey(), rec = duelS.days[dk];
-    const code = rec ? duelNorm(rec.code) : duelNorm(duelUI.code);
+    const dk = todayDateKey(), rec = duelS.days[dk], i = duelUI.tab;
+    const slot = (rec && rec.slots) ? rec.slots[i] : null;
+    const code = slot ? duelNorm(slot.code) : duelNorm(duelUI.codes[i]);
+    const noTrade = !!(rec && rec.noTrade);
     let h = '';
     const pend = duelPendingAnnounce();
     if (pend) h += `<button class="duel-b banner" data-duel="announce" data-ym="${pend}">🏁 ${Number(pend.slice(5))}月の結果発表を見る</button>`;
     const it = code ? duelItem(code) : null;
     if (it) h += liveRowHTML(it);
-    else h += `<div class="duel-empty">${code ? 'この番号は今の戦場にいません（追跡している銘柄だけ呼べます）。' : '番号を入れて「呼ぶ」を押すと、ここに銘柄のチャートが出ます。'}</div>`;
-    const decided = !!(rec && rec.king && rec.king.act);
-    const holding = decided && rec.king.act === 'buy' && !rec.king.sell;
+    else h += `<div class="duel-empty">${code ? 'この番号は今の戦場にいません（追跡している銘柄だけ呼べます）。' : '番号を入れて「呼ぶ」を押すと、ここに銘柄のチャートが出ます。（①②③のタブで、同時に3銘柄まで）'}</div>`;
+    const holding = !!slot && !slot.sell;
     const g = duelGate(code);
     const gSkip = duelGateSkip();
-    const canBuy = !decided && g.ok, canSkip = !decided && (g.ok || gSkip.ok), canSell = holding && g.ok;
-    const cashK = duelCashBefore(dk).k;
-    h += `<div class="duel-box">持ち金（キング）<b> ¥${Math.round(cashK).toLocaleString('ja-JP')}</b></div>`;
-    if (!decided && it && it.p != null) {
-      const shN = Math.round(Number(duelUI.shares)) || 0, mx = duelMaxShares(cashK, it.p);
+    const canBuy = !slot && !noTrade && g.ok, canSell = holding && g.ok;
+    const canSkip = !noTrade && duelSlotList(rec).length === 0 && gSkip.ok;
+    const cashK = rec ? duelCashNow(dk, rec) : duelCashBefore(dk).k;
+    h += `<div class="duel-box">使える持ち金（キング・3枠で共有）<b> ¥${Math.round(cashK).toLocaleString('ja-JP')}</b></div>`;
+    if (!slot && !noTrade && it && it.p != null) {
+      const shN = Math.round(Number(duelUI.sh[i])) || 0, mx = duelMaxShares(cashK, it.p);
       const bad = !(shN >= DUEL_LOT && shN % DUEL_LOT === 0) ? `${DUEL_LOT}株単位で入れてください` : (shN * it.p > cashK ? '持ち金を超えています' : '');
       h += `<div class="duel-note">${shN.toLocaleString('ja-JP')}株 × ¥${liveFmt(it.p)} ＝ ¥${Math.round(shN * it.p).toLocaleString('ja-JP')}（今の値で最大 ${mx.toLocaleString('ja-JP')}株）${bad ? '　⚠ ' + skyEsc(bad) : ''}</div>`;
     }
@@ -9704,20 +9763,20 @@ ${keywordLine}${bpBlock}${conditionBlock}
       <button class="duel-b buy" data-duel="buy"${canBuy ? '' : ' disabled'}>買う</button>
       <button class="duel-b sell" data-duel="sell"${canSell ? '' : ' disabled'}>売る</button>
       <button class="duel-b skip" data-duel="skip"${canSkip ? '' : ' disabled'}>ノートレ</button></div>`;
-    const why = duelUI.msg || ((!decided || holding) && !g.ok ? (!decided && gSkip.ok ? '買うときは、番号を入れて「呼ぶ」を押します。ノートレは番号なしで押せます。' : g.why) : '');
+    const why = duelUI.msg || ((((!slot && !noTrade) || holding) && !g.ok) ? ((!slot && !noTrade && gSkip.ok) ? '買うときは、番号を入れて「呼ぶ」を押します。ノートレ（1日まるごと）は番号なしで押せます。' : g.why) : '');
     if (why) h += `<div class="duel-note">${skyEsc(why)}</div>`;
     if (rec && rec.status === 'open') {
-      if (holding) h += `<div class="duel-box me">保有中<br><b>買値 ¥${liveFmt(rec.king.buy.p)}（${duelHMS(rec.king.buy.t)} のチャートの値）</b><br>${Number(rec.king.buy.sh).toLocaleString('ja-JP')}株　¥${Math.round(rec.king.buy.p * rec.king.buy.sh).toLocaleString('ja-JP')}<br><span class="duel-note">9:30まで持つと、9:30の値で自動で売ります。</span></div>`;
-      else if (rec.king.act === 'buy') h += `<div class="duel-box me">売り：¥${liveFmt(rec.king.sell.p)}（${duelHMS(rec.king.sell.t)} のチャートの値）<br><span class="duel-note">9:30に、TACOの結果と一緒に発表します。</span></div>`;
-      else h += `<div class="duel-box me">今日はノートレ。<br><span class="duel-note">9:30に、TACOの結果と一緒に発表します。</span></div>`;
+      if (holding) h += `<div class="duel-box me">保有中<br><b>買値 ¥${liveFmt(slot.buy.p)}（${duelHMS(slot.buy.t)} のチャートの値）</b><br>${Number(slot.buy.sh).toLocaleString('ja-JP')}株　¥${Math.round(slot.buy.p * slot.buy.sh).toLocaleString('ja-JP')}<br><span class="duel-note">9:30まで持つと、9:30の値で自動で売ります。</span></div>`;
+      else if (slot) h += `<div class="duel-box me">売り：¥${liveFmt(slot.sell.p)}（${duelHMS(slot.sell.t)} のチャートの値）<br><span class="duel-note">9:30に、TACOの結果と一緒に発表します。</span></div>`;
+      else if (noTrade) h += `<div class="duel-box me">今日はノートレ。<br><span class="duel-note">9:30に、TACOの結果と一緒に発表します。</span></div>`;
       if (duelSecNow() >= DUEL_END_SEC + 5) h += `<div class="duel-note">9:30の結果を集計中…</div>`;
     } else if (rec && rec.status === 'invalid') {
       h += `<div class="duel-box">今日は集計できませんでした。<br><span class="duel-note">${skyEsc(rec.why || '')}（月の合計には入りません）</span></div>`;
     } else if (rec && rec.status === 'ok') {
       const kp = rec.pl.king, tp = rec.pl.taco, diff = Math.abs(kp - tp);
       const win = kp > tp ? `今日はキングの勝ち（差 ${duelYen(diff).replace(/^[+−]/,'')}）` : (kp < tp ? `今日はTACOの勝ち（差 ${duelYen(diff).replace(/^[+−]/,'')}）` : '今日は引き分け');
-      h += `<div class="duel-box me">キングの取引<br>${skyEsc(duelTradeLine(rec.king))}<br><span class="duel-big ${duelCls(kp)}">${duelYen(kp)}</span></div>
-        <div class="duel-box">TACOの取引（9:30に初めて公開）<br>${rec.taco && rec.taco.code ? skyEsc(rec.taco.code + ' ' + (rec.taco.name || '')) + '<br>' : ''}${skyEsc(duelTradeLine(rec.taco))}<br><span class="duel-big ${duelCls(tp)}">${duelYen(tp)}</span></div>
+      h += `<div class="duel-box me">キングの取引<br>${duelTradesHTML(duelSlotList(rec))}<span class="duel-big ${duelCls(kp)}">${duelYen(kp)}</span></div>
+        <div class="duel-box">TACOの取引（9:30に初めて公開）<br>${duelTradesHTML((rec.taco && rec.taco.picks) || [])}<span class="duel-big ${duelCls(tp)}">${duelYen(tp)}</span></div>
         <div class="duel-box"><b>${win}</b><br><span class="duel-note">勝ち負けは月末の合計で決まります。この日のTACOのルール：${skyEsc(duelRuleLabel(rec.rule))}</span></div>`;
     }
     const ym = dk.slice(0,7), ms = duelMonthSum(ym);
@@ -9727,15 +9786,25 @@ ${keywordLine}${bpBlock}${conditionBlock}
     return h;
   }
   function updateSkyDuelPanel(root){
-    const body = (root || document).querySelector('#duelBody');
+    const base = root || document;
+    const body = base.querySelector('#duelBody');
     if (!body) return;
     duelSettleAll();
+    const tabs = base.querySelector('#duelTabs');
+    if (tabs) tabs.innerHTML = duelTabsHTML();
     body.innerHTML = duelBodyHTML();
-    const shIn = (root || document).querySelector('#duelSh');
+    const rec0 = duelS.days[todayDateKey()], i = duelUI.tab;
+    const s0 = (rec0 && rec0.slots) ? rec0.slots[i] : null;
+    const codeIn = base.querySelector('#duelCode');
+    if (codeIn) {
+      if (duelUI.syncCode || s0) { if (s0 || document.activeElement !== codeIn) codeIn.value = s0 ? s0.code : duelUI.codes[i]; duelUI.syncCode = false; }
+      codeIn.disabled = !!s0;
+      const callB = base.querySelector('[data-duel="call"]'); if (callB) callB.disabled = !!s0;
+    }
+    const shIn = base.querySelector('#duelSh');
     if (shIn) {
-      const rec0 = duelS.days[todayDateKey()];
-      shIn.disabled = !!(rec0 && rec0.king && rec0.king.act);
-      if (document.activeElement !== shIn) shIn.value = rec0 && rec0.king && rec0.king.buy ? rec0.king.buy.sh : String(duelUI.shares);
+      shIn.disabled = !!(s0 || (rec0 && rec0.noTrade));
+      if (document.activeElement !== shIn) shIn.value = s0 ? s0.buy.sh : String(duelUI.sh[i]);
     }
     const pend = duelPendingAnnounce();
     if (pend && !duelUI.autoShown[pend] && screen === 'sky' && document.visibilityState === 'visible') { duelUI.autoShown[pend] = true; showDuelAnnounce(pend); }
@@ -9743,16 +9812,20 @@ ${keywordLine}${bpBlock}${conditionBlock}
   function buildSkyDuelPanel(){
     const panel = document.createElement('div'); panel.className = 'sky-panel duel-panel'; panel.id = 'skyDuelPanel';
     const rec = duelS.days[todayDateKey()];
-    if (rec) duelUI.code = rec.code;
-    const startCode = rec ? rec.code : (duelS.lastCode || '');
-    if (!duelUI.code) duelUI.code = '';
+    for (let n = 0; n < DUEL_SLOTS; n++) {
+      const sl = (rec && rec.slots) ? rec.slots[n] : null;
+      if (sl) duelUI.codes[n] = sl.code;
+      else if (!duelUI.codes[n] && n === 0) duelUI.codes[n] = duelS.lastCode || '';
+    }
+    duelUI.syncCode = true;
     const opts = DUEL_RULES.map(r => `<option value="${r[0]}"${duelS.rule === r[0] ? ' selected' : ''}>${skyEsc(r[1])}</option>`).join('') + '<option value="C" disabled>C 窓×代金（準備中）</option>';
     panel.innerHTML = `<div class="sky-section-title">🥊 寄り付きの対戦<span class="duel-sub">キング 対 TACO</span></div>
-      <div class="duel-code-row"><label for="duelCode">銘柄の番号</label><input id="duelCode" class="duel-in" type="text" inputmode="text" autocomplete="off" value="${skyEsc(startCode)}" placeholder="例 285A"><button class="duel-go" data-duel="call">呼ぶ</button></div>
-      <div class="duel-code-row"><label for="duelSh">株数（${DUEL_LOT}株単位）</label><button class="duel-go" style="padding:0 12px" data-duel="shm">−${DUEL_LOT}</button><input id="duelSh" class="duel-in" type="text" inputmode="numeric" autocomplete="off" value="${duelUI.shares}"><button class="duel-go" style="padding:0 12px" data-duel="shp">＋${DUEL_LOT}</button><button class="duel-go" style="padding:0 12px" data-duel="shmax">最大</button></div>
+      <div id="duelTabs" class="duel-tabs" role="tablist"></div>
+      <div class="duel-code-row"><label for="duelCode">銘柄の番号</label><input id="duelCode" class="duel-in" type="text" inputmode="text" autocomplete="off" value="" placeholder="例 285A"><button class="duel-go" data-duel="call">呼ぶ</button></div>
+      <div class="duel-code-row"><label for="duelSh">株数（${DUEL_LOT}株単位）</label><button class="duel-go" style="padding:0 12px" data-duel="shm">−${DUEL_LOT}</button><input id="duelSh" class="duel-in" type="text" inputmode="numeric" autocomplete="off" value="${duelUI.sh[0]}"><button class="duel-go" style="padding:0 12px" data-duel="shp">＋${DUEL_LOT}</button><button class="duel-go" style="padding:0 12px" data-duel="shmax">最大</button></div>
       <div id="duelBody"></div>
-      <div class="duel-rule"><label for="duelRule">TACOのルール</label><select id="duelRule">${opts}</select><span>次の対戦から変わります。TACOは自分で銘柄を選び、株数は持ち金で買える最大です</span></div>`;
-    const doCall = () => { const inp = panel.querySelector('#duelCode'); duelUI.code = duelNorm(inp.value); duelUI.msg = ''; if (duelUI.code) { duelS.lastCode = duelUI.code; duelSave(); } updateSkyDuelPanel(panel); };
+      <div class="duel-rule"><label for="duelRule">TACOのルール</label><select id="duelRule">${opts}</select><span>次の対戦から変わります。TACOは自分で銘柄を選び、最大3銘柄まで。持ち金は共有で、買えた順にその時点の持ち金いっぱいで買います</span></div>`;
+    const doCall = () => { const inp = panel.querySelector('#duelCode'); const c = duelNorm(inp.value); duelUI.codes[duelUI.tab] = c; duelUI.msg = ''; if (c) { duelS.lastCode = c; duelSave(); } updateSkyDuelPanel(panel); };
     panel.addEventListener('click', (ev) => {
       const cp = ev.target.closest('[data-lv-copy]');
       if (cp) { ev.stopPropagation(); liveCopyCode(cp, cp.dataset.lvCopy); return; }
@@ -9761,23 +9834,24 @@ ${keywordLine}${bpBlock}${conditionBlock}
       if (t) {
         const a = t.dataset.duel;
         if (a === 'call') doCall();
+        else if (a === 'tab') { duelUI.tab = Math.max(0, Math.min(DUEL_SLOTS - 1, Number(t.dataset.i) || 0)); duelUI.msg = ''; duelUI.syncCode = true; updateSkyDuelPanel(panel); }
         else if (a === 'shm' || a === 'shp' || a === 'shmax') {
-          const dk0 = todayDateKey(), cur = Math.round(Number(duelUI.shares)) || DUEL_LOT;
-          if (a === 'shm') duelUI.shares = Math.max(DUEL_LOT, cur - DUEL_LOT);
-          else if (a === 'shp') duelUI.shares = cur + DUEL_LOT;
-          else { const it0 = duelItem(duelNorm(duelUI.code)); const mx0 = it0 && it0.p != null ? duelMaxShares(duelCashBefore(dk0).k, it0.p) : 0; if (mx0 >= DUEL_LOT) duelUI.shares = mx0; }
-          const si = panel.querySelector('#duelSh'); if (si) si.value = String(duelUI.shares);
+          const dk0 = todayDateKey(), i0 = duelUI.tab, cur = Math.round(Number(duelUI.sh[i0])) || DUEL_LOT;
+          if (a === 'shm') duelUI.sh[i0] = Math.max(DUEL_LOT, cur - DUEL_LOT);
+          else if (a === 'shp') duelUI.sh[i0] = cur + DUEL_LOT;
+          else { const it0 = duelItem(duelNorm(duelUI.codes[i0])); const rec1 = duelS.days[dk0]; const mx0 = it0 && it0.p != null ? duelMaxShares(rec1 ? duelCashNow(dk0, rec1) : duelCashBefore(dk0).k, it0.p) : 0; if (mx0 >= DUEL_LOT) duelUI.sh[i0] = mx0; }
+          const si = panel.querySelector('#duelSh'); if (si) si.value = String(duelUI.sh[i0]);
           updateSkyDuelPanel(panel);
         }
         else if (a === 'announce') showDuelAnnounce(t.dataset.ym);
         else if (a === 'log') showDuelLog();
-        else { duelPress(a); updateSkyDuelPanel(panel); }
+        else { duelPress(a, duelUI.tab); updateSkyDuelPanel(panel); }
         return;
       }
       if (lc) { const c = lc.dataset.lvCode; skyLive.open[c] = !skyLive.open[c]; updateSkyLivePanel(); }
     });
     panel.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' && ev.target && ev.target.id === 'duelCode') { ev.preventDefault(); doCall(); } });
-    panel.addEventListener('input', (ev) => { if (ev.target && ev.target.id === 'duelSh') { const n = Math.round(Number(String(ev.target.value).replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).replace(/[^0-9]/g, ''))); duelUI.shares = n || 0; updateSkyDuelPanel(panel); } });
+    panel.addEventListener('input', (ev) => { if (ev.target && ev.target.id === 'duelSh') { const n = Math.round(Number(String(ev.target.value).replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).replace(/[^0-9]/g, ''))); duelUI.sh[duelUI.tab] = n || 0; updateSkyDuelPanel(panel); } });
     panel.addEventListener('change', (ev) => { if (ev.target && ev.target.id === 'duelRule') { duelS.rule = ev.target.value; duelSave(); } });
     updateSkyDuelPanel(panel);
     return panel;
@@ -9857,13 +9931,9 @@ ${keywordLine}${bpBlock}${conditionBlock}
     const kp = rec.pl.king, tp = rec.pl.taco;
     const cls = tp > kp ? 'taco' : (kp > tp ? 'king' : '');
     const badge = tp > kp ? '🐙 TACOの勝ち' : (kp > tp ? '👑 キングの勝ち' : '引き分け');
-    const k = rec.king || {};
-    const kName = (k.act === 'buy' && rec.code) ? skyEsc(rec.code + ' ' + (rec.name || '')) + '<br>' : '';
-    const tc = rec.taco || {};
-    const tName = (tc.code) ? skyEsc(tc.code + ' ' + (tc.name || '')) + '<br>' : '';
     return `<div class="duel-day ${cls}"><div class="duel-day-h"><span>${md}</span><span>${badge}</span></div>
-      <div class="duel-day-side"><b>キング</b>　<span class="${duelCls(kp)}"><b>${duelYen(kp)}</b></span><br>${kName}${skyEsc(duelTradeLine(k))}</div>
-      <div class="duel-day-side"><b>TACO</b>　<span class="${duelCls(tp)}"><b>${duelYen(tp)}</b></span><br>${tName}${skyEsc(duelTradeLine(tc))}</div>
+      <div class="duel-day-side"><b>キング</b>　<span class="${duelCls(kp)}"><b>${duelYen(kp)}</b></span><br>${duelTradesHTML(duelSlotList(rec))}</div>
+      <div class="duel-day-side"><b>TACO</b>　<span class="${duelCls(tp)}"><b>${duelYen(tp)}</b></span><br>${duelTradesHTML((rec.taco && rec.taco.picks) || [])}</div>
       <div class="duel-note">TACOのルール：${skyEsc(duelRuleLabel(rec.rule))}</div></div>`;
   }
   function duelLogHTML(){
@@ -16052,7 +16122,7 @@ ${note}
   }
 
   // 診断用：直近のfetch試行ログ（どのソースがどう失敗したかを画面に出すため）
-  const APP_BUILD = '2026-11-04a';  // 画面に出して、古いキャッシュで動いていないか判別する
+  const APP_BUILD = '2026-11-05a';  // 画面に出して、古いキャッシュで動いていないか判別する
   let runNote = null;           // 一括実行の進行状況(何をしているか画面に出す)
   let pendingNames = {};        // 株価取得中に拾った社名(スキャン終了時にstockNamesへ反映)
   let goldMineDiag = null;
