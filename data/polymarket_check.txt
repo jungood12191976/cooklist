@@ -1,4 +1,4 @@
-fetched_at=2026-11-06T03:41:45+09:00
+fetched_at=2026-11-06T05:38:07+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,countryName,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,electionType,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,showAllOutcomes,showMarketImages,slug,sortBy,startDate,startTime,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
@@ -14,14 +14,14 @@ theme oil_iran: 6 events
     - US-Iran effective ceasefire continues through...?
     - US announces end of Iranian blockade by...?
     - Pete Hegseth out as Secretary of Defense by December 31?
-    - Will the U.S. invade Iran before 2027?
+    - US-Iran Final Nuclear Deal by…?
 theme trump: 6 events
     - Fed Decision in December?
     - US-Iran ceasefire continues through...?
     - Prime Minister of Israel after the next election?
     - US-Iran effective ceasefire continues through...?
+    - Who will Trump publicly insult by October 31?
     - US announces end of Iranian blockade by...?
-    - Pete Hegseth out as Secretary of Defense by December 31?
 theme tariff: 0 events
 theme recession: 0 events
 theme inflation: 4 events
@@ -34,8 +34,8 @@ theme stocks: 3 events
     - What will S&P 500 (SPY) hit in November 2026?
     - What will S&P 500 (SPY) hit Week of November 2 2026?
 theme ai_chips: 6 events
-    - Largest Company end of December 2026?
     - Anthropic IPO Closing Market Cap
+    - Largest Company end of December 2026?
     - Anthropic IPO by __?
     - GPT Astra 6.1+ released by...?
     - Largest IPO by market cap in 2026?
