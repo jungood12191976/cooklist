@@ -5,7 +5,7 @@ import json
 import time
 import requests
 
-UA = {"User-Agent": "king-the-quest/1.0 (personal app; contact: github.com/jungood12191976/cooklist)"}
+UA = {"User-Agent": "king-the-quest/1.0 (personal app; contact: github.com/kingtheQ/cooklist)"}
 out = []
 
 r = requests.get("https://gamma-api.polymarket.com/events",

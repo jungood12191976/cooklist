@@ -15,7 +15,7 @@ import datetime
 import requests
 
 API = "https://gamma-api.polymarket.com/events"
-UA = {"User-Agent": "king-the-quest/1.0 (personal app; contact: github.com/jungood12191976/cooklist)"}
+UA = {"User-Agent": "king-the-quest/1.0 (personal app; contact: github.com/kingtheQ/cooklist)"}
 PAGES = 5          # 100件 x 5ページ = 最大500イベント(取引量の多い順)
 PER_THEME_EVENTS = 6
 PER_EVENT_MARKETS = 3
