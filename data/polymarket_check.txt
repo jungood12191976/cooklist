@@ -1,6 +1,6 @@
-fetched_at=2026-11-06T11:38:13+09:00
+fetched_at=2026-11-06T19:46:18+09:00
 events_fetched=500
-event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cyom,deploying,description,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,gameId,icon,id,image,liquidity,liquidityClob,live,markets,negRisk,negRiskAugmented,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
+event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cumulativeMarkets,cyom,deploying,deployingTimestamp,description,enableNegRisk,enableOrderBook,endDate,estimateValue,eventMetadata,featured,featuredOrder,gmpChartMode,icon,id,image,liquidity,liquidityClob,markets,negRisk,negRiskAugmented,negRiskMarketID,new,openInterest,pendingDeployment,resolutionSource,restricted,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sortBy,startDate,tags,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
     - Fed Decision in December?
     - How many Fed rate cuts in 2026?
@@ -9,27 +9,28 @@ theme rates: 6 events
     - Fed Decision in March?
     - How many Fed rate hikes in 2026?
 theme oil_iran: 6 events
-    - US-Iran ceasefire continues through...?
     - Israel x Iran ceasefire continues through...?
+    - US-Iran ceasefire continues through...?
     - US-Iran effective ceasefire continues through...?
     - Pete Hegseth out as Secretary of Defense by December 31?
     - US announces end of Iranian blockade by...?
-    - Will the U.S. invade Iran before 2027?
+    - US-Iran Final Nuclear Deal by…?
 theme trump: 6 events
     - Fed Decision in December?
-    - US-Iran ceasefire continues through...?
     - Prime Minister of Israel after the next election?
+    - US-Iran ceasefire continues through...?
     - Who will Trump publicly insult by October 31?
     - US-Iran effective ceasefire continues through...?
     - Pete Hegseth out as Secretary of Defense by December 31?
 theme tariff: 0 events
 theme recession: 0 events
-theme inflation: 5 events
+theme inflation: 6 events
     - Another Fed rate hike in 2026?
     - How many Fed rate hikes in 2026?
-    - Fed decisions (Sep–Dec)
     - Fed decisions (Oct-Jan)
+    - Fed decisions (Sep–Dec)
     - Gas prices on November 6?
+    - What will gas hit by end of November?
 theme stocks: 3 events
     - What will S&P 500 (SPY) hit in November 2026?
     - What will S&P 500 (SPY) hit Week of November 2 2026?
@@ -38,7 +39,7 @@ theme ai_chips: 6 events
     - Largest Company end of December 2026?
     - Anthropic IPO Closing Market Cap
     - Anthropic IPO by __?
-    - GPT Astra 6.1+ released by...?
-    - AI bubble burst by...?
     - Will Anthropic’s valuation hit __ by December 31?
+    - AI bubble burst by...?
+    - GPT Astra 6.1+ released by...?
 theme fx: 0 events
