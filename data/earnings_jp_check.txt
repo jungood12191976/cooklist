@@ -1,25 +1,25 @@
-FILE kessan.xlsx as_of=None data_rows=219 parsed=215 (うち日付未定=0) skipped=4 dups=0
+FILE kessan.xlsx as_of=None data_rows=154 parsed=150 (うち日付未定=0) skipped=4 dups=0
   SKIPPED ['※ 決算期変更による変則決算期中の会社を含む場合があります。', '', '', '', '', '', '', '']
   SKIPPED ['May include companies with irregular fiscal terms due to changes in the fiscal year.', '', '', '', '', '', '', '']
   SKIPPED ['※ テクニカル上場した会社は、前身となる会社（株式移転等を行った旧上場会社）の決算情報を発表する場合があります。', '', '', '', '', '', '', '']
   SKIPPED ['Technical listed companies may announce the financial information of their predecessor (former listed companies that have transferred stock, etc.)', '', '', '', '', '', '', '']
-FILE kessan08_1002.xlsx as_of=2026-10-01 data_rows=463 parsed=459 (うち日付未定=5) skipped=4 dups=0
+FILE kessan09_1106.xlsx as_of=2026-11-05 data_rows=2978 parsed=2974 (うち日付未定=16) skipped=4 dups=150
   SKIPPED ['※ 決算期変更による変則決算期中の会社を含む場合があります。', '', '', '', '', '', '', '']
   SKIPPED ['May include companies with irregular fiscal terms due to changes in the fiscal year.', '', '', '', '', '', '', '']
   SKIPPED ['※ テクニカル上場した会社は、前身となる会社（株式移転等を行った旧上場会社）の決算情報を発表する場合があります。', '', '', '', '', '', '', '']
   SKIPPED ['Technical listed companies may announce the financial information of their predecessor (former listed companies that have transferred stock, etc.)', '', '', '', '', '', '', '']
-FILE kessan09_1030.xlsx as_of=2026-10-29 data_rows=2965 parsed=2961 (うち日付未定=21) skipped=4 dups=211
+  DUP ('1417', '2026-11-09', '第２四半期')
+  DUP ('1720', '2026-11-09', '第２四半期')
+  DUP ('1736', '2026-11-09', '第２四半期')
+  DUP ('1768', '2026-11-09', '第２四半期')
+  DUP ('1786', '2026-11-09', '第２四半期')
+  DUP ('1798', '2026-11-09', '第２四半期')
+  DUP ('1803', '2026-11-09', '第２四半期')
+  DUP ('1813', '2026-11-09', '第２四半期')
+  DUP ('1828', '2026-11-09', '第２四半期')
+  DUP ('1867', '2026-11-09', '第２四半期')
+FILE kessan10_1106.xlsx as_of=2026-11-05 data_rows=229 parsed=225 (うち日付未定=6) skipped=4 dups=0
   SKIPPED ['※ 決算期変更による変則決算期中の会社を含む場合があります。', '', '', '', '', '', '', '']
   SKIPPED ['May include companies with irregular fiscal terms due to changes in the fiscal year.', '', '', '', '', '', '', '']
   SKIPPED ['※ テクニカル上場した会社は、前身となる会社（株式移転等を行った旧上場会社）の決算情報を発表する場合があります。', '', '', '', '', '', '', '']
   SKIPPED ['Technical listed companies may announce the financial information of their predecessor (former listed companies that have transferred stock, etc.)', '', '', '', '', '', '', '']
-  DUP ('1301', '2026-11-06', '第２四半期')
-  DUP ('1332', '2026-11-06', '第２四半期')
-  DUP ('1375', '2026-11-06', '第２四半期')
-  DUP ('1450', '2026-11-06', '第２四半期')
-  DUP ('1515', '2026-11-06', '第２四半期')
-  DUP ('1717', '2026-11-06', '第２四半期')
-  DUP ('1721', '2026-11-06', '第２四半期')
-  DUP ('1826', '2026-11-06', '第２四半期')
-  DUP ('1905', '2026-11-06', '第２四半期')
-  DUP ('1951', '2026-11-06', '第２四半期')
