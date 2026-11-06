@@ -1,4 +1,4 @@
-fetched_at=2026-11-06T10:29:56+09:00
+fetched_at=2026-11-06T11:38:13+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cyom,deploying,description,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,gameId,icon,id,image,liquidity,liquidityClob,live,markets,negRisk,negRiskAugmented,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
@@ -40,5 +40,5 @@ theme ai_chips: 6 events
     - Anthropic IPO by __?
     - GPT Astra 6.1+ released by...?
     - AI bubble burst by...?
-    - Largest IPO by market cap in 2026?
+    - Will Anthropic’s valuation hit __ by December 31?
 theme fx: 0 events
