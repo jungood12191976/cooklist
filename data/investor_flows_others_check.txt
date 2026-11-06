@@ -1,6 +1,6 @@
-実行 2026-11-05T15:40:25.411530Z / 一覧のxlsx 5件
-20260924〜20260925: {'proprietary': 6521, 'brokerage': -55, 'invtrust': -502, 'bizcorp': -1340, 'othercorp': 376, 'lifenl': -219, 'citybank': -231, 'otherfin': 69} / 全14区分の合計=-70億円 / 市場=['東証プライム', '東証スタンダード', '東証グロース'] / 既存3者との差: foreign=+0, individual=-1, trustbank=+0
+実行 2026-11-06T15:14:10.221620Z / 一覧のxlsx 5件
 20260928〜20261002: {'proprietary': -12225, 'brokerage': -67, 'invtrust': -143, 'bizcorp': -528, 'othercorp': 131, 'lifenl': -345, 'citybank': -234, 'otherfin': 77} / 全14区分の合計=+218億円 / 市場=['東証プライム', '東証スタンダード', '東証グロース'] / 既存3者との差: foreign=+0, individual=+1, trustbank=+0
 20261005〜20261009: {'proprietary': -12685, 'brokerage': -3, 'invtrust': -1556, 'bizcorp': 1774, 'othercorp': 122, 'lifenl': -1186, 'citybank': -579, 'otherfin': -552} / 全14区分の合計=+174億円 / 市場=['東証プライム', '東証スタンダード', '東証グロース'] / 既存3者との差: foreign=+0, individual=+0, trustbank=-1
 20261013〜20261016: {'proprietary': -103, 'brokerage': -340, 'invtrust': 1379, 'bizcorp': 1850, 'othercorp': -44, 'lifenl': -310, 'citybank': -508, 'otherfin': 172} / 全14区分の合計=-138億円 / 市場=['東証プライム', '東証スタンダード', '東証グロース'] / 既存3者との差: foreign=+0, individual=+0, trustbank=+0
 20261019〜20261023: {'proprietary': 665, 'brokerage': -171, 'invtrust': 392, 'bizcorp': 1199, 'othercorp': 1432, 'lifenl': -304, 'citybank': -328, 'otherfin': 27} / 全14区分の合計=+225億円 / 市場=['東証プライム', '東証スタンダード', '東証グロース'] / 既存3者との差: foreign=+0, individual=+0, trustbank=+0
+20261026〜20261030: {'proprietary': 2751, 'brokerage': -109, 'invtrust': 1569, 'bizcorp': -669, 'othercorp': 55, 'lifenl': -392, 'citybank': -215, 'otherfin': 346} / 全14区分の合計=+255億円 / 市場=['東証プライム', '東証スタンダード', '東証グロース'] / 既存3者との差: foreign=+0, individual=+0, trustbank=+0
