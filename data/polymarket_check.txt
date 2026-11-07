@@ -1,13 +1,10 @@
-fetched_at=2026-11-07T18:58:46+09:00
+fetched_at=2026-11-08T01:50:06+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cyom,deploying,description,elapsed,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,finishedTimestamp,gameId,icon,id,image,liquidity,liquidityClob,live,markets,negRisk,negRiskAugmented,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,updatedAt,usId,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
-theme rates: 6 events
+theme rates: 3 events
     - Fed Decision in December?
-    - Another Fed rate hike in 2026?
     - How many Fed rate cuts in 2026?
-    - Fed Decision in January?
-    - How many Fed rate hikes in 2026?
-    - Fed decisions (Sep–Dec)
+    - Another Fed rate hike in 2026?
 theme oil_iran: 6 events
     - US-Iran effective ceasefire continues through...?
     - Israel x Iran ceasefire continues through...?
@@ -17,23 +14,22 @@ theme oil_iran: 6 events
     - What will WTI Crude Oil (WTI) hit in November 2026?
 theme trump: 6 events
     - US-Iran effective ceasefire continues through...?
-    - Fed Decision in December?
     - Prime Minister of Israel after the next election?
     - US announces end of Iranian blockade by...?
     - Who will leave Trump Administration before 2027?
     - Will the U.S. invade Iran before 2027?
+    - Fed Decision in December?
 theme tariff: 0 events
 theme recession: 0 events
-theme inflation: 3 events
+theme inflation: 2 events
+    - October Inflation US - Annual
     - Another Fed rate hike in 2026?
-    - How many Fed rate hikes in 2026?
-    - Fed decisions (Sep–Dec)
 theme stocks: 0 events
 theme ai_chips: 6 events
     - Anthropic IPO by __?
     - Anthropic IPO Closing Market Cap
-    - Largest IPO by market cap in 2026?
     - What will NVIDIA (NVDA) hit in November 2026?
-    - Will NVIDIA (NVDA) close above ___ end of November?
+    - Largest IPO by market cap in 2026?
+    - Will Anthropic’s valuation hit __ by December 31?
     - AI bubble burst by...?
 theme fx: 0 events
