@@ -1,26 +1,26 @@
-fetched_at=2026-11-07T09:04:45+09:00
+fetched_at=2026-11-07T11:05:54+09:00
 events_fetched=500
 event_keys=active,archived,automaticallyActive,closed,commentCount,competitive,createdAt,creationDate,cyom,deploying,description,enableNegRisk,enableOrderBook,endDate,ended,eventDate,eventMetadata,eventWeek,featured,gameId,icon,id,image,liquidity,liquidityClob,live,markets,negRisk,negRiskAugmented,new,openInterest,pendingDeployment,period,resolutionSource,restricted,score,series,seriesSlug,showAllOutcomes,showMarketImages,slug,sport,startDate,startTime,tags,teams,ticker,title,updatedAt,version,volume,volume1mo,volume1wk,volume1yr,volume24hr
 theme rates: 6 events
     - Fed Decision in December?
-    - How many Fed rate cuts in 2026?
     - Another Fed rate hike in 2026?
+    - How many Fed rate cuts in 2026?
     - Bank of England decision in December?
     - Fed Decision in January?
     - How many Fed rate hikes in 2026?
 theme oil_iran: 6 events
     - US-Iran effective ceasefire continues through...?
     - Israel x Iran ceasefire continues through...?
-    - US-Iran ceasefire continues through...?
-    - Will the U.S. invade Iran before 2027?
     - US announces end of Iranian blockade by...?
+    - Will the U.S. invade Iran before 2027?
     - Pete Hegseth out as Secretary of Defense by December 31?
+    - Iran leadership change by...?
 theme trump: 6 events
-    - Fed Decision in December?
     - US-Iran effective ceasefire continues through...?
+    - Fed Decision in December?
     - Prime Minister of Israel after the next election?
-    - US-Iran ceasefire continues through...?
     - Who will leave Trump Administration before 2027?
+    - US announces end of Iranian blockade by...?
     - Will the U.S. invade Iran before 2027?
 theme tariff: 0 events
 theme recession: 0 events
@@ -36,5 +36,5 @@ theme ai_chips: 6 events
     - Will Anthropic’s valuation hit __ by December 31?
     - Largest IPO by market cap in 2026?
     - What will NVIDIA (NVDA) hit in November 2026?
-    - AI bubble burst by...?
+    - Will NVIDIA (NVDA) close above ___ end of November?
 theme fx: 0 events
